@@ -60,7 +60,7 @@ class Game {
             paddleDash: { active: false, timer: 0, duration: 180, cooldown: 1200 },
             chargedShot: { charging: false, chargeLevel: 0, maxCharge: 1200 },
             safetyNet: { active: false, timer: 0, duration: 900, cooldown: 4800 },
-            effectActivator: { active: false, timer: 0, duration: 0, cooldown: 1200 } // 20 segundos cooldown
+            effectActivator: { active: false, timer: 0, duration: 0, cooldown: 1200 }
         };
         
         // Configurações
@@ -480,9 +480,9 @@ class Game {
             this.riskConverterTimer = null;
             this.riskConverterSpeedMultiplier = 1;
         }
-            if (this.activeUpgradeEffects.chargedShot.chargeLevel >= this.activeUpgradeEffects.chargedShot.maxCharge) {
-                this.activeUpgradeEffects.chargedShot.chargeLevel = this.activeUpgradeEffects.chargedShot.maxCharge;
-            }
+        
+        if (this.activeUpgradeEffects.chargedShot.chargeLevel >= this.activeUpgradeEffects.chargedShot.maxCharge) {
+            this.activeUpgradeEffects.chargedShot.chargeLevel = this.activeUpgradeEffects.chargedShot.maxCharge;
         }
         
         // Aplicar efeito do Super Ímã
@@ -634,8 +634,8 @@ class Game {
                 fragment.x + fragment.size > this.paddle.x && 
                 fragment.x < this.paddle.x + this.paddle.width) {
                 
-                // Fragmento atingiu a plataforma - perder vida
-                this.loseLife();
+                // Fragmento atingiu a plataforma - perder vida sem resetar bolinha
+                this.loseLifeFromFragment();
                 this.fragments.splice(index, 1);
                 return;
             }
@@ -1670,6 +1670,25 @@ class Game {
             this.resetBallEffects();
             this.ballEffects.speedMultiplier = currentSpeedMultiplier;
         }
+    }
+    
+    loseLifeFromFragment() {
+        this.lives--;
+        
+        // Perder 10 moedas ao perder vida
+        this.money = Math.max(0, this.money - 10);
+        
+        // Seguro de Vida - ganhar 100 moedas ao invés de perder
+        if (this.hasUpgrade('life_insurance')) {
+            this.money += 100;
+        }
+        
+        this.updateUI();
+        
+        if (this.lives <= 0) {
+            this.gameOver();
+        }
+        // Não recriar bolinha nem resetar efeitos - o jogo continua normalmente
     }
     
     completePhase() {
