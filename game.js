@@ -29,6 +29,7 @@ class Game {
         this.bricks = [];
         this.particles = [];
         this.powerUps = [];
+        this.fragments = [];
         
         // Efeitos ativos
         this.activeUpgrades = [];
@@ -300,6 +301,7 @@ class Game {
         // Limpar arrays
         this.particles = [];
         this.powerUps = [];
+        this.fragments = [];
     }
     
     generateBricks() {
@@ -341,8 +343,8 @@ class Game {
         }
         
         // Distribuição de cores baseada na fase
-        const colors = ['blue', 'yellow', 'green', 'purple', 'gray'];
-        const weights = [0.4, 0.2, 0.15, 0.15, 0.1]; // Probabilidades
+        const colors = ['blue', 'yellow', 'green', 'purple', 'gray', 'white'];
+        const weights = [0.35, 0.2, 0.15, 0.15, 0.1, 0.05]; // Probabilidades
         
         // Aumentar dificuldade com a fase
         const difficulty = Math.min(this.currentPhase / 10, 1);
@@ -385,6 +387,7 @@ class Game {
         this.updatePaddle();
         this.updateBalls();
         this.updateParticles();
+        this.updateFragments();
         this.updatePowerUps();
         this.updateUpgradeEffects();
         this.checkCollisions();
@@ -539,11 +542,11 @@ class Game {
             
             // Efeito de zigue-zague (amplitude ainda menor)
             if (this.ballEffects.zigzag) {
-                this.ballEffects.zigzagTimer += 0.05;
+                this.ballEffects.zigzagTimer += 0.0404;
                 // Movimento horizontal com amplitude muito menor
-                vx += Math.sin(this.ballEffects.zigzagTimer * 0.4) * 2; // Reduzido de 5px para 3px
+                vx += Math.sin(this.ballEffects.zigzagTimer * 0.323) * 1.617;
                 // Movimento vertical mais sutil
-                vy += Math.cos(this.ballEffects.zigzagTimer * 0.3) * 0.3; // Reduzido de 1 para 0.5
+                vy += Math.cos(this.ballEffects.zigzagTimer * 0.243) * 0.243;
             }
             
 
@@ -590,6 +593,31 @@ class Game {
             
             if (particle.life <= 0) {
                 this.particles.splice(index, 1);
+            }
+        });
+    }
+    
+    updateFragments() {
+        this.fragments.forEach((fragment, index) => {
+            fragment.x += fragment.vx;
+            fragment.y += fragment.vy;
+            fragment.life--;
+            
+            // Verificar colisão com a plataforma
+            if (fragment.y + fragment.size > this.paddle.y && 
+                fragment.y < this.paddle.y + this.paddle.height &&
+                fragment.x + fragment.size > this.paddle.x && 
+                fragment.x < this.paddle.x + this.paddle.width) {
+                
+                // Fragmento atingiu a plataforma - perder vida
+                this.loseLife();
+                this.fragments.splice(index, 1);
+                return;
+            }
+            
+            // Remover se sair da tela ou vida acabar
+            if (fragment.y > this.height || fragment.life <= 0) {
+                this.fragments.splice(index, 1);
             }
         });
     }
@@ -843,6 +871,29 @@ class Game {
         // Quebrar tijolo
         brick.hits -= (1 + extraDamage);
         
+        // Efeito especial do bloco vermelho - trocar posição com outro bloco
+        if (brick.color === 'red') {
+            // Encontrar blocos disponíveis para troca (não destruídos e não vermelhos)
+            const availableBricks = this.bricks.filter(b => !b.destroyed && b.color !== 'red' && b !== brick);
+            
+            if (availableBricks.length > 0) {
+                // Escolher um bloco aleatório para trocar
+                const randomBrick = availableBricks[Math.floor(Math.random() * availableBricks.length)];
+                
+                // Trocar posições
+                const tempX = brick.x;
+                const tempY = brick.y;
+                brick.x = randomBrick.x;
+                brick.y = randomBrick.y;
+                randomBrick.x = tempX;
+                randomBrick.y = tempY;
+                
+                // Criar efeito visual da troca
+                this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff0000');
+                this.createParticles(randomBrick.x + randomBrick.width / 2, randomBrick.y + randomBrick.height / 2, this.getBrickColorValue(randomBrick.color));
+            }
+        }
+        
         // Efeito especial do bloco vermelho - aumentar velocidade da bolinha
         if (brick.color === 'red') {
             this.ballEffects.speedMultiplier += 0.02; // Aumentar velocidade em 2%
@@ -868,6 +919,11 @@ class Game {
         if (brick.hits <= 0) {
             brick.destroyed = true;
             let reward = this.getBrickReward(brick.color);
+            
+            // Efeito especial do bloco branco - criar fragmento perigoso
+            if (brick.color === 'white') {
+                this.createFragment(brick.x + brick.width / 2, brick.y + brick.height);
+            }
             
             // Aplicar modificadores de dinheiro
             if (this.hasUpgrade('lucky_amulet') && Math.random() < 0.25) {
@@ -1482,6 +1538,7 @@ class Game {
             'green': 1,
             'purple': 7,
             'gray': 3,
+            'white': 5,
             'red': 10
         };
         return rewards[color] || 1;
@@ -1494,6 +1551,7 @@ class Game {
             'green': '#2ecc71',
             'purple': '#9b59b6',
             'gray': '#95a5a6',
+            'white': '#ffffff',
             'red': '#e74c3c'
         };
         return colors[color] || '#ffffff';
@@ -1549,6 +1607,18 @@ class Game {
                 size: Math.random() * 4 + 2
             });
         }
+    }
+    
+    createFragment(x, y) {
+        this.fragments.push({
+            x: x,
+            y: y,
+            vx: (Math.random() - 0.5) * 2, // Pequeno movimento horizontal
+            vy: 2 + Math.random() * 2, // Velocidade para baixo
+            size: 8,
+            color: '#ffffff',
+            life: 300 // 5 segundos a 60fps
+        });
     }
     
     loseLife() {
@@ -2287,6 +2357,11 @@ class Game {
             this.drawParticle(particle);
         });
         
+        // Desenhar fragmentos
+        this.fragments.forEach(fragment => {
+            this.drawFragment(fragment);
+        });
+        
         // Desenhar power-ups
         this.powerUps.forEach(powerUp => {
             this.drawPowerUp(powerUp);
@@ -2449,6 +2524,18 @@ class Game {
         this.ctx.beginPath();
         this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
         this.ctx.fill();
+        this.ctx.restore();
+    }
+    
+    drawFragment(fragment) {
+        this.ctx.save();
+        this.ctx.fillStyle = fragment.color;
+        this.ctx.strokeStyle = '#cccccc';
+        this.ctx.lineWidth = 1;
+        this.ctx.beginPath();
+        this.ctx.arc(fragment.x, fragment.y, fragment.size, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.stroke();
         this.ctx.restore();
     }
     

@@ -628,6 +628,11 @@ body {
     background: #e74c3c;
 }
 
+.brick-block.white {
+    background: #ffffff;
+    border: 1px solid #cccccc;
+}
+
 .brick-text {
     font-size: 0.9rem;
     text-align: center;
