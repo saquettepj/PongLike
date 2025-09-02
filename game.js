@@ -100,6 +100,12 @@ class Game {
         
         // Som de batida no tijolo
         this.sounds.brickHit = this.createTone(400, 0.15, 'square');
+        
+        // Som de perda de vida
+        this.sounds.loseLife = this.createTone(150, 0.4, 'sawtooth');
+        
+        // Som de compra na loja
+        this.sounds.purchase = this.createTone(600, 0.2, 'triangle');
     }
     
     createTone(frequency, duration, type = 'sine') {
@@ -127,6 +133,10 @@ class Game {
     
     playSound(soundName) {
         if (this.sounds[soundName]) {
+            // Reativar contexto de áudio se estiver suspenso
+            if (this.audioContext && this.audioContext.state === 'suspended') {
+                this.audioContext.resume();
+            }
             this.sounds[soundName]();
         }
     }
@@ -635,7 +645,10 @@ class Game {
                 fragment.x < this.paddle.x + this.paddle.width) {
                 
                 // Fragmento atingiu a plataforma - perder vida sem resetar bolinha
-                this.loseLifeFromFragment();
+                // Só aplicar se ainda há bolinhas no jogo
+                if (this.balls.length > 0) {
+                    this.loseLifeFromFragment();
+                }
                 this.fragments.splice(index, 1);
                 return;
             }
@@ -1641,6 +1654,9 @@ class Game {
     loseLife() {
         this.lives--;
         
+        // Tocar som de perda de vida
+        this.playSound('loseLife');
+        
         // Perder 10 moedas ao perder vida
         this.money = Math.max(0, this.money - 10);
         
@@ -1674,6 +1690,9 @@ class Game {
     
     loseLifeFromFragment() {
         this.lives--;
+        
+        // Tocar som de perda de vida
+        this.playSound('loseLife');
         
         // Perder 10 moedas ao perder vida
         this.money = Math.max(0, this.money - 10);
@@ -2006,6 +2025,10 @@ class Game {
     selectUpgrade(upgrade, cardElement) {
         if (this.money >= upgrade.price) {
             this.money -= upgrade.price;
+            
+            // Tocar som de compra
+            this.playSound('purchase');
+            
             this.updateUI(); // Atualizar UI em tempo real
             this.activeUpgrades.push(upgrade);
             cardElement.classList.add('selected');
