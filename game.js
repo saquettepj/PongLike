@@ -56,11 +56,11 @@ class Game {
         
         // Upgrades com ativação manual
         this.activeUpgradeEffects = {
-            superMagnet: { active: false, timer: 0, duration: 120, cooldown: 3000 }, // 2 segundos ativo, 50 segundos cooldown
-            paddleDash: { active: false, timer: 0, duration: 180, cooldown: 1200 }, // 3 segundos ativo, 20 segundos cooldown
-            chargedShot: { charging: false, chargeLevel: 0, maxCharge: 60 },
-            safetyNet: { active: false, timer: 0, duration: 900, cooldown: 4800 }, // 15 segundos ativo, 80 segundos cooldown
-            effectActivator: { active: false, timer: 0, duration: 600 } // 10 segundos
+            superMagnet: { active: false, timer: 0, duration: 120, cooldown: 3000 }, 
+            paddleDash: { active: false, timer: 0, duration: 180, cooldown: 1200 },
+            chargedShot: { charging: false, chargeLevel: 0, maxCharge: 1200 },
+            safetyNet: { active: false, timer: 0, duration: 900, cooldown: 4800 },
+            effectActivator: { active: false, timer: 0, duration: 0, cooldown: 1200 } // 20 segundos cooldown
         };
         
         // Configurações
@@ -460,6 +460,26 @@ class Game {
         // Atualizar carregamento do tiro carregado
         if (this.activeUpgradeEffects.chargedShot.charging) {
             this.activeUpgradeEffects.chargedShot.chargeLevel++;
+        }
+        
+        // Conversor de Risco - mudar velocidade da bolinha aleatoriamente a cada 5 segundos
+        if (this.hasUpgrade('risk_converter')) {
+            if (!this.riskConverterTimer) {
+                this.riskConverterTimer = 300; // 5 segundos
+                this.riskConverterSpeedMultiplier = 1; // Velocidade base
+            }
+            
+            this.riskConverterTimer--;
+            if (this.riskConverterTimer <= 0) {
+                this.riskConverterTimer = 300; // Reset para 5 segundos
+                // Mudar velocidade entre 50% e 120% do valor atual
+                const speedChange = 0.5 + Math.random() * 0.7; // 0.5 a 1.2
+                this.riskConverterSpeedMultiplier = speedChange;
+            }
+        } else {
+            this.riskConverterTimer = null;
+            this.riskConverterSpeedMultiplier = 1;
+        }
             if (this.activeUpgradeEffects.chargedShot.chargeLevel >= this.activeUpgradeEffects.chargedShot.maxCharge) {
                 this.activeUpgradeEffects.chargedShot.chargeLevel = this.activeUpgradeEffects.chargedShot.maxCharge;
             }
@@ -532,8 +552,13 @@ class Game {
             }
             
             // Aplicar efeitos
-            let vx = ball.vx * this.ballEffects.speedMultiplier;
-            let vy = ball.vy * this.ballEffects.speedMultiplier;
+            let speedMultiplier = this.ballEffects.speedMultiplier;
+            // Aplicar multiplicador do Conversor de Risco
+            if (this.hasUpgrade('risk_converter') && this.riskConverterSpeedMultiplier) {
+                speedMultiplier *= this.riskConverterSpeedMultiplier;
+            }
+            let vx = ball.vx * speedMultiplier;
+            let vy = ball.vy * speedMultiplier;
             
             // Efeito de inversão
             if (this.ballEffects.inverted) {
@@ -930,13 +955,7 @@ class Game {
                 reward = Math.floor(reward * 1.25);
             }
             
-            // Conversor de Risco - mais dinheiro com efeitos negativos
-            if (this.hasUpgrade('risk_converter')) {
-                const negativeEffects = (this.ballEffects.inverted ? 1 : 0) + 
-                                      (this.ballEffects.zigzag ? 1 : 0) + 
-                                      (this.ballEffects.invisible ? 1 : 0);
-                reward += negativeEffects;
-            }
+
             
             this.money += reward;
             this.updateUI(); // Atualizar UI em tempo real
@@ -1180,9 +1199,8 @@ class Game {
                 break;
                 
             case 'effect_activator':
-                if (!this.activeUpgradeEffects.effectActivator.active) {
-                    this.activeUpgradeEffects.effectActivator.active = true;
-                    this.activeUpgradeEffects.effectActivator.timer = this.activeUpgradeEffects.effectActivator.duration;
+                if (this.activeUpgradeEffects.effectActivator.cooldown <= 0) {
+                    this.activeUpgradeEffects.effectActivator.cooldown = 1200; // 20 segundos cooldown
                     // Ativar efeito aleatório
                     const effects = ['yellow', 'green', 'purple', 'gray'];
                     const randomEffect = effects[Math.floor(Math.random() * effects.length)];
@@ -1221,9 +1239,8 @@ class Game {
         }
         
         // Ativador de Efeito
-        if (this.hasUpgrade('effect_activator') && !this.activeUpgradeEffects.effectActivator.active) {
-            this.activeUpgradeEffects.effectActivator.active = true;
-            this.activeUpgradeEffects.effectActivator.timer = this.activeUpgradeEffects.effectActivator.duration;
+        if (this.hasUpgrade('effect_activator') && this.activeUpgradeEffects.effectActivator.cooldown <= 0) {
+            this.activeUpgradeEffects.effectActivator.cooldown = 1200; // 20 segundos cooldown
             // Ativar efeito aleatório
             const effects = ['yellow', 'green', 'purple', 'gray'];
             const randomEffect = effects[Math.floor(Math.random() * effects.length)];
@@ -1840,7 +1857,7 @@ class Game {
             {
                 id: 'effect_activator',
                 name: 'Ativador de Efeito',
-                description: 'Permite que o jogador escolha e ative um dos efeitos dos tijolos na bolinha por 10 segundos',
+                description: 'Ativa efeito aleatório dos blocos na bolinha (cooldown 20s)',
                 price: 110,
                 type: 'ball',
                 icon: this.getUpgradeIcon('effect_activator')
@@ -1906,7 +1923,7 @@ class Game {
             {
                 id: 'risk_converter',
                 name: 'Conversor de Risco',
-                description: 'Cada efeito negativo ativo na bolinha aumenta o dinheiro ganho por tijolo em +1',
+                description: 'Muda velocidade da bolinha aleatoriamente entre 50%-120% a cada 5 segundos',
                 price: 120,
                 type: 'utility',
                 icon: this.getUpgradeIcon('risk_converter')
@@ -2260,11 +2277,11 @@ class Game {
                 
             case 'effect_activator':
                 const activatorEffect = this.activeUpgradeEffects.effectActivator;
-                if (activatorEffect.active) {
-                    powerItem.className = 'power-item active';
-                    const seconds = Math.ceil(activatorEffect.timer / 60);
+                if (activatorEffect.cooldown > 0) {
+                    powerItem.className = 'power-item on-cooldown';
+                    const seconds = Math.ceil(activatorEffect.cooldown / 60);
                     cooldownElement.textContent = `${seconds}s`;
-                    cooldownElement.className = 'power-cooldown ready';
+                    cooldownElement.className = 'power-cooldown';
                 } else {
                     powerItem.className = 'power-item';
                     cooldownElement.textContent = 'PRONTO';

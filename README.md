@@ -58,7 +58,7 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 11. **Multi-bola** - Duas bolinhas simultâneas (120 🪙)
 12. **Bolinha Explosiva** - Explode ao atingir tijolos (não afeta o núcleo vermelho) (80 🪙)
 13. **Eco da Bolinha** - Segunda bolinha com atraso de 10ms + destrói bloco aleatório (70 🪙)
-14. **Ativador de Efeito** - Escolhe efeito ativo (110 🪙)
+14. **Ativador de Efeito** - Ativa efeito aleatório dos blocos na bolinha (cooldown 20s) (110 🪙)
 15. **Bolinha Espelhada** - Destrói bloco simétrico ao quebrar um (90 🪙)
 16. **Bolinha da Fortuna** - Bolinha dourada que dá +1 moeda por bloco (85 🪙)
 17. **Bolinha Prima** - Destrói bloco aleatório a cada número primo de batidas (70 🪙)
@@ -69,7 +69,7 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 19. **Amuleto da Sorte** - +25% dinheiro (80 🪙)
 20. **Seguro de Vida** - Ganha 100 moedas ao perder vida (70 🪙)
 21. **Reciclagem** - Tijolos azuis podem reaparecer (100 🪙)
-22. **Conversor de Risco** - Mais dinheiro com efeitos negativos (120 🪙)
+22. **Conversor de Risco** - Muda velocidade da bolinha aleatoriamente entre 50%-120% a cada 5s (120 🪙)
 
 #### 🔥 Upgrades "Quebra-Regras" (5 total)
 23. **Dano Estrutural** - Primeira batida no núcleo conta como duas (80 🪙)
