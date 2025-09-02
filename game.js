@@ -14,6 +14,12 @@ class Game {
         this.highScore = parseInt(localStorage.getItem('brickRogueHighScore')) || 1;
         this.money = 0;
         this.lives = 3;
+        
+        // Sistema de promoção da loja
+        this.shopPromotion = {
+            active: false,
+            discountPercent: 0
+        };
         this.gameRunning = false;
         this.gamePaused = false;
         this.ballHitCount = 0; // Contador de batidas da bolinha para Bolinha Prima
@@ -364,7 +370,7 @@ class Game {
             trail: [],
             attached: true, // Bolinha presa à plataforma
             explosive: false,
-            ghostUsed: false
+
         }];
         
         // Limpar arrays
@@ -626,12 +632,6 @@ class Game {
                     ball.y = this.height - 20;
                     ball.vy = -Math.abs(ball.vy);
                     this.createParticles(ball.x, ball.y, '#2ecc71');
-                }
-                // Bolinha Fantasma - primeira queda passa pela parte de baixo
-                else if (this.hasUpgrade('ghost_ball') && !ball.ghostUsed) {
-                    ball.ghostUsed = true;
-                    ball.y = 50; // Reaparecer no topo
-                    ball.vy = Math.abs(ball.vy); // Manter direção para baixo
                 } else {
                     this.balls.splice(index, 1);
                     // Só perder vida quando não há mais bolas no jogo
@@ -1273,7 +1273,6 @@ class Game {
                         radius: this.config.ballRadius,
                         explosive: false,
                         attached: true,
-                        ghostUsed: false,
                         visible: true,
                         trail: []
                     });
@@ -1441,12 +1440,7 @@ class Game {
                 <path d="M8 20 Q16 24 24 20" stroke="#95a5a6" stroke-width="2" fill="none"/>
             </svg>`,
             
-            'ghost_ball': `<svg width="32" height="32" viewBox="0 0 32 32">
-                <circle cx="16" cy="16" r="6" fill="#fdcb6e" stroke="#ff6b35" stroke-width="2"/>
-                <path d="M10 16 Q16 12 22 16" stroke="#ffffff" stroke-width="2" fill="none" opacity="0.5"/>
-                <path d="M10 20 Q16 16 22 20" stroke="#ffffff" stroke-width="2" fill="none" opacity="0.5"/>
-                <path d="M10 24 Q16 20 22 24" stroke="#ffffff" stroke-width="2" fill="none" opacity="0.5"/>
-            </svg>`,
+
             
             'multi_ball': `<svg width="32" height="32" viewBox="0 0 32 32">
                 <circle cx="12" cy="16" r="4" fill="#fdcb6e" stroke="#ff6b35" stroke-width="1"/>
@@ -1747,7 +1741,7 @@ class Game {
                 trail: [],
                 attached: true, // Nova bolinha presa à plataforma
                 explosive: false,
-                ghostUsed: false
+    
             }];
             // Resetar efeitos ao perder vida (exceto speedMultiplier do bloco vermelho)
             const currentSpeedMultiplier = this.ballEffects.speedMultiplier;
@@ -1799,9 +1793,25 @@ class Game {
         this.showScreen('gameOverScreen');
     }
     
+    checkShopPromotion() {
+        // Ativar promoção a cada 3 fases (fases 3, 6, 9, 12, etc.)
+        if (this.currentPhase % 3 === 0) {
+            this.shopPromotion.active = true;
+            // Desconto aleatório entre 20% e 40%
+            this.shopPromotion.discountPercent = Math.floor(Math.random() * 21) + 20; // 20-40%
+        } else {
+            this.shopPromotion.active = false;
+            this.shopPromotion.discountPercent = 0;
+        }
+    }
+    
     showUpgradeScreen() {
         // Armazenar dinheiro antes de entrar na loja
         this.moneyBeforeShop = this.money;
+        
+        // Verificar se deve ativar promoção (a cada 3 fases)
+        this.checkShopPromotion();
+        
         this.generateUpgradeOptions();
         this.updateUI(); // Atualizar UI para mostrar dinheiro atual
         this.showScreen('upgradeScreen');
@@ -1812,7 +1822,6 @@ class Game {
         upgradesGrid.innerHTML = '';
         
         const availableUpgrades = this.getAvailableUpgrades();
-        const selectedUpgrades = [];
         
         // Verificar se há upgrades suficientes
         if (availableUpgrades.length === 0) {
@@ -1821,27 +1830,35 @@ class Game {
             return;
         }
         
-        // Gerar até 3 upgrades aleatórios (ou menos se não houver suficientes)
-        const maxUpgrades = Math.min(3, availableUpgrades.length);
-        for (let i = 0; i < maxUpgrades; i++) {
-            const randomIndex = Math.floor(Math.random() * availableUpgrades.length);
-            const upgrade = availableUpgrades[randomIndex];
-            selectedUpgrades.push(upgrade);
-            availableUpgrades.splice(randomIndex, 1);
-        }
-        
-        selectedUpgrades.forEach(upgrade => {
+        // Mostrar todos os upgrades disponíveis (sem restrição de quantidade)
+        availableUpgrades.forEach(upgrade => {
+            // Aplicar desconto se promoção estiver ativa
+            let displayPrice = upgrade.price;
+            if (this.shopPromotion.active) {
+                displayPrice = Math.floor(upgrade.price * (1 - this.shopPromotion.discountPercent / 100));
+            }
+            
             const upgradeCard = document.createElement('div');
             upgradeCard.className = 'upgrade-card';
+            
+            // Adicionar classe especial se promoção estiver ativa
+            if (this.shopPromotion.active) {
+                upgradeCard.classList.add('promotion-active');
+            }
+            
             upgradeCard.innerHTML = `
                 <div class="upgrade-icon">${upgrade.icon}</div>
                 <div class="upgrade-name">${upgrade.name}</div>
                 <div class="upgrade-description">${upgrade.description}</div>
-                <div class="upgrade-price">${upgrade.price} 🪙</div>
+                <div class="upgrade-price">
+                    ${this.shopPromotion.active ? `<span class="original-price">${upgrade.price}</span>` : ''}
+                    ${displayPrice} 🪙
+                    ${this.shopPromotion.active ? `<span class="discount-badge">-${this.shopPromotion.discountPercent}%</span>` : ''}
+                </div>
             `;
             
             upgradeCard.addEventListener('click', () => {
-                this.selectUpgrade(upgrade, upgradeCard);
+                this.selectUpgrade(upgrade, upgradeCard, displayPrice);
             });
             
             upgradesGrid.appendChild(upgradeCard);
@@ -1856,7 +1873,7 @@ class Game {
                 id: 'wide_paddle',
                 name: 'Plataforma Larga',
                 description: 'Aumenta o tamanho da plataforma em 50%',
-                price: 120,
+                price: 150,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('wide_paddle')
             },
@@ -1864,7 +1881,7 @@ class Game {
                 id: 'attached_cannons',
                 name: 'Canhões Acoplados',
                 description: 'A plataforma atira 2 projéteis para frente quando a bolinha bate nela',
-                price: 100,
+                price: 200,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('attached_cannons')
             },
@@ -1872,7 +1889,7 @@ class Game {
                 id: 'super_magnet',
                 name: 'Super Ímã',
                 description: 'Pressione um botão para criar um campo magnético que puxa a bolinha por 2 segundos',
-                price: 120,
+                price: 180,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('super_magnet')
             },
@@ -1880,7 +1897,7 @@ class Game {
                 id: 'paddle_dash',
                 name: 'Dash de Plataforma',
                 description: 'Permite um movimento rápido (dash) para a esquerda ou direita uma vez a cada 5 segundos',
-                price: 80,
+                price: 140,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('paddle_dash')
             },
@@ -1888,7 +1905,7 @@ class Game {
                 id: 'cushion_paddle',
                 name: 'Plataforma de Aceleração',
                 description: 'Ativa aceleração de 30% na bolinha por 10 segundos. Cooldown de 20 segundos.',
-                price: 70,
+                price: 80,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('cushion_paddle')
             },
@@ -1896,7 +1913,7 @@ class Game {
                 id: 'repulsor_shield',
                 name: 'Reforço',
                 description: 'A plataforma fica 2x mais alta e a bolinha destrói o bloco atingido e o bloco de trás',
-                price: 80,
+                price: 220,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('repulsor_shield')
             },
@@ -1904,7 +1921,7 @@ class Game {
                 id: 'charged_shot',
                 name: 'Tiro Carregado',
                 description: 'Atira um projétil perfurante imediatamente.',
-                price: 90,
+                price: 190,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('charged_shot')
             },
@@ -1914,7 +1931,7 @@ class Game {
                 id: 'piercing_ball',
                 name: 'Bolinha Perfurante',
                 description: 'A bolinha quebra 1 tijolo comum (azul) sem mudar de direção',
-                price: 80,
+                price: 220,
                 type: 'ball',
                 icon: this.getUpgradeIcon('piercing_ball')
             },
@@ -1922,23 +1939,16 @@ class Game {
                 id: 'friction_field',
                 name: 'Campo de Fricção',
                 description: 'Deixa a bolinha 10% mais lenta',
-                price: 120,
+                price: 160,
                 type: 'ball',
                 icon: this.getUpgradeIcon('friction_field')
             },
-            {
-                id: 'ghost_ball',
-                name: 'Bolinha Fantasma',
-                description: 'A primeira vez que a bolinha for cair, ela passa pela parte de baixo e reaparece no topo',
-                price: 100,
-                type: 'ball',
-                icon: this.getUpgradeIcon('ghost_ball')
-            },
+
             {
                 id: 'multi_ball',
                 name: 'Multi-bola',
                 description: 'Cria uma nova bolinha grudada na plataforma. Cooldown de 1 minuto.',
-                price: 120,
+                price: 200,
                 type: 'ball',
                 icon: this.getUpgradeIcon('multi_ball')
             },
@@ -1946,7 +1956,7 @@ class Game {
                 id: 'explosive_ball',
                 name: 'Bolinha Explosiva',
                 description: 'A bolinha explode ao atingir um tijolo, destruindo tijolos adjacentes em uma pequena área',
-                price: 80,
+                price: 350,
                 type: 'ball',
                 icon: this.getUpgradeIcon('explosive_ball')
             },
@@ -1954,7 +1964,7 @@ class Game {
                 id: 'ball_echo',
                 name: 'Eco da Bolinha',
                 description: 'Destrói um bloco aleatório adicional a cada batida',
-                price: 70,
+                price: 250,
                 type: 'ball',
                 icon: this.getUpgradeIcon('ball_echo')
             },
@@ -1962,7 +1972,7 @@ class Game {
                 id: 'effect_activator',
                 name: 'Ativador de Efeito',
                 description: 'Ativa efeito aleatório dos blocos na bolinha (cooldown 20s)',
-                price: 110,
+                price: 30,
                 type: 'ball',
                 icon: this.getUpgradeIcon('effect_activator')
             },
@@ -1970,7 +1980,7 @@ class Game {
                 id: 'mirror_ball',
                 name: 'Bolinha Espelhada',
                 description: 'Quando a bolinha destrói um bloco, também destrói o bloco simetricamente posicionado do outro lado da tela',
-                price: 90,
+                price: 250,
                 type: 'ball',
                 icon: this.getUpgradeIcon('mirror_ball')
             },
@@ -1978,7 +1988,7 @@ class Game {
                 id: 'lucky_ball',
                 name: 'Bolinha da Fortuna',
                 description: 'A bolinha fica dourada e ganha +1 moeda extra por cada bloco quebrado',
-                price: 85,
+                price: 150,
                 type: 'ball',
                 icon: this.getUpgradeIcon('lucky_ball')
             },
@@ -1987,8 +1997,8 @@ class Game {
             {
                 id: 'extra_life',
                 name: 'Coração Extra',
-                description: 'Permite ter uma vida a mais',
-                price: 100,
+                description: 'Ganha uma vida a cada fase',
+                price: 180,
                 type: 'utility',
                 icon: this.getUpgradeIcon('extra_life')
             },
@@ -1996,7 +2006,7 @@ class Game {
                 id: 'safety_net',
                 name: 'Rede de Segurança',
                 description: 'Uma barreira de energia temporária aparece na parte inferior da tela por 15 segundos',
-                price: 120,
+                price: 300,
                 type: 'utility',
                 icon: this.getUpgradeIcon('safety_net')
             },
@@ -2004,7 +2014,7 @@ class Game {
                 id: 'lucky_amulet',
                 name: 'Amuleto da Sorte',
                 description: 'Aumenta a chance de obter mais dinheiro por tijolo quebrado (+25%)',
-                price: 80,
+                price: 30,
                 type: 'utility',
                 icon: this.getUpgradeIcon('lucky_amulet')
             },
@@ -2012,7 +2022,7 @@ class Game {
                 id: 'life_insurance',
                 name: 'Seguro de Vida',
                 description: 'Ao perder uma vida, ganha 100 moedas ao invés de perder 10',
-                price: 70,
+                price: 150,
                 type: 'utility',
                 icon: this.getUpgradeIcon('life_insurance')
             },
@@ -2020,7 +2030,7 @@ class Game {
                 id: 'recycling',
                 name: 'Reciclagem',
                 description: 'Tijolos azuis (comuns) têm 10% de chance de reaparecer após serem quebrados',
-                price: 100,
+                price: 30,
                 type: 'utility',
                 icon: this.getUpgradeIcon('recycling')
             },
@@ -2028,7 +2038,7 @@ class Game {
                 id: 'risk_converter',
                 name: 'Conversor de Risco',
                 description: 'Diminui vida do bloco vermelho para 3 e muda velocidade da bolinha entre 80%-140% a cada 5s',
-                price: 120,
+                price: 50,
                 type: 'utility',
                 icon: this.getUpgradeIcon('risk_converter')
             },
@@ -2038,7 +2048,7 @@ class Game {
                 id: 'structural_damage',
                 name: 'Dano Estrutural',
                 description: 'A primeira batida no Tijolo Núcleo conta como duas',
-                price: 80,
+                price: 180,
                 type: 'special',
                 icon: this.getUpgradeIcon('structural_damage')
             },
@@ -2046,7 +2056,7 @@ class Game {
                 id: 'heat_vision',
                 name: 'Visão de Calor',
                 description: 'A bolinha invisível deixa um rastro térmico muito mais visível',
-                price: 80,
+                price: 100,
                 type: 'special',
                 icon: this.getUpgradeIcon('heat_vision')
             },
@@ -2054,7 +2064,7 @@ class Game {
                 id: 'controlled_reversal',
                 name: 'Reversão Controlada',
                 description: 'O efeito de Inversão do tijolo verde só acontece 50% das vezes',
-                price: 100,
+                price: 40,
                 type: 'special',
                 icon: this.getUpgradeIcon('controlled_reversal')
             },
@@ -2062,7 +2072,7 @@ class Game {
                 id: 'prime_ball',
                 name: 'Bolinha Prima',
                 description: 'A cada número primo de batidas, destrói um bloco aleatório (não vermelho)',
-                price: 70,
+                price: 120,
                 type: 'special',
                 icon: this.getUpgradeIcon('prime_ball')
             },
@@ -2088,9 +2098,11 @@ class Game {
         return allUpgrades.filter(upgrade => !this.hasUpgrade(upgrade.id));
     }
     
-    selectUpgrade(upgrade, cardElement) {
-        if (this.money >= upgrade.price) {
-            this.money -= upgrade.price;
+    selectUpgrade(upgrade, cardElement, discountedPrice = null) {
+        const priceToPay = discountedPrice !== null ? discountedPrice : upgrade.price;
+        
+        if (this.money >= priceToPay) {
+            this.money -= priceToPay;
             
             // Tocar som de compra
             this.playSound('purchase');
@@ -2129,7 +2141,10 @@ class Game {
                     // Não precisa de inicialização especial
                     break;
                 case 'extra_life':
-                    this.lives++;
+                    // Limitar vida máxima a 4 corações
+                    if (this.lives < 4) {
+                        this.lives++;
+                    }
                     break;
                 case 'friction_field':
                     this.ballEffects.speedMultiplier *= 0.9;
@@ -2210,6 +2225,16 @@ class Game {
         const shopMoneyElement = document.getElementById('shopMoney');
         if (shopMoneyElement) {
             shopMoneyElement.textContent = this.money;
+        }
+        
+        // Atualizar subtitle da loja
+        const upgradeSubtitle = document.getElementById('upgradeSubtitle');
+        if (upgradeSubtitle) {
+            if (this.shopPromotion.active) {
+                upgradeSubtitle.textContent = `A loja está com ${this.shopPromotion.discountPercent}% em promoção!`;
+            } else {
+                upgradeSubtitle.textContent = 'Escolha seus upgrades';
+            }
         }
         
         // Atualizar vidas
