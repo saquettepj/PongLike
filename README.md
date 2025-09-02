@@ -82,6 +82,7 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 ### 💰 Sistema de Moedas
 - **Perda de Vida**: Ao perder uma vida, você perde 10 moedas
 - **Seguro de Vida**: Com este upgrade, ao perder vida você ganha 20 moedas ao invés de perder 10
+- **Economia na Loja**: Se não comprar nada na loja, você mantém 30% do dinheiro para a próxima fase
 
 ### ⚡ Efeitos dos Tijolos
 - **Não Acumulativos**: Efeitos da mesma cor não se acumulam

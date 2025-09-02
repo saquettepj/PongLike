@@ -1405,6 +1405,8 @@ class Game {
     }
     
     showUpgradeScreen() {
+        // Armazenar dinheiro antes de entrar na loja
+        this.moneyBeforeShop = this.money;
         this.generateUpgradeOptions();
         this.updateUI(); // Atualizar UI para mostrar dinheiro atual
         this.showScreen('upgradeScreen');
@@ -1754,14 +1756,26 @@ class Game {
         this.currentPhase++;
         this.resetBallEffects();
         
-        // Zerar dinheiro após comprar upgrades (não cumulativo)
-        // Exceto se tiver o upgrade "Poupança"
-        if (!this.hasUpgrade('money_saver')) {
-            this.money = 0;
+        // Verificar se comprou algo na loja
+        const moneyBeforeShop = this.moneyBeforeShop || 0;
+        const moneySpent = moneyBeforeShop - this.money;
+        
+        // Se não comprou nada (não gastou dinheiro), manter 30% do dinheiro
+        if (moneySpent === 0 && moneyBeforeShop > 0) {
+            this.money = Math.floor(moneyBeforeShop * 0.3);
         } else {
-            // Manter apenas 50 moedas se tiver o upgrade
-            this.money = Math.min(this.money, 50);
+            // Zerar dinheiro após comprar upgrades (não cumulativo)
+            // Exceto se tiver o upgrade "Poupança"
+            if (!this.hasUpgrade('money_saver')) {
+                this.money = 0;
+            } else {
+                // Manter apenas 50 moedas se tiver o upgrade
+                this.money = Math.min(this.money, 50);
+            }
         }
+        
+        // Limpar referência do dinheiro antes da loja
+        this.moneyBeforeShop = null;
         
         this.initGameObjects();
         this.applyUpgrades(); // Aplicar upgrades antes de iniciar a fase
