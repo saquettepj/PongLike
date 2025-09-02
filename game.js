@@ -15,6 +15,7 @@ class Game {
         this.money = 0;
         this.lives = 3;
         this.gameRunning = false;
+        this.gamePaused = false;
         this.gameTime = 0; // Tempo de jogo em segundos
         this.lastMultiBallTime = 0; // Último tempo que uma bola foi adicionada
         
@@ -134,8 +135,14 @@ class Game {
         document.addEventListener('keydown', (e) => {
             this.keys[e.code] = true;
             
+            // Pausar/Despausar com tecla P
+            if (e.code === 'KeyP' && this.gameRunning) {
+                e.preventDefault();
+                this.togglePause();
+            }
+            
             // Ativar upgrades com barra de espaço ou soltar bolinha presa
-            if (e.code === 'Space' && this.gameRunning) {
+            if (e.code === 'Space' && this.gameRunning && !this.gamePaused) {
                 e.preventDefault();
                 
                 // Verificar se há bolinhas presas para soltar
@@ -177,6 +184,10 @@ class Game {
         document.getElementById('restartButton').addEventListener('click', () => {
             this.restartGame();
         });
+        
+        document.getElementById('resumeButton').addEventListener('click', () => {
+            this.resumeGame();
+        });
     }
     
     showScreen(screenName) {
@@ -216,6 +227,24 @@ class Game {
     
     restartGame() {
         this.startGame();
+    }
+    
+    togglePause() {
+        if (this.gamePaused) {
+            this.resumeGame();
+        } else {
+            this.pauseGame();
+        }
+    }
+    
+    pauseGame() {
+        this.gamePaused = true;
+        this.showScreen('pauseScreen');
+    }
+    
+    resumeGame() {
+        this.gamePaused = false;
+        this.showScreen('gameScreen');
     }
     
     initGameObjects() {
@@ -316,6 +345,11 @@ class Game {
     }
     
     update() {
+        // Não atualizar se o jogo estiver pausado
+        if (this.gamePaused) {
+            return;
+        }
+        
         // Atualizar tempo de jogo (60 FPS = 1/60 segundos por frame)
         this.gameTime += 1/60;
         
@@ -349,6 +383,11 @@ class Game {
     }
     
     updatePaddle() {
+        // Não atualizar paddle se o jogo estiver pausado
+        if (this.gamePaused) {
+            return;
+        }
+        
         let speed = this.paddle.speed;
         
         // Dash de Plataforma

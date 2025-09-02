@@ -15,20 +15,56 @@
                 <h2 class="game-subtitle">O Desafio dos Efeitos</h2>
             </div>
             
-            <div class="controls-section">
-                <h3>Controles</h3>
-                <div class="controls-grid">
-                    <div class="control-item">
-                        <div class="control-icon">A/D ou ← →</div>
-                        <div class="control-text">Controlar a plataforma</div>
+            <div class="instructions-container">
+                <div class="controls-section">
+                    <h3>Controles</h3>
+                    <div class="controls-grid">
+                        <div class="control-item">
+                            <div class="control-icon">A/D ou ← →</div>
+                            <div class="control-text">Controlar a plataforma</div>
+                        </div>
+                        <div class="control-item">
+                            <div class="control-icon">⎵ Espaço</div>
+                            <div class="control-text">Ativar poderes especiais</div>
+                        </div>
+                        <div class="control-item">
+                            <div class="control-icon">P</div>
+                            <div class="control-text">Pausar/Despausar</div>
+                        </div>
+                        <div class="control-item">
+                            <div class="control-icon">🖱️ Clique</div>
+                            <div class="control-text">Navegar / Comprar upgrades</div>
+                        </div>
                     </div>
-                    <div class="control-item">
-                        <div class="control-icon">⎵ Espaço</div>
-                        <div class="control-text">Ativar poderes especiais</div>
-                    </div>
-                    <div class="control-item">
-                        <div class="control-icon">🖱️ Clique</div>
-                        <div class="control-text">Navegar / Comprar upgrades</div>
+                </div>
+                
+                <div class="bricks-effects-section">
+                    <h3>Efeitos dos Blocos</h3>
+                    <div class="bricks-grid">
+                        <div class="brick-effect-item">
+                            <div class="brick-block blue"></div>
+                            <div class="brick-text">Física Padrão</div>
+                        </div>
+                        <div class="brick-effect-item">
+                            <div class="brick-block yellow"></div>
+                            <div class="brick-text">Velocidade (+40%)</div>
+                        </div>
+                        <div class="brick-effect-item">
+                            <div class="brick-block green"></div>
+                            <div class="brick-text">Inversão Horizontal</div>
+                        </div>
+                        <div class="brick-effect-item">
+                            <div class="brick-block purple"></div>
+                            <div class="brick-text">Zigue-zague</div>
+                        </div>
+                        <div class="brick-effect-item">
+                            <div class="brick-block gray"></div>
+                            <div class="brick-text">Invisibilidade (ciclo 2s)</div>
+                        </div>
+                        <div class="brick-effect-item">
+                            <div class="brick-block red"></div>
+                            <div class="brick-text">Objetivo da Fase</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -76,6 +112,69 @@
                 <div class="upgrade-actions">
                     <button id="continueButton" class="continue-button">Continuar</button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Tela de Pause -->
+        <div id="pauseScreen" class="screen">
+            <div class="pause-container">
+                <h2>PAUSE</h2>
+                
+                <div class="instructions-container">
+                    <div class="controls-section">
+                        <h3>Controles</h3>
+                        <div class="controls-grid">
+                            <div class="control-item">
+                                <div class="control-icon">A/D ou ← →</div>
+                                <div class="control-text">Controlar a plataforma</div>
+                            </div>
+                            <div class="control-item">
+                                <div class="control-icon">⎵ Espaço</div>
+                                <div class="control-text">Ativar poderes especiais</div>
+                            </div>
+                            <div class="control-item">
+                                <div class="control-icon">P</div>
+                                <div class="control-text">Pausar/Despausar</div>
+                            </div>
+                            <div class="control-item">
+                                <div class="control-icon">🖱️ Clique</div>
+                                <div class="control-text">Navegar / Comprar upgrades</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bricks-effects-section">
+                        <h3>Efeitos dos Blocos</h3>
+                        <div class="bricks-grid">
+                            <div class="brick-effect-item">
+                                <div class="brick-block blue"></div>
+                                <div class="brick-text">Física Padrão</div>
+                            </div>
+                            <div class="brick-effect-item">
+                                <div class="brick-block yellow"></div>
+                                <div class="brick-text">Velocidade (+40%)</div>
+                            </div>
+                            <div class="brick-effect-item">
+                                <div class="brick-block green"></div>
+                                <div class="brick-text">Inversão Horizontal</div>
+                            </div>
+                            <div class="brick-effect-item">
+                                <div class="brick-block purple"></div>
+                                <div class="brick-text">Zigue-zague</div>
+                            </div>
+                            <div class="brick-effect-item">
+                                <div class="brick-block gray"></div>
+                                <div class="brick-text">Invisibilidade (ciclo 2s)</div>
+                            </div>
+                            <div class="brick-effect-item">
+                                <div class="brick-block red"></div>
+                                <div class="brick-text">Objetivo da Fase</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="resumeButton" class="resume-button">Continuar</button>
             </div>
         </div>
 

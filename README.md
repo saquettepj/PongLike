@@ -19,8 +19,9 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 
 ## 🎮 Controles
 
-- **Mouse**: Mova para controlar a plataforma
-- **Teclas A/D ou Setas ← →**: Alternativa para controlar a plataforma
+- **Teclas A/D ou Setas ← →**: Controlar a plataforma
+- **Barra de Espaço**: Ativar poderes especiais / Soltar bolinha presa
+- **Tecla P**: Pausar/Despausar o jogo
 - **Clique Esquerdo do Mouse**: Navegar / Comprar upgrades
 
 ## 🧱 Sistema de Tijolos
@@ -92,11 +93,12 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 ## 🚀 Como Jogar
 
 1. **Inicie o jogo** clicando em "INICIAR"
-2. **Controle a plataforma** com o mouse ou teclado
+2. **Controle a plataforma** com as teclas A/D ou setas
 3. **Quebre tijolos** para ganhar dinheiro
 4. **Destrua o Tijolo Núcleo** vermelho para completar a fase
 5. **Compre upgrades** estratégicos entre as fases
-6. **Sobreviva** o máximo de fases possível!
+6. **Pause o jogo** com a tecla P quando necessário
+7. **Sobreviva** o máximo de fases possível!
 
 ## 🛠️ Tecnologias Utilizadas
 
