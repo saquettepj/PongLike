@@ -15,6 +15,8 @@ class Game {
         this.money = 0;
         this.lives = 3;
         this.gameRunning = false;
+        this.gameTime = 0; // Tempo de jogo em segundos
+        this.lastMultiBallTime = 0; // Último tempo que uma bola foi adicionada
         
         // Objetos do jogo
         this.paddle = null;
@@ -58,7 +60,7 @@ class Game {
         // Configurações
         this.config = {
             paddleSpeed: 2.4,
-            ballSpeed: 1.5,
+            ballSpeed: 1.7,
             brickWidth: 60,
             brickHeight: 20,
             brickSpacing: 5,
@@ -132,10 +134,23 @@ class Game {
         document.addEventListener('keydown', (e) => {
             this.keys[e.code] = true;
             
-            // Ativar upgrades com barra de espaço
+            // Ativar upgrades com barra de espaço ou soltar bolinha presa
             if (e.code === 'Space' && this.gameRunning) {
                 e.preventDefault();
-                this.activateUpgrade();
+                
+                // Verificar se há bolinhas presas para soltar
+                const attachedBalls = this.balls.filter(ball => ball.attached);
+                if (attachedBalls.length > 0) {
+                    // Soltar todas as bolinhas presas
+                    attachedBalls.forEach(ball => {
+                        ball.attached = false;
+                        ball.vx = (Math.random() - 0.5) * 4;
+                        ball.vy = -this.config.ballSpeed;
+                    });
+                } else {
+                    // Se não há bolinhas presas, ativar upgrades
+                    this.activateUpgrade();
+                }
             }
         });
         
@@ -208,15 +223,16 @@ class Game {
             speed: this.config.paddleSpeed
         };
         
-        // Criar bolinha inicial
+        // Criar bolinha inicial (presa à plataforma)
         this.balls = [{
             x: this.width / 2,
             y: this.height - 100,
-            vx: (Math.random() - 0.5) * 4,
-            vy: -this.config.ballSpeed,
+            vx: 0,
+            vy: 0,
             radius: this.config.ballRadius,
             visible: true,
-            trail: []
+            trail: [],
+            attached: true // Bolinha presa à plataforma
         }];
         
         // Limpar arrays
@@ -295,6 +311,9 @@ class Game {
     }
     
     update() {
+        // Atualizar tempo de jogo (60 FPS = 1/60 segundos por frame)
+        this.gameTime += 1/60;
+        
         this.updatePaddle();
         this.updateBalls();
         this.updateParticles();
@@ -302,6 +321,26 @@ class Game {
         this.updateUpgradeEffects();
         this.checkCollisions();
         this.updateBallEffects();
+        this.updateMultiBall();
+    }
+    
+    updateMultiBall() {
+        // Verificar se tem o upgrade multi_ball e se passou 1 minuto desde a última bola
+        if (this.hasUpgrade('multi_ball') && this.gameTime - this.lastMultiBallTime >= 60) {
+            // Adicionar nova bola (presa à plataforma)
+            this.balls.push({
+                x: this.width / 2 + (Math.random() - 0.5) * 40,
+                y: this.height - 100,
+                vx: 0,
+                vy: 0,
+                radius: this.config.ballRadius,
+                explosive: false,
+                attached: true // Nova bolinha presa à plataforma
+            });
+            
+            this.lastMultiBallTime = this.gameTime;
+            this.updateUI();
+        }
     }
     
     updatePaddle() {
@@ -405,6 +444,13 @@ class Game {
     
     updateBalls() {
         this.balls.forEach((ball, index) => {
+            // Se a bolinha está presa à plataforma, seguir o paddle
+            if (ball.attached) {
+                ball.x = this.paddle.x + this.paddle.width / 2;
+                ball.y = this.paddle.y - ball.radius - 5;
+                return; // Não aplicar física se estiver presa
+            }
+            
             // Aplicar efeitos
             let vx = ball.vx * this.ballEffects.speedMultiplier;
             let vy = ball.vy * this.ballEffects.speedMultiplier;
@@ -414,10 +460,13 @@ class Game {
                 vx = -vx;
             }
             
-            // Efeito de zigue-zague
+            // Efeito de zigue-zague (amplitude ainda menor)
             if (this.ballEffects.zigzag) {
-                this.ballEffects.zigzagTimer += 0.1;
-                vx += Math.sin(this.ballEffects.zigzagTimer * 10) * 2;
+                this.ballEffects.zigzagTimer += 0.05;
+                // Movimento horizontal com amplitude muito menor
+                vx += Math.sin(this.ballEffects.zigzagTimer * 0.4) * 2; // Reduzido de 5px para 3px
+                // Movimento vertical mais sutil
+                vy += Math.cos(this.ballEffects.zigzagTimer * 0.3) * 0.3; // Reduzido de 1 para 0.5
             }
             
             // Atrator de Núcleo - atração magnética para o tijolo núcleo
@@ -502,6 +551,7 @@ class Game {
                         // Quebrar tijolo
                         brick.destroyed = true;
                         this.money += this.getBrickReward(brick.color);
+                        this.updateUI(); // Atualizar UI em tempo real
                         this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, this.getBrickColorValue(brick.color));
                         
                         // Reduzir poder do projétil
@@ -532,6 +582,7 @@ class Game {
                         // Quebrar tijolo
                         brick.destroyed = true;
                         this.money += this.getBrickReward(brick.color);
+                        this.updateUI(); // Atualizar UI em tempo real
                         this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, this.getBrickColorValue(brick.color));
                         
                         // Remover projétil
@@ -690,6 +741,7 @@ class Game {
             }
             
             this.money += reward;
+            this.updateUI(); // Atualizar UI em tempo real
             this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, this.getBrickColorValue(brick.color));
             
             // Reciclagem - chance de recriar tijolo azul
@@ -1009,6 +1061,13 @@ class Game {
                 <rect x="12" y="18" width="8" height="2" fill="#f1c40f"/>
                 <rect x="12" y="20" width="8" height="2" fill="#f1c40f"/>
                 <path d="M16 6 L18 8 L16 10 L14 8 Z" fill="#e74c3c"/>
+            </svg>`,
+            'money_saver': `<svg width="32" height="32" viewBox="0 0 32 32">
+                <rect x="6" y="8" width="20" height="16" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+                <rect x="8" y="10" width="16" height="12" fill="#ffffff"/>
+                <circle cx="16" cy="16" r="4" fill="#f1c40f" stroke="#f39c12" stroke-width="1"/>
+                <text x="16" y="19" text-anchor="middle" font-family="Arial" font-size="8" fill="#2c3e50">$</text>
+                <rect x="14" y="4" width="4" height="2" fill="#95a5a6"/>
             </svg>`
         };
         
@@ -1023,8 +1082,7 @@ class Game {
                 // Efeito padrão - nenhum
                 break;
             case 'yellow':
-                // Aumentar velocidade
-                this.ballEffects.speedMultiplier *= 1.3;
+                this.ballEffects.speedMultiplier *= 1.4;
                 break;
             case 'green':
                 // Inverter direção horizontal
@@ -1036,9 +1094,9 @@ class Game {
                 this.ballEffects.zigzagTimer = 0;
                 break;
             case 'gray':
-                // Invisibilidade - ciclo de 3s invisível, 2s visível
+                // Invisibilidade - ciclo de 2s invisível, 2s visível
                 this.ballEffects.invisible = true;
-                this.ballEffects.invisibleTimer = 180; // 3 segundos a 60fps
+                this.ballEffects.invisibleTimer = 120; // 2 segundos a 60fps
                 this.ballEffects.invisibleCycle = 1; // Começar invisível
                 break;
         }
@@ -1048,9 +1106,9 @@ class Game {
         const rewards = {
             'blue': 1,
             'yellow': 3,
-            'green': 4,
-            'purple': 5,
-            'gray': 7,
+            'green': 1,
+            'purple': 3, // Aumentado de 1 para 3 moedas
+            'gray': 3,
             'red': 10
         };
         return rewards[color] || 1;
@@ -1086,7 +1144,7 @@ class Game {
             this.ballEffects.invisibleTimer--;
             
             if (this.ballEffects.invisibleCycle === 1) {
-                // Fase invisível (3 segundos)
+                // Fase invisível (2 segundos)
                 if (this.ballEffects.invisibleTimer <= 0) {
                     this.ballEffects.invisibleCycle = 0; // Mudar para visível
                     this.ballEffects.invisibleTimer = 120; // 2 segundos visível
@@ -1095,7 +1153,7 @@ class Game {
                 // Fase visível (2 segundos)
                 if (this.ballEffects.invisibleTimer <= 0) {
                     this.ballEffects.invisibleCycle = 1; // Mudar para invisível
-                    this.ballEffects.invisibleTimer = 180; // 3 segundos invisível
+                    this.ballEffects.invisibleTimer = 120; // 2 segundos invisível
                 }
             }
             
@@ -1127,15 +1185,16 @@ class Game {
         if (this.lives <= 0) {
             this.gameOver();
         } else {
-            // Recriar bolinha
+            // Recriar bolinha (presa à plataforma)
             this.balls = [{
                 x: this.width / 2,
                 y: this.height - 100,
-                vx: (Math.random() - 0.5) * 4,
-                vy: -this.config.ballSpeed,
+                vx: 0,
+                vy: 0,
                 radius: this.config.ballRadius,
                 visible: true,
-                trail: []
+                trail: [],
+                attached: true // Nova bolinha presa à plataforma
             }];
             this.resetBallEffects();
         }
@@ -1162,6 +1221,7 @@ class Game {
     
     showUpgradeScreen() {
         this.generateUpgradeOptions();
+        this.updateUI(); // Atualizar UI para mostrar dinheiro atual
         this.showScreen('upgradeScreen');
     }
     
@@ -1206,7 +1266,7 @@ class Game {
                 id: 'wide_paddle',
                 name: 'Plataforma Larga',
                 description: 'Aumenta o tamanho da plataforma em 50%',
-                price: 15,
+                price: 120,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('wide_paddle')
             },
@@ -1214,7 +1274,7 @@ class Game {
                 id: 'attached_cannons',
                 name: 'Canhões Acoplados',
                 description: 'A plataforma atira 2 projéteis para frente quando a bolinha bate nela',
-                price: 25,
+                price: 100,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('attached_cannons')
             },
@@ -1222,7 +1282,7 @@ class Game {
                 id: 'super_magnet',
                 name: 'Super Ímã',
                 description: 'Pressione um botão para criar um campo magnético que puxa a bolinha por 2 segundos',
-                price: 30,
+                price: 120,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('super_magnet')
             },
@@ -1230,7 +1290,7 @@ class Game {
                 id: 'paddle_dash',
                 name: 'Dash de Plataforma',
                 description: 'Permite um movimento rápido (dash) para a esquerda ou direita uma vez a cada 5 segundos',
-                price: 20,
+                price: 80,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('paddle_dash')
             },
@@ -1238,7 +1298,7 @@ class Game {
                 id: 'cushion_paddle',
                 name: 'Plataforma de Amortecimento',
                 description: 'Bater na plataforma remove os efeitos negativos, mas mantém os positivos',
-                price: 35,
+                price: 70,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('cushion_paddle')
             },
@@ -1246,7 +1306,7 @@ class Game {
                 id: 'repulsor_shield',
                 name: 'Escudo Repulsor',
                 description: 'Cria um escudo de energia na frente da plataforma que rebate a bolinha com mais força',
-                price: 40,
+                price: 80,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('repulsor_shield')
             },
@@ -1254,7 +1314,7 @@ class Game {
                 id: 'charged_shot',
                 name: 'Tiro Carregado',
                 description: 'Segure um botão para carregar um projétil maior e mais poderoso que perfura até 3 tijolos',
-                price: 45,
+                price: 90,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('charged_shot')
             },
@@ -1264,7 +1324,7 @@ class Game {
                 id: 'piercing_ball',
                 name: 'Bolinha Perfurante',
                 description: 'A bolinha quebra 1 tijolo comum (azul) sem mudar de direção',
-                price: 20,
+                price: 80,
                 type: 'ball',
                 icon: this.getUpgradeIcon('piercing_ball')
             },
@@ -1272,7 +1332,7 @@ class Game {
                 id: 'friction_field',
                 name: 'Campo de Fricção',
                 description: 'Deixa a bolinha 10% mais lenta',
-                price: 15,
+                price: 120,
                 type: 'ball',
                 icon: this.getUpgradeIcon('friction_field')
             },
@@ -1280,15 +1340,15 @@ class Game {
                 id: 'ghost_ball',
                 name: 'Bolinha Fantasma',
                 description: 'A primeira vez que a bolinha for cair, ela passa pela parte de baixo e reaparece no topo',
-                price: 50,
+                price: 100,
                 type: 'ball',
                 icon: this.getUpgradeIcon('ghost_ball')
             },
             {
                 id: 'multi_ball',
                 name: 'Multi-bola',
-                description: 'Inicia a fase com duas bolinhas em jogo. Perde-se uma vida apenas se a última bolinha cair',
-                price: 60,
+                description: 'Adiciona uma nova bolinha a cada 1 minuto de jogo',
+                price: 120,
                 type: 'ball',
                 icon: this.getUpgradeIcon('multi_ball')
             },
@@ -1296,7 +1356,7 @@ class Game {
                 id: 'explosive_ball',
                 name: 'Bolinha Explosiva',
                 description: 'A bolinha explode ao atingir um tijolo, destruindo tijolos adjacentes em uma pequena área',
-                price: 40,
+                price: 80,
                 type: 'ball',
                 icon: this.getUpgradeIcon('explosive_ball')
             },
@@ -1304,7 +1364,7 @@ class Game {
                 id: 'ball_echo',
                 name: 'Eco da Bolinha',
                 description: 'Uma segunda bolinha "eco" segue a trajetória da principal com um pequeno atraso',
-                price: 35,
+                price: 70,
                 type: 'ball',
                 icon: this.getUpgradeIcon('ball_echo')
             },
@@ -1312,7 +1372,7 @@ class Game {
                 id: 'effect_activator',
                 name: 'Ativador de Efeito',
                 description: 'Permite que o jogador escolha e ative um dos efeitos dos tijolos na bolinha por 10 segundos',
-                price: 55,
+                price: 110,
                 type: 'ball',
                 icon: this.getUpgradeIcon('effect_activator')
             },
@@ -1322,7 +1382,7 @@ class Game {
                 id: 'extra_life',
                 name: 'Coração Extra',
                 description: 'Permite ter uma vida a mais',
-                price: 25,
+                price: 100,
                 type: 'utility',
                 icon: this.getUpgradeIcon('extra_life')
             },
@@ -1330,7 +1390,7 @@ class Game {
                 id: 'safety_net',
                 name: 'Rede de Segurança',
                 description: 'Uma barreira de energia temporária aparece na parte inferior da tela por 15 segundos',
-                price: 30,
+                price: 120,
                 type: 'utility',
                 icon: this.getUpgradeIcon('safety_net')
             },
@@ -1338,7 +1398,7 @@ class Game {
                 id: 'lucky_amulet',
                 name: 'Amuleto da Sorte',
                 description: 'Aumenta a chance de obter mais dinheiro por tijolo quebrado (+25%)',
-                price: 20,
+                price: 80,
                 type: 'utility',
                 icon: this.getUpgradeIcon('lucky_amulet')
             },
@@ -1346,7 +1406,7 @@ class Game {
                 id: 'life_insurance',
                 name: 'Seguro de Vida',
                 description: 'Se perder uma vida, você não perde o dinheiro que acumulou naquela fase',
-                price: 35,
+                price: 70,
                 type: 'utility',
                 icon: this.getUpgradeIcon('life_insurance')
             },
@@ -1354,7 +1414,7 @@ class Game {
                 id: 'recycling',
                 name: 'Reciclagem',
                 description: 'Tijolos azuis (comuns) têm 10% de chance de reaparecer após serem quebrados',
-                price: 25,
+                price: 100,
                 type: 'utility',
                 icon: this.getUpgradeIcon('recycling')
             },
@@ -1362,7 +1422,7 @@ class Game {
                 id: 'risk_converter',
                 name: 'Conversor de Risco',
                 description: 'Cada efeito negativo ativo na bolinha aumenta o dinheiro ganho por tijolo em +1',
-                price: 30,
+                price: 120,
                 type: 'utility',
                 icon: this.getUpgradeIcon('risk_converter')
             },
@@ -1372,7 +1432,7 @@ class Game {
                 id: 'structural_damage',
                 name: 'Dano Estrutural',
                 description: 'A primeira batida no Tijolo Núcleo conta como duas',
-                price: 40,
+                price: 80,
                 type: 'special',
                 icon: this.getUpgradeIcon('structural_damage')
             },
@@ -1380,7 +1440,7 @@ class Game {
                 id: 'heat_vision',
                 name: 'Visão de Calor',
                 description: 'A bolinha invisível deixa um rastro térmico muito mais visível',
-                price: 20,
+                price: 80,
                 type: 'special',
                 icon: this.getUpgradeIcon('heat_vision')
             },
@@ -1388,7 +1448,7 @@ class Game {
                 id: 'controlled_reversal',
                 name: 'Reversão Controlada',
                 description: 'O efeito de Inversão do tijolo verde só acontece 50% das vezes',
-                price: 25,
+                price: 100,
                 type: 'special',
                 icon: this.getUpgradeIcon('controlled_reversal')
             },
@@ -1396,7 +1456,7 @@ class Game {
                 id: 'core_attractor',
                 name: 'Atrator de Núcleo',
                 description: 'A bolinha é levemente atraída magneticamente em direção ao Tijolo Núcleo',
-                price: 35,
+                price: 70,
                 type: 'special',
                 icon: this.getUpgradeIcon('core_attractor')
             },
@@ -1407,6 +1467,14 @@ class Game {
                 price: 0,
                 type: 'special',
                 icon: this.getUpgradeIcon('investor')
+            },
+            {
+                id: 'money_saver',
+                name: 'Poupança',
+                description: 'Mantém até 50 moedas para a próxima fase',
+                price: 80,
+                type: 'passive',
+                icon: this.getUpgradeIcon('money_saver')
             }
         ];
     }
@@ -1414,6 +1482,7 @@ class Game {
     selectUpgrade(upgrade, cardElement) {
         if (this.money >= upgrade.price) {
             this.money -= upgrade.price;
+            this.updateUI(); // Atualizar UI em tempo real
             this.activeUpgrades.push(upgrade);
             cardElement.classList.add('selected');
             this.updateUI();
@@ -1434,17 +1503,9 @@ class Game {
                     this.paddle.width = this.config.paddleWidth * 1.5;
                     break;
                 case 'multi_ball':
-                    if (this.balls.length === 1) {
-                        this.balls.push({
-                            x: this.width / 2 + 20,
-                            y: this.height - 100,
-                            vx: (Math.random() - 0.5) * 4,
-                            vy: -this.config.ballSpeed,
-                            radius: this.config.ballRadius,
-                            visible: true,
-                            trail: []
-                        });
-                    }
+                    // Multi-bola agora é gerenciado pelo updateMultiBall()
+                    // Inicializar timer para primeira bola extra
+                    this.lastMultiBallTime = this.gameTime;
                     break;
                 case 'extra_life':
                     this.lives++;
@@ -1487,6 +1548,16 @@ class Game {
     continueToNextPhase() {
         this.currentPhase++;
         this.resetBallEffects();
+        
+        // Zerar dinheiro após comprar upgrades (não cumulativo)
+        // Exceto se tiver o upgrade "Poupança"
+        if (!this.hasUpgrade('money_saver')) {
+            this.money = 0;
+        } else {
+            // Manter apenas 50 moedas se tiver o upgrade
+            this.money = Math.min(this.money, 50);
+        }
+        
         this.initGameObjects();
         this.applyUpgrades(); // Aplicar upgrades antes de iniciar a fase
         this.generateBricks();
@@ -1500,6 +1571,12 @@ class Game {
         document.getElementById('currentPhase').textContent = this.currentPhase;
         document.getElementById('highScore').textContent = this.highScore;
         document.getElementById('money').textContent = this.money;
+        
+        // Atualizar dinheiro na loja
+        const shopMoneyElement = document.getElementById('shopMoney');
+        if (shopMoneyElement) {
+            shopMoneyElement.textContent = this.money;
+        }
         
         // Atualizar vidas
         const livesElement = document.getElementById('lives');
@@ -1593,8 +1670,27 @@ class Game {
     }
     
     drawBall(ball) {
-        // Verificar invisibilidade
-        if (this.ballEffects.invisible && this.ballEffects.invisibleTimer % 20 < 10) {
+        // Se a bolinha está presa, mostrar indicador visual
+        if (ball.attached) {
+            // Desenhar linha conectando a bolinha ao paddle
+            this.ctx.strokeStyle = '#ff6b35';
+            this.ctx.lineWidth = 2;
+            this.ctx.setLineDash([5, 5]);
+            this.ctx.beginPath();
+            this.ctx.moveTo(ball.x, ball.y);
+            this.ctx.lineTo(this.paddle.x + this.paddle.width / 2, this.paddle.y);
+            this.ctx.stroke();
+            this.ctx.setLineDash([]);
+            
+            // Desenhar texto "ESPAÇO" acima da bolinha
+            this.ctx.fillStyle = '#ff6b35';
+            this.ctx.font = '12px "Press Start 2P"';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('ESPAÇO', ball.x, ball.y - 20);
+        }
+        
+        // Verificar invisibilidade - bolinha 100% invisível
+        if (this.ballEffects.invisible) {
             // Visão de Calor - rastro térmico mais visível
             if (this.hasUpgrade('heat_vision')) {
                 // Desenhar rastro térmico intenso
@@ -1622,13 +1718,8 @@ class Game {
                 this.ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
                 this.ctx.stroke();
                 this.ctx.setLineDash([]);
-            } else {
-                // Rastro normal para bolinha invisível
-                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-                this.ctx.beginPath();
-                this.ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-                this.ctx.fill();
             }
+            // Se não tem visão de calor, bolinha fica 100% invisível (não desenha nada)
             return;
         }
         

@@ -31,9 +31,9 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 |-----|--------|------------|
 | 🔵 Azul | Física Padrão | 1 🪙 |
 | 🟡 Amarelo | Velocidade (+30%) | 3 🪙 |
-| 🟢 Verde | Inversão Horizontal | 4 🪙 |
-| 🟣 Roxo | Zigue-zague | 5 🪙 |
-| ⚫ Cinza | Invisibilidade (2s) | 7 🪙 |
+| 🟢 Verde | Inversão Horizontal | 1 🪙 |
+| 🟣 Roxo | Zigue-zague | 3 🪙 |
+| ⚫ Cinza | Invisibilidade (2s) | 3 🪙 |
 | 🔴 Vermelho (Núcleo) | Objetivo da Fase | 10 🪙 |
 
 ## ⚡ Sistema Roguelike
