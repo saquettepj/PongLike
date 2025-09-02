@@ -22,6 +22,7 @@ class Game {
         this.lastUpgradesCount = 0; // Contador para controlar quando recriar interface de poderes
         this.selectedPowerIndex = 0; // Índice do poder selecionado
         this.activatablePowers = []; // Lista de poderes que podem ser ativados
+        this.powerUIUpdateTimer = 0; // Timer para atualizar UI de poderes a cada segundo
         
         // Objetos do jogo
         this.paddle = null;
@@ -58,9 +59,11 @@ class Game {
         this.activeUpgradeEffects = {
             superMagnet: { active: false, timer: 0, duration: 120, cooldown: 3000 }, 
             paddleDash: { active: false, timer: 0, duration: 180, cooldown: 1200 },
-            chargedShot: { charging: false, chargeLevel: 0, maxCharge: 1200 },
+            chargedShot: { charging: false, chargeLevel: 0, maxCharge: 1200, cooldown: 1800 },
             safetyNet: { active: false, timer: 0, duration: 900, cooldown: 4800 },
-            effectActivator: { active: false, timer: 0, duration: 0, cooldown: 1200 }
+            effectActivator: { active: false, timer: 0, duration: 0, cooldown: 1200 },
+            cushionPaddle: { active: false, timer: 0, duration: 600, cooldown: 1200 },
+            multiBall: { active: false, timer: 0, duration: 0, cooldown: 3600 }
         };
         
         // Configurações
@@ -106,6 +109,25 @@ class Game {
         
         // Som de compra na loja
         this.sounds.purchase = this.createTone(600, 0.2, 'triangle');
+        
+        // Sons para poderes ativáveis
+        this.sounds.superMagnet = this.createTone(500, 0.3, 'sine');
+        this.sounds.paddleDash = this.createTone(800, 0.2, 'square');
+        this.sounds.chargedShot = this.createTone(400, 0.4, 'sawtooth');
+        this.sounds.safetyNet = this.createTone(300, 0.3, 'triangle');
+        this.sounds.effectActivator = this.createTone(700, 0.25, 'square');
+        
+        // Som explosivo para bolinha explosiva
+        this.sounds.explosiveHit = this.createTone(200, 0.5, 'sawtooth');
+        
+        // Som para plataforma de aceleração
+        this.sounds.cushionPaddle = this.createTone(350, 0.3, 'triangle');
+        
+        // Som de tiro laser para canhões acoplados
+        this.sounds.laserShot = this.createTone(800, 0.15, 'square');
+        
+        // Som para multi-bola - som de "pop" ou "sploosh" para criação de bola
+        this.sounds.multiBall = this.createTone(400, 0.2, 'triangle');
     }
     
     createTone(frequency, duration, type = 'sine') {
@@ -203,10 +225,7 @@ class Game {
         document.addEventListener('keyup', (e) => {
             this.keys[e.code] = false;
             
-            // Parar carregamento do tiro carregado
-            if (e.code === 'Space' && this.activeUpgradeEffects.chargedShot.charging) {
-                this.fireChargedShot();
-            }
+
         });
         
         // Controles do mouse (removidos - apenas teclado)
@@ -252,9 +271,6 @@ class Game {
         this.activeUpgrades = [];
         this.resetBallEffects();
         
-        // Limpar estado da bolinha eco
-        this.upgradeTimers.ballEcho.active = false;
-        this.upgradeTimers.ballEcho.echoBall = null;
         
         this.initGameObjects();
         this.generateBricks();
@@ -278,12 +294,53 @@ class Game {
     
     pauseGame() {
         this.gamePaused = true;
+        this.updatePurchasedPowersUI();
         this.showScreen('pauseScreen');
     }
     
     resumeGame() {
         this.gamePaused = false;
         this.showScreen('gameScreen');
+    }
+    
+    updatePurchasedPowersUI() {
+        const container = document.getElementById('purchasedPowersContainer');
+        if (!container) return;
+        
+        // Limpar container
+        container.innerHTML = '';
+        
+        // Se não há upgrades comprados, mostrar mensagem
+        if (this.activeUpgrades.length === 0) {
+            container.innerHTML = '<div style="color: #888; font-style: italic;">Nenhum poder comprado ainda</div>';
+            return;
+        }
+        
+        // Criar itens para cada upgrade comprado
+        this.activeUpgrades.forEach(upgrade => {
+            const powerItem = document.createElement('div');
+            powerItem.className = 'purchased-power-item';
+            
+            // Ícone
+            const icon = document.createElement('div');
+            icon.className = 'purchased-power-icon';
+            icon.innerHTML = this.getUpgradeIcon(upgrade.id);
+            powerItem.appendChild(icon);
+            
+            // Nome
+            const name = document.createElement('div');
+            name.className = 'purchased-power-name';
+            name.textContent = upgrade.name;
+            powerItem.appendChild(name);
+            
+            // Tooltip
+            const tooltip = document.createElement('div');
+            tooltip.className = 'power-tooltip';
+            tooltip.textContent = upgrade.description;
+            powerItem.appendChild(tooltip);
+            
+            container.appendChild(powerItem);
+        });
     }
     
     initGameObjects() {
@@ -305,7 +362,9 @@ class Game {
             radius: this.config.ballRadius,
             visible: true,
             trail: [],
-            attached: true // Bolinha presa à plataforma
+            attached: true, // Bolinha presa à plataforma
+            explosive: false,
+            ghostUsed: false
         }];
         
         // Limpar arrays
@@ -331,6 +390,12 @@ class Game {
                 // Determinar cor baseada na posição e fase
                 let color = this.getBrickColor(row, col, rows, cols);
                 
+                // Determinar vida máxima do bloco vermelho
+                let redMaxHits = 6;
+                if (color === 'red' && this.hasUpgrade('risk_converter')) {
+                    redMaxHits = 3; // Conversor de Risco diminui vida para 3
+                }
+                
                 this.bricks.push({
                     x: x,
                     y: y,
@@ -338,8 +403,8 @@ class Game {
                     height: this.config.brickHeight,
                     color: color,
                     destroyed: false,
-                    hits: color === 'red' ? 6 : 1,
-                    maxHits: color === 'red' ? 6 : 1,
+                    hits: color === 'red' ? redMaxHits : 1,
+                    maxHits: color === 'red' ? redMaxHits : 1,
                     lastHitTime: null // Para cooldown do bloco vermelho
                 });
             }
@@ -402,27 +467,12 @@ class Game {
         this.updateUpgradeEffects();
         this.checkCollisions();
         this.updateBallEffects();
-        this.updateMultiBall();
+        
+        // Atualizar UI a cada frame para manter cooldowns em tempo real
+        this.updateUI();
     }
     
-    updateMultiBall() {
-        // Verificar se tem o upgrade multi_ball e se passou 1 minuto desde a última bola
-        if (this.hasUpgrade('multi_ball') && this.gameTime - this.lastMultiBallTime >= 60) {
-            // Adicionar nova bola (presa à plataforma)
-            this.balls.push({
-                x: this.width / 2 + (Math.random() - 0.5) * 40,
-                y: this.height - 100,
-                vx: 0,
-                vy: 0,
-                radius: this.config.ballRadius,
-                explosive: false,
-                attached: true // Nova bolinha presa à plataforma
-            });
-            
-            this.lastMultiBallTime = this.gameTime;
-            this.updateUI();
-        }
-    }
+
     
     updatePaddle() {
         // Não atualizar paddle se o jogo estiver pausado
@@ -460,16 +510,16 @@ class Game {
             // Desativar efeitos quando o timer chegar a zero
             if (effect.timer <= 0 && effect.active) {
                 effect.active = false;
-                // Se for Super Ímã, Dash de Plataforma ou Rede de Segurança, iniciar cooldown
-                if ((key === 'superMagnet' || key === 'paddleDash' || key === 'safetyNet') && effect.cooldown) {
+                // Se for Super Ímã, Dash de Plataforma, Rede de Segurança ou Plataforma de Aceleração, iniciar cooldown
+                if ((key === 'superMagnet' || key === 'paddleDash' || key === 'safetyNet' || key === 'cushionPaddle') && effect.cooldown) {
                     effect.timer = effect.cooldown;
                 }
             }
         });
         
-        // Atualizar carregamento do tiro carregado
-        if (this.activeUpgradeEffects.chargedShot.charging) {
-            this.activeUpgradeEffects.chargedShot.chargeLevel++;
+        // Decrementar cooldown do tiro carregado
+        if (this.activeUpgradeEffects.chargedShot.cooldown > 0) {
+            this.activeUpgradeEffects.chargedShot.cooldown--;
         }
         
         // Conversor de Risco - mudar velocidade da bolinha aleatoriamente a cada 5 segundos
@@ -482,8 +532,8 @@ class Game {
             this.riskConverterTimer--;
             if (this.riskConverterTimer <= 0) {
                 this.riskConverterTimer = 300; // Reset para 5 segundos
-                // Mudar velocidade entre 50% e 120% do valor atual
-                const speedChange = 0.5 + Math.random() * 0.7; // 0.5 a 1.2
+                // Mudar velocidade entre 80% e 140% do valor atual
+                const speedChange = 0.8 + Math.random() * 0.6; // 0.8 a 1.4
                 this.riskConverterSpeedMultiplier = speedChange;
             }
         } else {
@@ -522,34 +572,7 @@ class Game {
             }
         }
         
-        // Atualizar Eco da Bolinha
-        if (this.hasUpgrade('ball_echo') && this.balls.length > 0) {
-            const mainBall = this.balls[0];
-            
-            if (!this.upgradeTimers.ballEcho.active) {
-                // Criar bolinha eco
-                this.upgradeTimers.ballEcho.echoBall = {
-                    x: mainBall.x,
-                    y: mainBall.y,
-                    vx: mainBall.vx,
-                    vy: mainBall.vy,
-                    radius: mainBall.radius,
-                    trail: [],
-                    delay: 0
-                };
-                this.upgradeTimers.ballEcho.active = true;
-            } else {
-                // Atualizar posição da bolinha eco com delay de 10ms (aproximadamente 1 frame a 60fps)
-                this.upgradeTimers.ballEcho.echoBall.delay++;
-                if (this.upgradeTimers.ballEcho.echoBall.delay >= 1) { // Delay de 1 frame (10ms)
-                    this.upgradeTimers.ballEcho.echoBall.x = mainBall.x;
-                    this.upgradeTimers.ballEcho.echoBall.y = mainBall.y;
-                    this.upgradeTimers.ballEcho.echoBall.vx = mainBall.vx;
-                    this.upgradeTimers.ballEcho.echoBall.vy = mainBall.vy;
-                    this.upgradeTimers.ballEcho.echoBall.delay = 0;
-                }
-            }
-        }
+        // Eco da Bolinha - apenas efeito de destruir bloco aleatório (sem segunda bolinha)
     }
     
     updateBalls() {
@@ -611,6 +634,7 @@ class Game {
                     ball.vy = Math.abs(ball.vy); // Manter direção para baixo
                 } else {
                     this.balls.splice(index, 1);
+                    // Só perder vida quando não há mais bolas no jogo
                     if (this.balls.length === 0) {
                         this.loseLife();
                     }
@@ -811,12 +835,9 @@ class Game {
         
         let ballSpeed = this.config.ballSpeed;
         
-        // Plataforma de Aceleração - verificar se o espaço está apertado
-        if (this.hasUpgrade('cushion_paddle')) {
-            const spaceApertado = this.isSpaceApertado();
-            if (spaceApertado) {
-                ballSpeed *= 1.3; // Acelerar 30%
-            }
+        // Plataforma de Aceleração - ativa quando ativada manualmente
+        if (this.hasUpgrade('cushion_paddle') && this.activeUpgradeEffects.cushionPaddle.active) {
+            ballSpeed *= 1.3; // Acelerar 30%
         }
         
         ball.vx = Math.sin(angle) * ballSpeed;
@@ -824,23 +845,26 @@ class Game {
         
         // Canhões Acoplados - atirar projéteis
         if (this.hasUpgrade('attached_cannons')) {
+            // Tocar som de tiro laser
+            this.playSound('laserShot');
+            
             this.powerUps.push({
                 x: this.paddle.x + this.paddle.width * 0.25,
                 y: this.paddle.y,
                 vx: 0,
-                vy: -1.0, // Reduzido para manter proporção com nova velocidade da bolinha
+                vy: -3.0, // Aumentado para chegar aos tijolos
                 radius: 3,
                 type: 'cannon_shot',
-                life: 120
+                life: 300 // Aumentado para durar mais tempo
             });
             this.powerUps.push({
                 x: this.paddle.x + this.paddle.width * 0.75,
                 y: this.paddle.y,
                 vx: 0,
-                vy: -1.0, // Reduzido para manter proporção com nova velocidade da bolinha
+                vy: -3.0, // Aumentado para chegar aos tijolos
                 radius: 3,
                 type: 'cannon_shot',
-                life: 120
+                life: 300 // Aumentado para durar mais tempo
             });
         }
         
@@ -1074,7 +1098,11 @@ class Game {
         }
         
         // Tocar som de batida no tijolo
-        this.playSound('brickHit');
+        if (this.hasUpgrade('explosive_ball') && ball.explosive) {
+            this.playSound('explosiveHit');
+        } else {
+            this.playSound('brickHit');
+        }
     }
     
     hasUpgrade(upgradeId) {
@@ -1141,7 +1169,7 @@ class Game {
         this.activatablePowers = [];
         
         // Lista de poderes que podem ser ativados
-        const powerIds = ['super_magnet', 'paddle_dash', 'charged_shot', 'safety_net', 'effect_activator'];
+        const powerIds = ['super_magnet', 'paddle_dash', 'charged_shot', 'safety_net', 'effect_activator', 'cushion_paddle', 'multi_ball'];
         
         powerIds.forEach(powerId => {
             if (this.hasUpgrade(powerId)) {
@@ -1185,6 +1213,7 @@ class Game {
                     this.activeUpgradeEffects.superMagnet.active = true;
                     this.activeUpgradeEffects.superMagnet.timer = this.activeUpgradeEffects.superMagnet.duration;
                     this.createParticles(this.paddle.x + this.paddle.width / 2, this.paddle.y, '#3498db');
+                    this.playSound('superMagnet');
                 }
                 break;
                 
@@ -1193,13 +1222,14 @@ class Game {
                     this.activeUpgradeEffects.paddleDash.active = true;
                     this.activeUpgradeEffects.paddleDash.timer = this.activeUpgradeEffects.paddleDash.duration;
                     this.createParticles(this.paddle.x + this.paddle.width / 2, this.paddle.y, '#f1c40f');
+                    this.playSound('paddleDash');
                 }
                 break;
                 
             case 'charged_shot':
-                if (!this.activeUpgradeEffects.chargedShot.charging) {
-                    this.activeUpgradeEffects.chargedShot.charging = true;
-                    this.activeUpgradeEffects.chargedShot.chargeLevel = 0;
+                if (this.activeUpgradeEffects.chargedShot.cooldown <= 0) {
+                    // Atirar imediatamente sem carregamento
+                    this.fireChargedShot();
                 }
                 break;
                 
@@ -1208,6 +1238,7 @@ class Game {
                     this.activeUpgradeEffects.safetyNet.active = true;
                     this.activeUpgradeEffects.safetyNet.timer = this.activeUpgradeEffects.safetyNet.duration;
                     this.createParticles(this.width / 2, this.height - 20, '#2ecc71');
+                    this.playSound('safetyNet');
                 }
                 break;
                 
@@ -1218,6 +1249,41 @@ class Game {
                     const effects = ['yellow', 'green', 'purple', 'gray'];
                     const randomEffect = effects[Math.floor(Math.random() * effects.length)];
                     this.applyBrickEffect(randomEffect);
+                    this.playSound('effectActivator');
+                }
+                break;
+                
+            case 'cushion_paddle':
+                if (!this.activeUpgradeEffects.cushionPaddle.active && this.activeUpgradeEffects.cushionPaddle.timer <= 0) {
+                    this.activeUpgradeEffects.cushionPaddle.active = true;
+                    this.activeUpgradeEffects.cushionPaddle.timer = this.activeUpgradeEffects.cushionPaddle.duration;
+                    this.createParticles(this.paddle.x + this.paddle.width / 2, this.paddle.y, '#e67e22');
+                    this.playSound('cushionPaddle');
+                }
+                break;
+                
+            case 'multi_ball':
+                if (this.activeUpgradeEffects.multiBall.timer <= 0) {
+                    // Criar nova bola grudada na plataforma
+                    this.balls.push({
+                        x: this.paddle.x + this.paddle.width / 2,
+                        y: this.paddle.y - this.config.ballRadius - 5,
+                        vx: 0,
+                        vy: 0,
+                        radius: this.config.ballRadius,
+                        explosive: false,
+                        attached: true,
+                        ghostUsed: false,
+                        visible: true,
+                        trail: []
+                    });
+                    
+                    // Iniciar cooldown de 1 minuto
+                    this.activeUpgradeEffects.multiBall.timer = this.activeUpgradeEffects.multiBall.cooldown;
+                    
+                    // Efeitos visuais e sonoros
+                    this.createParticles(this.paddle.x + this.paddle.width / 2, this.paddle.y, '#fdcb6e');
+                    this.playSound('multiBall');
                 }
                 break;
         }
@@ -1262,24 +1328,24 @@ class Game {
     }
     
     fireChargedShot() {
-        if (this.hasUpgrade('charged_shot') && this.activeUpgradeEffects.chargedShot.charging) {
-            const chargeLevel = this.activeUpgradeEffects.chargedShot.chargeLevel;
-            const power = Math.min(chargeLevel / this.activeUpgradeEffects.chargedShot.maxCharge, 1);
-            
-            // Criar projétil carregado
+        if (this.hasUpgrade('charged_shot')) {
+            // Criar projétil imediatamente
             this.powerUps.push({
                 x: this.paddle.x + this.paddle.width / 2,
                 y: this.paddle.y,
                 vx: 0,
-                vy: -1.0, // Reduzido para manter proporção com nova velocidade da bolinha
-                radius: 4 + power * 4,
-                power: power,
+                vy: -1.0,
+                radius: 4,
+                power: 1,
                 type: 'charged_shot',
-                life: 300
+                life: 350
             });
             
-            this.activeUpgradeEffects.chargedShot.charging = false;
-            this.activeUpgradeEffects.chargedShot.chargeLevel = 0;
+            // Tocar som
+            this.playSound('chargedShot');
+            
+            // Iniciar cooldown de 30 segundos
+            this.activeUpgradeEffects.chargedShot.cooldown = 1800;
         }
     }
     
@@ -1679,7 +1745,9 @@ class Game {
                 radius: this.config.ballRadius,
                 visible: true,
                 trail: [],
-                attached: true // Nova bolinha presa à plataforma
+                attached: true, // Nova bolinha presa à plataforma
+                explosive: false,
+                ghostUsed: false
             }];
             // Resetar efeitos ao perder vida (exceto speedMultiplier do bloco vermelho)
             const currentSpeedMultiplier = this.ballEffects.speedMultiplier;
@@ -1718,9 +1786,7 @@ class Game {
     gameOver() {
         this.gameRunning = false;
         
-        // Limpar estado da bolinha eco
-        this.upgradeTimers.ballEcho.active = false;
-        this.upgradeTimers.ballEcho.echoBall = null;
+        // Limpar estado da bolinha eco (não mais necessário)
         
         // Atualizar recorde
         if (this.currentPhase > this.highScore) {
@@ -1821,7 +1887,7 @@ class Game {
             {
                 id: 'cushion_paddle',
                 name: 'Plataforma de Aceleração',
-                description: 'Quando o espaço estiver apertado, a bolinha acelera 30% ao bater na plataforma',
+                description: 'Ativa aceleração de 30% na bolinha por 10 segundos. Cooldown de 20 segundos.',
                 price: 70,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('cushion_paddle')
@@ -1837,7 +1903,7 @@ class Game {
             {
                 id: 'charged_shot',
                 name: 'Tiro Carregado',
-                description: 'Segure um botão para carregar um projétil maior e mais poderoso que perfura até 3 tijolos',
+                description: 'Atira um projétil perfurante imediatamente.',
                 price: 90,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('charged_shot')
@@ -1871,7 +1937,7 @@ class Game {
             {
                 id: 'multi_ball',
                 name: 'Multi-bola',
-                description: 'Adiciona uma nova bolinha a cada 1 minuto de jogo',
+                description: 'Cria uma nova bolinha grudada na plataforma. Cooldown de 1 minuto.',
                 price: 120,
                 type: 'ball',
                 icon: this.getUpgradeIcon('multi_ball')
@@ -1887,7 +1953,7 @@ class Game {
             {
                 id: 'ball_echo',
                 name: 'Eco da Bolinha',
-                description: 'Uma segunda bolinha "eco" segue a trajetória da principal com um pequeno atraso',
+                description: 'Destrói um bloco aleatório adicional a cada batida',
                 price: 70,
                 type: 'ball',
                 icon: this.getUpgradeIcon('ball_echo')
@@ -1945,7 +2011,7 @@ class Game {
             {
                 id: 'life_insurance',
                 name: 'Seguro de Vida',
-                description: 'Ao perder uma vida, ganha 20 moedas ao invés de perder 10',
+                description: 'Ao perder uma vida, ganha 100 moedas ao invés de perder 10',
                 price: 70,
                 type: 'utility',
                 icon: this.getUpgradeIcon('life_insurance')
@@ -1961,7 +2027,7 @@ class Game {
             {
                 id: 'risk_converter',
                 name: 'Conversor de Risco',
-                description: 'Muda velocidade da bolinha aleatoriamente entre 50%-120% a cada 5 segundos',
+                description: 'Diminui vida do bloco vermelho para 3 e muda velocidade da bolinha entre 80%-140% a cada 5s',
                 price: 120,
                 type: 'utility',
                 icon: this.getUpgradeIcon('risk_converter')
@@ -2040,6 +2106,11 @@ class Game {
                 this.money += 50;
                 this.updateUI();
             }
+            
+            // Se for Conversor de Risco, regenerar blocos para aplicar o efeito
+            if (upgrade.id === 'risk_converter') {
+                this.generateBricks();
+            }
         }
     }
     
@@ -2054,9 +2125,8 @@ class Game {
                     this.paddle.height = this.config.paddleHeight * 2;
                     break;
                 case 'multi_ball':
-                    // Multi-bola agora é gerenciado pelo updateMultiBall()
-                    // Inicializar timer para primeira bola extra
-                    this.lastMultiBallTime = this.gameTime;
+                    // Multi-bola agora é um poder ativável
+                    // Não precisa de inicialização especial
                     break;
                 case 'extra_life':
                     this.lives++;
@@ -2087,7 +2157,7 @@ class Game {
                     // Chance de reciclar tijolos azuis
                     break;
                 case 'risk_converter':
-                    // Aumentar dinheiro baseado em efeitos negativos
+                    // Diminuir vida máxima do bloco vermelho para 3
                     break;
                 case 'life_insurance':
                     // Proteger dinheiro ao perder vida
@@ -2176,8 +2246,12 @@ class Game {
             this.createPowersInterface();
         }
         
-        // Atualizar estados dos poderes
-        this.updatePowerStates();
+        // Atualizar estados dos poderes a cada segundo
+        this.powerUIUpdateTimer++;
+        if (this.powerUIUpdateTimer >= 60) { // 60 frames = 1 segundo
+            this.updatePowerStates();
+            this.powerUIUpdateTimer = 0;
+        }
     }
     
     createPowersInterface() {
@@ -2218,7 +2292,9 @@ class Game {
             'paddle_dash', 
             'charged_shot',
             'safety_net',
-            'effect_activator'
+            'effect_activator',
+            'cushion_paddle',
+            'multi_ball'
         ];
         return upgradesWithCooldown.includes(upgradeId);
     }
@@ -2230,7 +2306,9 @@ class Game {
             'paddle_dash', 
             'charged_shot',
             'safety_net',
-            'effect_activator'
+            'effect_activator',
+            'cushion_paddle',
+            'multi_ball'
         ];
         
         upgradesWithCooldown.forEach(upgradeId => {
@@ -2286,11 +2364,11 @@ class Game {
                 
             case 'charged_shot':
                 const chargedEffect = this.activeUpgradeEffects.chargedShot;
-                if (chargedEffect.charging) {
-                    powerItem.className = 'power-item active';
-                    const charge = Math.ceil((chargedEffect.chargeLevel / chargedEffect.maxCharge) * 100);
-                    cooldownElement.textContent = `${charge}%`;
-                    cooldownElement.className = 'power-cooldown ready';
+                if (chargedEffect.cooldown > 0) {
+                    powerItem.className = 'power-item on-cooldown';
+                    const seconds = Math.ceil(chargedEffect.cooldown / 60);
+                    cooldownElement.textContent = `${seconds}s`;
+                    cooldownElement.className = 'power-cooldown';
                 } else {
                     powerItem.className = 'power-item';
                     cooldownElement.textContent = 'PRONTO';
@@ -2322,6 +2400,39 @@ class Game {
                 if (activatorEffect.cooldown > 0) {
                     powerItem.className = 'power-item on-cooldown';
                     const seconds = Math.ceil(activatorEffect.cooldown / 60);
+                    cooldownElement.textContent = `${seconds}s`;
+                    cooldownElement.className = 'power-cooldown';
+                } else {
+                    powerItem.className = 'power-item';
+                    cooldownElement.textContent = 'PRONTO';
+                    cooldownElement.className = 'power-cooldown ready';
+                }
+                break;
+                
+            case 'cushion_paddle':
+                const cushionEffect = this.activeUpgradeEffects.cushionPaddle;
+                if (cushionEffect.active) {
+                    powerItem.className = 'power-item active';
+                    const seconds = Math.ceil(cushionEffect.timer / 60);
+                    cooldownElement.textContent = `${seconds}s`;
+                    cooldownElement.className = 'power-cooldown';
+                } else if (cushionEffect.timer > 0) {
+                    powerItem.className = 'power-item on-cooldown';
+                    const seconds = Math.ceil(cushionEffect.timer / 60);
+                    cooldownElement.textContent = `${seconds}s`;
+                    cooldownElement.className = 'power-cooldown';
+                } else {
+                    powerItem.className = 'power-item';
+                    cooldownElement.textContent = 'PRONTO';
+                    cooldownElement.className = 'power-cooldown ready';
+                }
+                break;
+                
+            case 'multi_ball':
+                const multiBallEffect = this.activeUpgradeEffects.multiBall;
+                if (multiBallEffect.timer > 0) {
+                    powerItem.className = 'power-item on-cooldown';
+                    const seconds = Math.ceil(multiBallEffect.timer / 60);
                     cooldownElement.textContent = `${seconds}s`;
                     cooldownElement.className = 'power-cooldown';
                 } else {
@@ -2381,7 +2492,9 @@ class Game {
             'paddle_dash': 'Dash',
             'charged_shot': 'Tiro Carregado',
             'safety_net': 'Rede de Segurança',
-            'effect_activator': 'Ativador'
+            'effect_activator': 'Ativador',
+            'cushion_paddle': 'Aceleração',
+            'multi_ball': 'Multi-bola'
         };
         return names[upgradeId] || upgradeId;
     }
@@ -2406,10 +2519,7 @@ class Game {
             this.drawBall(ball);
         });
         
-        // Desenhar bolinha eco
-        if (this.upgradeTimers.ballEcho.active && this.upgradeTimers.ballEcho.echoBall) {
-            this.drawEchoBall(this.upgradeTimers.ballEcho.echoBall);
-        }
+        // Eco da Bolinha - apenas efeito de destruir bloco aleatório (sem renderização)
         
         // Desenhar partículas
         this.particles.forEach(particle => {
@@ -2704,31 +2814,7 @@ class Game {
         }
     }
     
-    drawEchoBall(echoBall) {
-        // Desenhar bolinha eco com transparência
-        this.ctx.save();
-        this.ctx.globalAlpha = 0.5;
-        
-        const gradient = this.ctx.createRadialGradient(
-            echoBall.x - echoBall.radius / 3, echoBall.y - echoBall.radius / 3, 0,
-            echoBall.x, echoBall.y, echoBall.radius
-        );
-        gradient.addColorStop(0, '#ffffff');
-        gradient.addColorStop(0.7, '#fdcb6e');
-        gradient.addColorStop(1, '#ff6b35');
-        
-        this.ctx.fillStyle = gradient;
-        this.ctx.beginPath();
-        this.ctx.arc(echoBall.x, echoBall.y, echoBall.radius, 0, Math.PI * 2);
-        this.ctx.fill();
-        
-        // Borda
-        this.ctx.strokeStyle = '#d63031';
-        this.ctx.lineWidth = 2;
-        this.ctx.stroke();
-        
-        this.ctx.restore();
-    }
+    // Função drawEchoBall removida - Eco da Bolinha agora só tem efeito de destruir bloco aleatório
     
     lightenColor(color, amount) {
         const num = parseInt(color.replace("#", ""), 16);

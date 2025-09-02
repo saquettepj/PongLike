@@ -73,51 +73,133 @@ body {
 .instructions-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-    margin-bottom: 2rem;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
     max-width: 1000px;
     width: 100%;
 }
 
+/* Centralizar o pause-layout no instructions-container */
+#pauseScreen .instructions-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Layout de três colunas para pause */
+.pause-layout {
+    display: flex;
+    gap: 1.5rem;
+    align-items: stretch; /* Faz todas as colunas terem a mesma altura */
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    justify-content: center;
+}
+
+.pause-column {
+    flex: 1;
+    min-width: 0; /* Permite que as colunas encolham */
+    overflow: visible; /* Permite que tooltips sejam visíveis */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 300px; /* Largura máxima para evitar colunas muito largas */
+}
+
+/* Estilos específicos para a tela de pause */
+#pauseScreen .control-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0.6rem;
+    gap: 0.5rem;
+    width: 100%;
+    min-height: 40px;
+}
+
+#pauseScreen .control-icon {
+    font-size: 1.2rem;
+    margin-bottom: 0;
+    flex-shrink: 0;
+}
+
+#pauseScreen .control-text {
+    font-size: 0.85rem;
+    text-align: left;
+    flex: 1;
+}
+
+#pauseScreen .brick-effect-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0.6rem;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 260px;
+    min-height: 35px;
+}
+
+#pauseScreen .brick-block {
+    width: 30px;
+    height: 10px;
+    margin-bottom: 0;
+    flex-shrink: 0;
+}
+
+#pauseScreen .brick-text {
+    font-size: 0.8rem;
+    text-align: left;
+    flex: 1;
+}
+
+/* Removido larguras fixas para permitir flexibilidade das colunas */
+
 .controls-section {
     background: rgba(0, 0, 0, 0.3);
-    padding: 2rem;
-    border-radius: 15px;
+    padding: 1rem;
+    border-radius: 10px;
     border: 2px solid #ff6b35;
     box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
+    width: 100%;
+    height: 100%; /* Ocupa toda a altura da coluna */
+    display: flex;
+    flex-direction: column;
 }
 
 .controls-section h3 {
-    font-size: 1.8rem;
+    font-size: 1.4rem;
     color: #fdcb6e;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     text-shadow: 2px 2px 0px #e17055;
 }
 
 .controls-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+    flex: 1; /* Ocupa o espaço restante da seção */
 }
 
 .control-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 1rem;
+    padding: 0.8rem;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+    border-radius: 8px;
     border: 1px solid #ff6b35;
 }
 
 .control-icon {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    margin-bottom: 0.3rem;
     color: #ff6b35;
 }
 
 .control-text {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     text-align: center;
     color: #ffffff;
 }
@@ -227,11 +309,117 @@ body {
     z-index: 100;
 }
 
+/* Poderes Comprados na Tela de Pause */
+.purchased-powers-section {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1rem;
+    border-radius: 10px;
+    border: 2px solid #ff6b35;
+    margin-bottom: 0.5rem;
+    width: 100%;
+    height: 100%; /* Ocupa toda a altura da coluna */
+    display: flex;
+    flex-direction: column;
+}
+
+.purchased-powers-section h3 {
+    font-size: 1.4rem;
+    color: #fdcb6e;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 0px #e17055;
+}
+
+.purchased-powers-grid {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    margin-top: 1rem;
+    flex: 1; /* Ocupa o espaço restante da seção */
+    align-content: flex-start; /* Alinha os itens no topo */
+    overflow: visible; /* Permite que tooltips sejam visíveis */
+}
+
+.purchased-power-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid #ff6b35;
+    border-radius: 10px;
+    padding: 6px;
+    width: 124px;
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.purchased-power-item:hover {
+    background: rgba(255, 107, 53, 0.2);
+    border-color: #ff8c42;
+    transform: scale(1.05);
+}
+
+.purchased-power-icon {
+    width: 30px;
+    height: 30px;
+    margin-bottom: 3px;
+}
+
+.purchased-power-name {
+    font-size: 8px;
+    text-align: center;
+    color: #ffffff;
+    font-weight: bold;
+    line-height: 1.1;
+}
+
+/* Tooltip */
+.power-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.95);
+    color: #ffffff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 9999; /* Z-index muito alto para ficar acima de tudo */
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    border: 1px solid #ff6b35;
+    max-width: 200px;
+    white-space: normal;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); /* Sombra para melhor visibilidade */
+}
+
+.purchased-power-item:hover .power-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+.power-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.95);
+    z-index: 9999; /* Mesmo z-index do tooltip */
+}
+
 #powersContainer {
     display: flex;
     gap: 15px;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     flex-wrap: wrap;
 }
 
@@ -525,10 +713,11 @@ body {
     border: 3px solid #ff6b35;
     border-radius: 20px;
     padding: 2rem;
-    max-width: 800px;
-    width: 90%;
+    max-width: 1000px;
+    width: 95%;
     box-shadow: 0 0 30px rgba(255, 107, 53, 0.4);
     text-align: center;
+    overflow: hidden;
 }
 
 .pause-container h2 {
@@ -541,32 +730,37 @@ body {
 
 .bricks-effects-section {
     background: rgba(0, 0, 0, 0.3);
-    padding: 2rem;
-    border-radius: 15px;
+    padding: 1rem;
+    border-radius: 10px;
     border: 2px solid #ff6b35;
     box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
+    width: 100%;
+    height: 100%; /* Ocupa toda a altura da coluna */
+    display: flex;
+    flex-direction: column;
 }
 
 .bricks-effects-section h3 {
-    font-size: 1.8rem;
+    font-size: 1.4rem;
     color: #fdcb6e;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     text-shadow: 2px 2px 0px #e17055;
 }
 
 .bricks-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+    flex: 1; /* Ocupa o espaço restante da seção */
 }
 
 .brick-effect-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 1rem;
+    padding: 0.8rem;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+    border-radius: 8px;
     border: 1px solid #ff6b35;
     transition: all 0.3s ease;
 }
@@ -574,9 +768,9 @@ body {
 
 
 .brick-block {
-    width: 40px;
-    height: 15px;
-    margin-bottom: 0.5rem;
+    width: 35px;
+    height: 12px;
+    margin-bottom: 0.3rem;
     border-radius: 3px;
     position: relative;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -634,10 +828,11 @@ body {
 }
 
 .brick-text {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     text-align: center;
     color: #ffffff;
     font-weight: bold;
+    line-height: 1.2;
 }
 
 .resume-button {
@@ -762,6 +957,42 @@ body {
     .instructions-container {
         grid-template-columns: 1fr;
         gap: 1.5rem;
+    }
+    
+    .pause-layout {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .pause-column {
+        flex: none;
+        min-width: auto;
+    }
+    
+    .pause-column:nth-child(2),
+    .pause-column:nth-child(3) {
+        flex: none; /* Remove tamanhos fixos em mobile */
+    }
+    
+    /* Reverter estilos específicos da tela de pause em mobile */
+    #pauseScreen .control-item {
+        flex-direction: column;
+        text-align: center;
+        max-width: none;
+    }
+    
+    #pauseScreen .control-text {
+        text-align: center;
+    }
+    
+    #pauseScreen .brick-effect-item {
+        flex-direction: column;
+        text-align: center;
+        max-width: none;
+    }
+    
+    #pauseScreen .brick-text {
+        text-align: center;
     }
     
     .controls-grid {
