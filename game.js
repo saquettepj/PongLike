@@ -201,6 +201,11 @@ class Game {
         this.lives = 3;
         this.activeUpgrades = [];
         this.resetBallEffects();
+        
+        // Limpar estado da bolinha eco
+        this.upgradeTimers.ballEcho.active = false;
+        this.upgradeTimers.ballEcho.echoBall = null;
+        
         this.initGameObjects();
         this.generateBricks();
         this.gameRunning = true;
@@ -429,9 +434,9 @@ class Game {
                 };
                 this.upgradeTimers.ballEcho.active = true;
             } else {
-                // Atualizar posição da bolinha eco com delay
+                // Atualizar posição da bolinha eco com delay de 10ms (aproximadamente 1 frame a 60fps)
                 this.upgradeTimers.ballEcho.echoBall.delay++;
-                if (this.upgradeTimers.ballEcho.echoBall.delay >= 10) { // Delay de 10 frames
+                if (this.upgradeTimers.ballEcho.echoBall.delay >= 1) { // Delay de 1 frame (10ms)
                     this.upgradeTimers.ballEcho.echoBall.x = mainBall.x;
                     this.upgradeTimers.ballEcho.echoBall.y = mainBall.y;
                     this.upgradeTimers.ballEcho.echoBall.vx = mainBall.vx;
@@ -648,22 +653,25 @@ class Game {
     }
     
     handlePaddleCollision(ball) {
-        // Resetar efeitos ao tocar no paddle (exceto se tiver Plataforma de Amortecimento)
-        if (!this.hasUpgrade('cushion_paddle')) {
-            this.resetBallEffects();
-        } else {
-            // Remover apenas efeitos negativos
-            this.ballEffects.zigzag = false;
-            this.ballEffects.invisible = false;
-            this.ballEffects.invisibleTimer = 0;
-        }
+        // Resetar efeitos ao tocar no paddle
+        this.resetBallEffects();
         
         // Calcular ângulo baseado na posição de impacto
         const hitPos = (ball.x - (this.paddle.x + this.paddle.width / 2)) / (this.paddle.width / 2);
         const angle = hitPos * Math.PI / 3; // Ângulo máximo de 60 graus
         
-        ball.vx = Math.sin(angle) * this.config.ballSpeed;
-        ball.vy = -Math.abs(Math.cos(angle) * this.config.ballSpeed);
+        let ballSpeed = this.config.ballSpeed;
+        
+        // Plataforma de Aceleração - verificar se o espaço está apertado
+        if (this.hasUpgrade('cushion_paddle')) {
+            const spaceApertado = this.isSpaceApertado();
+            if (spaceApertado) {
+                ballSpeed *= 1.3; // Acelerar 30%
+            }
+        }
+        
+        ball.vx = Math.sin(angle) * ballSpeed;
+        ball.vy = -Math.abs(Math.cos(angle) * ballSpeed);
         
         // Canhões Acoplados - atirar projéteis
         if (this.hasUpgrade('attached_cannons')) {
@@ -771,12 +779,89 @@ class Game {
         // Criar partículas
         this.createParticles(ball.x, ball.y, this.getBrickColorValue(brick.color));
         
+        // Eco da Bolinha - destruir bloco aleatório adicional
+        if (this.hasUpgrade('ball_echo')) {
+            const availableBricks = this.bricks.filter(b => !b.destroyed && b.color !== 'red');
+            if (availableBricks.length > 0) {
+                const randomBrick = availableBricks[Math.floor(Math.random() * availableBricks.length)];
+                randomBrick.destroyed = true;
+                this.money += this.getBrickReward(randomBrick.color);
+                this.createParticles(randomBrick.x + randomBrick.width / 2, randomBrick.y + randomBrick.height / 2, this.getBrickColorValue(randomBrick.color));
+            }
+        }
+        
+        // Bolinha Espelhada - destruir bloco simétrico
+        if (this.hasUpgrade('mirror_ball')) {
+            const centerX = this.width / 2;
+            const mirrorX = centerX - (brick.x + brick.width / 2 - centerX);
+            
+            // Encontrar bloco simétrico
+            const mirrorBrick = this.bricks.find(b => 
+                !b.destroyed && 
+                b.color !== 'red' &&
+                Math.abs((b.x + b.width / 2) - mirrorX) < 5 && // Tolerância de 5 pixels
+                Math.abs(b.y - brick.y) < 5 // Mesma linha
+            );
+            
+            if (mirrorBrick) {
+                mirrorBrick.destroyed = true;
+                this.money += this.getBrickReward(mirrorBrick.color);
+                this.createParticles(mirrorBrick.x + mirrorBrick.width / 2, mirrorBrick.y + mirrorBrick.height / 2, this.getBrickColorValue(mirrorBrick.color));
+            }
+        }
+        
+        // Bolinha da Fortuna - +1 moeda extra
+        if (this.hasUpgrade('lucky_ball')) {
+            this.money += 1;
+        }
+        
+        // Reforço - destruir bloco de trás
+        if (this.hasUpgrade('repulsor_shield')) {
+            // Calcular direção da bolinha para determinar qual é o "bloco de trás"
+            const ballDirection = ball.vx > 0 ? 1 : -1; // 1 = direita, -1 = esquerda
+            const behindX = brick.x + (ballDirection > 0 ? -this.config.brickWidth - this.config.brickSpacing : this.config.brickWidth + this.config.brickSpacing);
+            
+            // Encontrar bloco de trás
+            const behindBrick = this.bricks.find(b => 
+                !b.destroyed && 
+                b.color !== 'red' &&
+                Math.abs(b.x - behindX) < 5 && // Tolerância de 5 pixels
+                Math.abs(b.y - brick.y) < 5 // Mesma linha
+            );
+            
+            if (behindBrick) {
+                behindBrick.destroyed = true;
+                this.money += this.getBrickReward(behindBrick.color);
+                this.createParticles(behindBrick.x + behindBrick.width / 2, behindBrick.y + behindBrick.height / 2, this.getBrickColorValue(behindBrick.color));
+            }
+        }
+        
         // Tocar som de batida no tijolo
         this.playSound('brickHit');
     }
     
     hasUpgrade(upgradeId) {
         return this.activeUpgrades.some(upgrade => upgrade.id === upgradeId);
+    }
+    
+    isSpaceApertado() {
+        // Verificar se há muitos blocos próximos à plataforma
+        const paddleY = this.paddle.y;
+        const threshold = 100; // Distância em pixels para considerar "apertado"
+        
+        // Contar blocos próximos à plataforma
+        let blocosProximos = 0;
+        this.bricks.forEach(brick => {
+            if (!brick.destroyed) {
+                const distancia = Math.abs(brick.y + brick.height - paddleY);
+                if (distancia < threshold) {
+                    blocosProximos++;
+                }
+            }
+        });
+        
+        // Considerar "apertado" se há mais de 3 blocos próximos
+        return blocosProximos > 3;
     }
     
     explodeBall(ball) {
@@ -908,17 +993,42 @@ class Game {
             </svg>`,
             
             'cushion_paddle': `<svg width="32" height="32" viewBox="0 0 32 32">
+                <!-- Plataforma -->
                 <rect x="2" y="26" width="28" height="4" fill="#ff6b35" stroke="#d63031" stroke-width="1"/>
-                <rect x="2" y="24" width="28" height="2" fill="#2ecc71"/>
-                <circle cx="8" cy="22" r="1" fill="#27ae60"/>
-                <circle cx="16" cy="22" r="1" fill="#27ae60"/>
-                <circle cx="24" cy="22" r="1" fill="#27ae60"/>
+                
+                <!-- Blocos próximos (espaço apertado) -->
+                <rect x="4" y="20" width="6" height="4" fill="#3498db" stroke="#2980b9" stroke-width="1"/>
+                <rect x="12" y="18" width="6" height="4" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+                <rect x="20" y="20" width="6" height="4" fill="#2ecc71" stroke="#27ae60" stroke-width="1"/>
+                
+                <!-- Bolinha acelerada -->
+                <circle cx="16" cy="14" r="3" fill="#f1c40f" stroke="#f39c12" stroke-width="1"/>
+                
+                <!-- Linhas de velocidade -->
+                <path d="M13 14 L10 12" stroke="#f1c40f" stroke-width="2" fill="none"/>
+                <path d="M19 14 L22 12" stroke="#f1c40f" stroke-width="2" fill="none"/>
+                <path d="M16 11 L16 8" stroke="#f1c40f" stroke-width="2" fill="none"/>
+                
+                <!-- Indicador de aceleração -->
+                <text x="16" y="6" text-anchor="middle" font-family="Arial" font-size="4" fill="#f1c40f">+30%</text>
             </svg>`,
             
             'repulsor_shield': `<svg width="32" height="32" viewBox="0 0 32 32">
-                <rect x="2" y="26" width="28" height="4" fill="#ff6b35" stroke="#d63031" stroke-width="1"/>
-                <path d="M16 18 L20 14 L16 10 L12 14 Z" fill="#9b59b6" stroke="#8e44ad" stroke-width="1"/>
-                <circle cx="16" cy="14" r="2" fill="#ffffff"/>
+                <!-- Plataforma reforçada (2x mais alta) -->
+                <rect x="2" y="20" width="28" height="8" fill="#ff6b35" stroke="#d63031" stroke-width="1"/>
+                <rect x="2" y="16" width="28" height="4" fill="#e17055" stroke="#d63031" stroke-width="1"/>
+                <rect x="2" y="12" width="28" height="4" fill="#d63031" stroke="#d63031" stroke-width="1"/>
+                
+                <!-- Blocos sendo destruídos -->
+                <rect x="4" y="6" width="6" height="4" fill="#3498db" stroke="#2980b9" stroke-width="1"/>
+                <rect x="12" y="6" width="6" height="4" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+                <rect x="20" y="6" width="6" height="4" fill="#3498db" stroke="#2980b9" stroke-width="1"/>
+                
+                <!-- Seta indicando destruição em cadeia -->
+                <path d="M10 8 L14 8" stroke="#ffffff" stroke-width="2" fill="none"/>
+                <path d="M18 8 L22 8" stroke="#ffffff" stroke-width="2" fill="none"/>
+                <path d="M12 6 L12 4" stroke="#ffffff" stroke-width="1" fill="none"/>
+                <path d="M20 6 L20 4" stroke="#ffffff" stroke-width="1" fill="none"/>
             </svg>`,
             
             'charged_shot': `<svg width="32" height="32" viewBox="0 0 32 32">
@@ -981,6 +1091,22 @@ class Game {
                 <rect x="14" y="22" width="4" height="2" fill="#2ecc71"/>
                 <rect x="8" y="14" width="2" height="4" fill="#f1c40f"/>
                 <rect x="22" y="14" width="2" height="4" fill="#95a5a6"/>
+            </svg>`,
+            
+            'mirror_ball': `<svg width="32" height="32" viewBox="0 0 32 32">
+                <circle cx="16" cy="16" r="6" fill="#fdcb6e" stroke="#ff6b35" stroke-width="2"/>
+                <rect x="4" y="8" width="6" height="4" fill="#3498db" stroke="#2980b9" stroke-width="1"/>
+                <rect x="22" y="8" width="6" height="4" fill="#3498db" stroke="#2980b9" stroke-width="1"/>
+                <rect x="4" y="20" width="6" height="4" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+                <rect x="22" y="20" width="6" height="4" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+                <path d="M16 4 L16 28" stroke="#ffffff" stroke-width="2"/>
+            </svg>`,
+            
+            'lucky_ball': `<svg width="32" height="32" viewBox="0 0 32 32">
+                <circle cx="16" cy="16" r="6" fill="#f1c40f" stroke="#f39c12" stroke-width="2"/>
+                <path d="M16 6 C12 6, 8 10, 8 16 C8 22, 16 28, 16 28 C16 28, 24 22, 24 16 C24 10, 20 6, 16 6 Z" fill="#e67e22" stroke="#d35400" stroke-width="1"/>
+                <circle cx="16" cy="16" r="2" fill="#ffffff"/>
+                <text x="16" y="19" text-anchor="middle" font-family="Arial" font-size="6" fill="#2c3e50">$</text>
             </svg>`,
             
             // Upgrades de Utilidade
@@ -1082,22 +1208,29 @@ class Game {
                 // Efeito padrão - nenhum
                 break;
             case 'yellow':
-                this.ballEffects.speedMultiplier *= 1.4;
+                // Só aplica se não estiver já ativo
+                if (this.ballEffects.speedMultiplier <= 1) {
+                    this.ballEffects.speedMultiplier *= 1.4;
+                }
                 break;
             case 'green':
-                // Inverter direção horizontal
+                // Inverter direção horizontal (sempre alterna)
                 this.ballEffects.inverted = !this.ballEffects.inverted;
                 break;
             case 'purple':
-                // Zigue-zague
-                this.ballEffects.zigzag = true;
-                this.ballEffects.zigzagTimer = 0;
+                // Zigue-zague - só aplica se não estiver já ativo
+                if (!this.ballEffects.zigzag) {
+                    this.ballEffects.zigzag = true;
+                    this.ballEffects.zigzagTimer = 0;
+                }
                 break;
             case 'gray':
-                // Invisibilidade - ciclo de 2s invisível, 2s visível
-                this.ballEffects.invisible = true;
-                this.ballEffects.invisibleTimer = 120; // 2 segundos a 60fps
-                this.ballEffects.invisibleCycle = 1; // Começar invisível
+                // Invisibilidade - só aplica se não estiver já ativo
+                if (!this.ballEffects.invisible) {
+                    this.ballEffects.invisible = true;
+                    this.ballEffects.invisibleTimer = 120; // 2 segundos a 60fps
+                    this.ballEffects.invisibleCycle = 1; // Começar invisível
+                }
                 break;
         }
     }
@@ -1180,6 +1313,15 @@ class Game {
     
     loseLife() {
         this.lives--;
+        
+        // Perder 10 moedas ao perder vida
+        this.money = Math.max(0, this.money - 10);
+        
+        // Seguro de Vida - ganhar 20 moedas ao invés de perder
+        if (this.hasUpgrade('life_insurance')) {
+            this.money += 20;
+        }
+        
         this.updateUI();
         
         if (this.lives <= 0) {
@@ -1207,6 +1349,10 @@ class Game {
     
     gameOver() {
         this.gameRunning = false;
+        
+        // Limpar estado da bolinha eco
+        this.upgradeTimers.ballEcho.active = false;
+        this.upgradeTimers.ballEcho.echoBall = null;
         
         // Atualizar recorde
         if (this.currentPhase > this.highScore) {
@@ -1296,16 +1442,16 @@ class Game {
             },
             {
                 id: 'cushion_paddle',
-                name: 'Plataforma de Amortecimento',
-                description: 'Bater na plataforma remove os efeitos negativos, mas mantém os positivos',
+                name: 'Plataforma de Aceleração',
+                description: 'Quando o espaço estiver apertado, a bolinha acelera 30% ao bater na plataforma',
                 price: 70,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('cushion_paddle')
             },
             {
                 id: 'repulsor_shield',
-                name: 'Escudo Repulsor',
-                description: 'Cria um escudo de energia na frente da plataforma que rebate a bolinha com mais força',
+                name: 'Reforço',
+                description: 'A plataforma fica 2x mais alta e a bolinha destrói o bloco atingido e o bloco de trás',
                 price: 80,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('repulsor_shield')
@@ -1376,6 +1522,22 @@ class Game {
                 type: 'ball',
                 icon: this.getUpgradeIcon('effect_activator')
             },
+            {
+                id: 'mirror_ball',
+                name: 'Bolinha Espelhada',
+                description: 'Quando a bolinha destrói um bloco, também destrói o bloco simetricamente posicionado do outro lado da tela',
+                price: 90,
+                type: 'ball',
+                icon: this.getUpgradeIcon('mirror_ball')
+            },
+            {
+                id: 'lucky_ball',
+                name: 'Bolinha da Fortuna',
+                description: 'A bolinha fica dourada e ganha +1 moeda extra por cada bloco quebrado',
+                price: 85,
+                type: 'ball',
+                icon: this.getUpgradeIcon('lucky_ball')
+            },
             
             // Upgrades de Utilidade e Defesa (15-20)
             {
@@ -1405,7 +1567,7 @@ class Game {
             {
                 id: 'life_insurance',
                 name: 'Seguro de Vida',
-                description: 'Se perder uma vida, você não perde o dinheiro que acumulou naquela fase',
+                description: 'Ao perder uma vida, ganha 20 moedas ao invés de perder 10',
                 price: 70,
                 type: 'utility',
                 icon: this.getUpgradeIcon('life_insurance')
@@ -1501,6 +1663,10 @@ class Game {
             switch (upgrade.id) {
                 case 'wide_paddle':
                     this.paddle.width = this.config.paddleWidth * 1.5;
+                    break;
+                case 'repulsor_shield':
+                    // Reforço - plataforma 2x mais alta
+                    this.paddle.height = this.config.paddleHeight * 2;
                     break;
                 case 'multi_ball':
                     // Multi-bola agora é gerenciado pelo updateMultiBall()
@@ -1728,9 +1894,17 @@ class Game {
             ball.x - ball.radius / 3, ball.y - ball.radius / 3, 0,
             ball.x, ball.y, ball.radius
         );
-        gradient.addColorStop(0, '#ffffff');
-        gradient.addColorStop(0.7, '#fdcb6e');
-        gradient.addColorStop(1, '#ff6b35');
+        
+        // Bolinha da Fortuna - cor dourada
+        if (this.hasUpgrade('lucky_ball')) {
+            gradient.addColorStop(0, '#ffffff');
+            gradient.addColorStop(0.7, '#f1c40f');
+            gradient.addColorStop(1, '#e67e22');
+        } else {
+            gradient.addColorStop(0, '#ffffff');
+            gradient.addColorStop(0.7, '#fdcb6e');
+            gradient.addColorStop(1, '#ff6b35');
+        }
         
         this.ctx.fillStyle = gradient;
         this.ctx.beginPath();
@@ -1738,14 +1912,22 @@ class Game {
         this.ctx.fill();
         
         // Borda
-        this.ctx.strokeStyle = '#d63031';
+        if (this.hasUpgrade('lucky_ball')) {
+            this.ctx.strokeStyle = '#d35400';
+        } else {
+            this.ctx.strokeStyle = '#d63031';
+        }
         this.ctx.lineWidth = 2;
         this.ctx.stroke();
         
         // Desenhar trail
         ball.trail.forEach((point, index) => {
             const alpha = index / ball.trail.length;
-            this.ctx.fillStyle = `rgba(255, 107, 53, ${alpha * 0.5})`;
+            if (this.hasUpgrade('lucky_ball')) {
+                this.ctx.fillStyle = `rgba(241, 196, 15, ${alpha * 0.5})`;
+            } else {
+                this.ctx.fillStyle = `rgba(255, 107, 53, ${alpha * 0.5})`;
+            }
             this.ctx.beginPath();
             this.ctx.arc(point.x, point.y, ball.radius * alpha, 0, Math.PI * 2);
             this.ctx.fill();

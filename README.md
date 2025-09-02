@@ -30,48 +30,64 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 | Cor | Efeito | Recompensa |
 |-----|--------|------------|
 | 🔵 Azul | Física Padrão | 1 🪙 |
-| 🟡 Amarelo | Velocidade (+30%) | 3 🪙 |
+| 🟡 Amarelo | Velocidade (+40%) | 3 🪙 |
 | 🟢 Verde | Inversão Horizontal | 1 🪙 |
 | 🟣 Roxo | Zigue-zague | 3 🪙 |
-| ⚫ Cinza | Invisibilidade (2s) | 3 🪙 |
+| ⚫ Cinza | Invisibilidade (ciclo 2s) | 3 🪙 |
 | 🔴 Vermelho (Núcleo) | Objetivo da Fase | 10 🪙 |
 
 ## ⚡ Sistema Roguelike
 
-### Upgrades Disponíveis (25 total)
+### Upgrades Disponíveis (28 total)
 
 #### 🏓 Upgrades de Plataforma
-1. **Plataforma Larga** - Aumenta tamanho em 50%
-2. **Canhões Acoplados** - Atira projéteis ao rebater
-3. **Super Ímã** - Campo magnético para puxar bolinha
-4. **Dash de Plataforma** - Movimento rápido lateral
-5. **Plataforma de Amortecimento** - Remove efeitos negativos
-6. **Escudo Repulsor** - Rebate com mais força
-7. **Tiro Carregado** - Projétil perfurante
+1. **Plataforma Larga** - Aumenta tamanho em 50% (120 🪙)
+2. **Canhões Acoplados** - Atira projéteis ao rebater (100 🪙)
+3. **Super Ímã** - Campo magnético para puxar bolinha (120 🪙)
+4. **Dash de Plataforma** - Movimento rápido lateral (80 🪙)
+5. **Plataforma de Aceleração** - Acelera bolinha 30% quando espaço apertado (70 🪙)
+6. **Reforço** - Plataforma 2x mais alta e destrói bloco de trás (80 🪙)
+7. **Tiro Carregado** - Projétil perfurante (90 🪙)
 
 #### ⚽ Upgrades de Bolinha
-8. **Bolinha Perfurante** - Quebra tijolos azuis sem mudar direção
-9. **Campo de Fricção** - Reduz velocidade em 10%
-10. **Bolinha Fantasma** - Primeira queda passa pela parte inferior
-11. **Multi-bola** - Duas bolinhas simultâneas
-12. **Bolinha Explosiva** - Explode ao atingir tijolos
-13. **Eco da Bolinha** - Segunda bolinha com atraso
-14. **Ativador de Efeito** - Escolhe efeito ativo
+8. **Bolinha Perfurante** - Quebra tijolos azuis sem mudar direção (80 🪙)
+9. **Campo de Fricção** - Reduz velocidade em 10% (120 🪙)
+10. **Bolinha Fantasma** - Primeira queda passa pela parte inferior (100 🪙)
+11. **Multi-bola** - Duas bolinhas simultâneas (120 🪙)
+12. **Bolinha Explosiva** - Explode ao atingir tijolos (80 🪙)
+13. **Eco da Bolinha** - Segunda bolinha com atraso de 10ms + destrói bloco aleatório (70 🪙)
+14. **Ativador de Efeito** - Escolhe efeito ativo (110 🪙)
+15. **Bolinha Espelhada** - Destrói bloco simétrico ao quebrar um (90 🪙)
+16. **Bolinha da Fortuna** - Bolinha dourada que dá +1 moeda por bloco (85 🪙)
 
 #### 🛡️ Upgrades de Utilidade
-15. **Coração Extra** - Vida adicional
-16. **Rede de Segurança** - Barreira temporária
-17. **Amuleto da Sorte** - +25% dinheiro
-18. **Seguro de Vida** - Protege dinheiro ao morrer
-19. **Reciclagem** - Tijolos azuis podem reaparecer
-20. **Conversor de Risco** - Mais dinheiro com efeitos negativos
+17. **Coração Extra** - Vida adicional (100 🪙)
+18. **Rede de Segurança** - Barreira temporária (120 🪙)
+19. **Amuleto da Sorte** - +25% dinheiro (80 🪙)
+20. **Seguro de Vida** - Ganha 20 moedas ao perder vida (70 🪙)
+21. **Reciclagem** - Tijolos azuis podem reaparecer (100 🪙)
+22. **Conversor de Risco** - Mais dinheiro com efeitos negativos (120 🪙)
 
 #### 🔥 Upgrades "Quebra-Regras"
-21. **Dano Estrutural** - Primeira batida no núcleo conta como duas
-22. **Visão de Calor** - Rastro térmico mais visível
-23. **Reversão Controlada** - Inversão só acontece 50% das vezes
-24. **Atrator de Núcleo** - Atração magnética para o núcleo
-25. **Investidor** - Sacrifica vida por 50 moedas
+23. **Dano Estrutural** - Primeira batida no núcleo conta como duas (80 🪙)
+24. **Visão de Calor** - Rastro térmico mais visível (80 🪙)
+25. **Reversão Controlada** - Inversão só acontece 50% das vezes (100 🪙)
+26. **Atrator de Núcleo** - Atração magnética para o núcleo (70 🪙)
+27. **Investidor** - Sacrifica vida por 50 moedas (0 🪙)
+28. **Poupança** - Mantém até 50 moedas para próxima fase (80 🪙)
+
+## 🎮 Regras do Jogo
+
+### 💰 Sistema de Moedas
+- **Perda de Vida**: Ao perder uma vida, você perde 10 moedas
+- **Seguro de Vida**: Com este upgrade, ao perder vida você ganha 20 moedas ao invés de perder 10
+
+### ⚡ Efeitos dos Tijolos
+- **Não Acumulativos**: Efeitos da mesma cor não se acumulam
+- **Amarelo**: Velocidade só ativa se não estiver já acelerado
+- **Roxo**: Zigue-zague só ativa se não estiver já ativo
+- **Cinza**: Invisibilidade só ativa se não estiver já ativo
+- **Verde**: Inversão sempre alterna (pode ser aplicado múltiplas vezes)
 
 ## 🚀 Como Jogar
 
@@ -121,7 +137,7 @@ Este jogo está preparado para ser hospedado no **GitHub Pages**:
 
 ## 🎮 Jogar Online
 
-[Clique aqui para jogar](https://seu-usuario.github.io/brick-rogue)
+[Clique aqui para jogar](https://saquettepj.github.io/PongLike)
 
 ## 📝 Licença
 
