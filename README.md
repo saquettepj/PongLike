@@ -36,7 +36,7 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 | 🟣 Roxo | Zigue-zague | 7 🪙 |
 | ⚫ Cinza | Invisibilidade (ciclo 1s) | 3 🪙 |
 | ⚪ Branco | Fragmento perigoso que cai e tira vida se acertar plataforma | 5 🪙 |
-| 🔴 Vermelho (Núcleo) | Objetivo da Fase + Acelera bolinha 2% por hit + Troca posição com bloco aleatório | 10 🪙 |
+| 🔴 Vermelho (Núcleo) | Objetivo da Fase + Acelera bolinha 4% por hit + Troca posição com bloco aleatório | 10 🪙 |
 
 ## ⚡ Sistema Roguelike
 
@@ -91,7 +91,7 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 - **Cinza**: Invisibilidade só ativa se não estiver já ativo
 - **Verde**: Inversão sempre alterna (pode ser aplicado múltiplas vezes)
 - **Branco**: Cria fragmento perigoso que cai e tira vida se acertar a plataforma
-- **Vermelho (Núcleo)**: Cooldown de 1 segundo entre danos + acelera bolinha 2% por hit + troca posição com bloco aleatório
+- **Vermelho (Núcleo)**: Cooldown de 1 segundo entre danos + acelera bolinha 4% por hit + troca posição com bloco aleatório
 
 ### 🛡️ Proteção do Núcleo Vermelho
 - **Apenas Toque Direto**: O bloco vermelho só pode ser destruído pelo toque direto da bolinha

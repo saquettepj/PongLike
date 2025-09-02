@@ -958,7 +958,7 @@ class Game {
         
         // Efeito especial do bloco vermelho - aumentar velocidade da bolinha
         if (brick.color === 'red') {
-            this.ballEffects.speedMultiplier += 0.02; // Aumentar velocidade em 2%
+            this.ballEffects.speedMultiplier += 0.04; // Aumentar velocidade em 4%
             // Criar partículas especiais para indicar o efeito
             this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff0000');
             
