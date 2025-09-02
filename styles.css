@@ -155,6 +155,25 @@ body {
     align-items: center;
 }
 
+.game-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+}
+
+.ui-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end;
+    align-self: flex-start;
+}
+
+.canvas-container {
+    position: relative;
+}
+
 #gameCanvas {
     border: 2px solid #ff6b35;
     background: #000000;
@@ -163,11 +182,8 @@ body {
 }
 
 #gameUI {
-    position: absolute;
-    right: 20px;
-    top: 20px;
     width: 200px;
-    z-index: 10;
+    z-index: 150;
 }
 
 .ui-panel {
@@ -204,6 +220,130 @@ body {
     0% { opacity: 1; }
     50% { opacity: 0.7; }
     100% { opacity: 1; }
+}
+
+/* Interface de Poderes */
+#powersUI {
+    z-index: 100;
+}
+
+#powersContainer {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.power-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid #ff6b35;
+    border-radius: 10px;
+    padding: 8px;
+    min-width: 60px;
+    backdrop-filter: blur(10px);
+}
+
+.power-item.on-cooldown {
+    border-color: #e74c3c;
+    background: rgba(231, 76, 60, 0.2);
+}
+
+.power-item.active {
+    border-color: #2ecc71;
+    background: rgba(46, 204, 113, 0.2);
+    animation: pulse 1s infinite;
+}
+
+.power-icon {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 4px;
+}
+
+.power-cooldown {
+    font-size: 12px;
+    color: #e74c3c;
+    font-weight: bold;
+    text-align: center;
+    min-height: 16px;
+}
+
+.power-cooldown.ready {
+    color: #2ecc71;
+}
+
+/* Interface de Seleção de Poderes */
+#powerSelectionUI {
+    flex-shrink: 0;
+    width: 200px;
+}
+
+#powerSelectionContainer {
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #ff6b35;
+    border-radius: 10px;
+    padding: 1rem;
+    min-width: 200px;
+    backdrop-filter: blur(10px);
+}
+
+.power-selection-title {
+    font-size: 1rem;
+    color: #fdcb6e;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1rem;
+    text-shadow: 1px 1px 0px #e17055;
+}
+
+.power-selection-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #ff6b35;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.power-selection-item.selected {
+    background: rgba(255, 107, 53, 0.3);
+    border-color: #fdcb6e;
+    box-shadow: 0 0 10px rgba(253, 203, 110, 0.5);
+}
+
+.power-selection-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 0.5rem;
+}
+
+.power-selection-name {
+    font-size: 0.9rem;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.power-selection-instructions {
+    font-size: 0.8rem;
+    color: #fdcb6e;
+    text-align: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #ff6b35;
+    line-height: 1.3;
+}
+
+.no-powers {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #95a5a6;
+    padding: 1rem;
 }
 
 /* Tela de Upgrades */
@@ -361,6 +501,18 @@ body {
     opacity: 0.5;
     cursor: not-allowed;
     transform: none;
+}
+
+.no-upgrades {
+    text-align: center;
+    font-size: 1.5rem;
+    color: #fdcb6e;
+    padding: 2rem;
+    background: rgba(255, 107, 53, 0.1);
+    border: 2px solid #ff6b35;
+    border-radius: 15px;
+    margin: 1rem 0;
+    text-shadow: 1px 1px 0px #e17055;
 }
 
 /* Tela de Pause */
@@ -551,6 +703,52 @@ body {
 }
 
 /* Responsividade */
+@media (max-width: 1200px) {
+    .game-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .ui-container {
+        order: 2; /* Fica depois do canvas */
+        align-items: center;
+    }
+    
+    #powerSelectionUI {
+        width: 180px;
+    }
+    
+    .canvas-container {
+        order: 1; /* Canvas fica primeiro */
+    }
+    
+    #powerSelectionContainer {
+        min-width: 160px;
+        padding: 0.8rem;
+    }
+    
+    .power-selection-item {
+        padding: 0.4rem;
+        margin-bottom: 0.3rem;
+    }
+    
+    .power-selection-icon {
+        width: 20px;
+        height: 20px;
+        margin-right: 0.3rem;
+    }
+    
+    .power-selection-name {
+        font-size: 0.8rem;
+    }
+    
+    .power-selection-instructions {
+        font-size: 0.7rem;
+        margin-top: 0.8rem;
+        padding-top: 0.8rem;
+    }
+}
+
 @media (max-width: 768px) {
     .game-title {
         font-size: 2.5rem;
@@ -583,5 +781,41 @@ body {
     
     #gameScreen {
         flex-direction: column;
+    }
+    
+    /* Para telas muito pequenas, interface de poderes fica no topo */
+    .game-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .ui-container {
+        order: 1; /* Fica no topo */
+        width: 90%;
+        max-width: 300px;
+    }
+    
+    #powerSelectionUI {
+        width: 100%;
+    }
+    
+    .canvas-container {
+        order: 2; /* Canvas fica embaixo */
+    }
+    
+    #powerSelectionContainer {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .power-selection-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem;
+    }
+    
+    .power-selection-name {
+        font-size: 0.9rem;
     }
 }

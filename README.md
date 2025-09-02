@@ -33,8 +33,8 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 | 🔵 Azul | Física Padrão | 1 🪙 |
 | 🟡 Amarelo | Velocidade (+40%) | 3 🪙 |
 | 🟢 Verde | Inversão Horizontal | 1 🪙 |
-| 🟣 Roxo | Zigue-zague | 3 🪙 |
-| ⚫ Cinza | Invisibilidade (ciclo 2s) | 3 🪙 |
+| 🟣 Roxo | Zigue-zague | 7 🪙 |
+| ⚫ Cinza | Invisibilidade (ciclo 1s) | 3 🪙 |
 | 🔴 Vermelho (Núcleo) | Objetivo da Fase + Acelera bolinha 2% por hit | 10 🪙 |
 
 ## ⚡ Sistema Roguelike
@@ -45,7 +45,7 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 1. **Plataforma Larga** - Aumenta tamanho em 50% (120 🪙)
 2. **Canhões Acoplados** - Atira projéteis ao rebater (100 🪙)
 3. **Super Ímã** - Campo magnético para puxar bolinha (120 🪙)
-4. **Dash de Plataforma** - Movimento rápido lateral (80 🪙)
+4. **Dash de Plataforma** - Movimento rápido lateral por 3s (cooldown 20s) (80 🪙)
 5. **Plataforma de Aceleração** - Acelera bolinha 30% quando espaço apertado (70 🪙)
 6. **Reforço** - Plataforma 2x mais alta e destrói bloco de trás (80 🪙)
 7. **Tiro Carregado** - Projétil perfurante (90 🪙)
@@ -55,7 +55,7 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 9. **Campo de Fricção** - Reduz velocidade em 10% (120 🪙)
 10. **Bolinha Fantasma** - Primeira queda passa pela parte inferior (100 🪙)
 11. **Multi-bola** - Duas bolinhas simultâneas (120 🪙)
-12. **Bolinha Explosiva** - Explode ao atingir tijolos (80 🪙)
+12. **Bolinha Explosiva** - Explode ao atingir tijolos (não afeta o núcleo vermelho) (80 🪙)
 13. **Eco da Bolinha** - Segunda bolinha com atraso de 10ms + destrói bloco aleatório (70 🪙)
 14. **Ativador de Efeito** - Escolhe efeito ativo (110 🪙)
 15. **Bolinha Espelhada** - Destrói bloco simétrico ao quebrar um (90 🪙)
@@ -64,9 +64,9 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 
 #### 🛡️ Upgrades de Utilidade (6 total)
 17. **Coração Extra** - Vida adicional (100 🪙)
-18. **Rede de Segurança** - Barreira temporária (120 🪙)
+18. **Rede de Segurança** - Barreira temporária por 15s (cooldown 80s) (120 🪙)
 19. **Amuleto da Sorte** - +25% dinheiro (80 🪙)
-20. **Seguro de Vida** - Ganha 20 moedas ao perder vida (70 🪙)
+20. **Seguro de Vida** - Ganha 100 moedas ao perder vida (70 🪙)
 21. **Reciclagem** - Tijolos azuis podem reaparecer (100 🪙)
 22. **Conversor de Risco** - Mais dinheiro com efeitos negativos (120 🪙)
 
@@ -81,7 +81,7 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 
 ### 💰 Sistema de Moedas
 - **Perda de Vida**: Ao perder uma vida, você perde 10 moedas
-- **Seguro de Vida**: Com este upgrade, ao perder vida você ganha 20 moedas ao invés de perder 10
+- **Seguro de Vida**: Com este upgrade, ao perder vida você ganha 100 moedas ao invés de perder 10
 - **Economia na Loja**: Se não comprar nada na loja, você mantém 30% do dinheiro para a próxima fase
 
 ### ⚡ Efeitos dos Tijolos
@@ -91,6 +91,16 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 - **Cinza**: Invisibilidade só ativa se não estiver já ativo
 - **Verde**: Inversão sempre alterna (pode ser aplicado múltiplas vezes)
 - **Vermelho (Núcleo)**: Cooldown de 1 segundo entre danos + acelera bolinha 2% por hit
+
+### 🛡️ Proteção do Núcleo Vermelho
+- **Apenas Toque Direto**: O bloco vermelho só pode ser destruído pelo toque direto da bolinha
+- **Proteção Contra Poderes**: Nenhum poder pode destruir o núcleo indiretamente:
+  - ❌ Bolinha Explosiva não afeta o núcleo
+  - ❌ Eco da Bolinha não pode destruir o núcleo
+  - ❌ Bolinha Espelhada não afeta o núcleo
+  - ❌ Bolinha Prima não pode destruir o núcleo
+  - ❌ Reforço não afeta o núcleo
+  - ❌ Projéteis não podem quebrar o núcleo
 
 ## 🚀 Como Jogar
 

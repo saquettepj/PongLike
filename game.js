@@ -19,6 +19,9 @@ class Game {
         this.ballHitCount = 0; // Contador de batidas da bolinha para Bolinha Prima
         this.gameTime = 0; // Tempo de jogo em segundos
         this.lastMultiBallTime = 0; // Último tempo que uma bola foi adicionada
+        this.lastUpgradesCount = 0; // Contador para controlar quando recriar interface de poderes
+        this.selectedPowerIndex = 0; // Índice do poder selecionado
+        this.activatablePowers = []; // Lista de poderes que podem ser ativados
         
         // Objetos do jogo
         this.paddle = null;
@@ -52,10 +55,10 @@ class Game {
         
         // Upgrades com ativação manual
         this.activeUpgradeEffects = {
-            superMagnet: { active: false, timer: 0, duration: 120 }, // 2 segundos
-            paddleDash: { active: false, timer: 0, cooldown: 300 }, // 5 segundos
+            superMagnet: { active: false, timer: 0, duration: 120, cooldown: 3000 }, // 2 segundos ativo, 50 segundos cooldown
+            paddleDash: { active: false, timer: 0, duration: 180, cooldown: 1200 }, // 3 segundos ativo, 20 segundos cooldown
             chargedShot: { charging: false, chargeLevel: 0, maxCharge: 60 },
-            safetyNet: { active: false, timer: 0, duration: 900 }, // 15 segundos
+            safetyNet: { active: false, timer: 0, duration: 900, cooldown: 4800 }, // 15 segundos ativo, 80 segundos cooldown
             effectActivator: { active: false, timer: 0, duration: 600 } // 10 segundos
         };
         
@@ -169,8 +172,19 @@ class Game {
                         ball.vy = -this.config.ballSpeed;
                     });
                 } else {
-                    // Se não há bolinhas presas, ativar upgrades
-                    this.activateUpgrade();
+                    // Se não há bolinhas presas, ativar upgrade selecionado
+                    this.activateSelectedUpgrade();
+                }
+            }
+            
+            // Seleção de poderes com W/S ou setas
+            if (this.gameRunning && !this.gamePaused) {
+                if (e.code === 'KeyW' || e.code === 'ArrowUp') {
+                    e.preventDefault();
+                    this.selectPreviousPower();
+                } else if (e.code === 'KeyS' || e.code === 'ArrowDown') {
+                    e.preventDefault();
+                    this.selectNextPower();
                 }
             }
         });
@@ -433,6 +447,10 @@ class Game {
             // Desativar efeitos quando o timer chegar a zero
             if (effect.timer <= 0 && effect.active) {
                 effect.active = false;
+                // Se for Super Ímã, Dash de Plataforma ou Rede de Segurança, iniciar cooldown
+                if ((key === 'superMagnet' || key === 'paddleDash' || key === 'safetyNet') && effect.cooldown) {
+                    effect.timer = effect.cooldown;
+                }
             }
         });
         
@@ -716,8 +734,10 @@ class Game {
     }
     
     handlePaddleCollision(ball) {
-        // Resetar efeitos ao tocar no paddle
+        // Resetar efeitos ao tocar no paddle (exceto speedMultiplier do bloco vermelho)
+        const currentSpeedMultiplier = this.ballEffects.speedMultiplier;
         this.resetBallEffects();
+        this.ballEffects.speedMultiplier = currentSpeedMultiplier;
         
         // Calcular ângulo baseado na posição de impacto
         const hitPos = (ball.x - (this.paddle.x + this.paddle.width / 2)) / (this.paddle.width / 2);
@@ -828,6 +848,21 @@ class Game {
             this.ballEffects.speedMultiplier += 0.02; // Aumentar velocidade em 2%
             // Criar partículas especiais para indicar o efeito
             this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff0000');
+            
+            // Criar partículas de velocidade para indicar o aumento
+            for (let i = 0; i < 5; i++) {
+                this.particles.push({
+                    x: brick.x + brick.width / 2,
+                    y: brick.y + brick.height / 2,
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: (Math.random() - 0.5) * 4,
+                    color: '#f1c40f',
+                    life: 60,
+                    maxLife: 60,
+                    alpha: 1,
+                    size: Math.random() * 3 + 2
+                });
+            }
         }
         
         if (brick.hits <= 0) {
@@ -981,9 +1016,9 @@ class Game {
     explodeBall(ball) {
         const explosionRadius = 80;
         
-        // Quebrar tijolos próximos
+        // Quebrar tijolos próximos (exceto o bloco vermelho)
         this.bricks.forEach(brick => {
-            if (!brick.destroyed) {
+            if (!brick.destroyed && brick.color !== 'red') {
                 const dx = (brick.x + brick.width / 2) - ball.x;
                 const dy = (brick.y + brick.height / 2) - ball.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
@@ -1014,9 +1049,96 @@ class Game {
         }
     }
     
+    updateActivatablePowers() {
+        this.activatablePowers = [];
+        
+        // Lista de poderes que podem ser ativados
+        const powerIds = ['super_magnet', 'paddle_dash', 'charged_shot', 'safety_net', 'effect_activator'];
+        
+        powerIds.forEach(powerId => {
+            if (this.hasUpgrade(powerId)) {
+                this.activatablePowers.push(powerId);
+            }
+        });
+        
+        // Ajustar índice selecionado se necessário
+        if (this.selectedPowerIndex >= this.activatablePowers.length) {
+            this.selectedPowerIndex = Math.max(0, this.activatablePowers.length - 1);
+        }
+    }
+    
+    selectNextPower() {
+        if (this.activatablePowers.length > 0) {
+            this.selectedPowerIndex = (this.selectedPowerIndex + 1) % this.activatablePowers.length;
+            this.updatePowerSelectionUI();
+        }
+    }
+    
+    selectPreviousPower() {
+        if (this.activatablePowers.length > 0) {
+            this.selectedPowerIndex = this.selectedPowerIndex === 0 
+                ? this.activatablePowers.length - 1 
+                : this.selectedPowerIndex - 1;
+            this.updatePowerSelectionUI();
+        }
+    }
+    
+    activateSelectedUpgrade() {
+        if (this.activatablePowers.length > 0) {
+            const selectedPower = this.activatablePowers[this.selectedPowerIndex];
+            this.activateSpecificUpgrade(selectedPower);
+        }
+    }
+    
+    activateSpecificUpgrade(powerId) {
+        switch (powerId) {
+            case 'super_magnet':
+                if (!this.activeUpgradeEffects.superMagnet.active && this.activeUpgradeEffects.superMagnet.timer <= 0) {
+                    this.activeUpgradeEffects.superMagnet.active = true;
+                    this.activeUpgradeEffects.superMagnet.timer = this.activeUpgradeEffects.superMagnet.duration;
+                    this.createParticles(this.paddle.x + this.paddle.width / 2, this.paddle.y, '#3498db');
+                }
+                break;
+                
+            case 'paddle_dash':
+                if (!this.activeUpgradeEffects.paddleDash.active && this.activeUpgradeEffects.paddleDash.timer <= 0) {
+                    this.activeUpgradeEffects.paddleDash.active = true;
+                    this.activeUpgradeEffects.paddleDash.timer = this.activeUpgradeEffects.paddleDash.duration;
+                    this.createParticles(this.paddle.x + this.paddle.width / 2, this.paddle.y, '#f1c40f');
+                }
+                break;
+                
+            case 'charged_shot':
+                if (!this.activeUpgradeEffects.chargedShot.charging) {
+                    this.activeUpgradeEffects.chargedShot.charging = true;
+                    this.activeUpgradeEffects.chargedShot.chargeLevel = 0;
+                }
+                break;
+                
+            case 'safety_net':
+                if (!this.activeUpgradeEffects.safetyNet.active && this.activeUpgradeEffects.safetyNet.timer <= 0) {
+                    this.activeUpgradeEffects.safetyNet.active = true;
+                    this.activeUpgradeEffects.safetyNet.timer = this.activeUpgradeEffects.safetyNet.duration;
+                    this.createParticles(this.width / 2, this.height - 20, '#2ecc71');
+                }
+                break;
+                
+            case 'effect_activator':
+                if (!this.activeUpgradeEffects.effectActivator.active) {
+                    this.activeUpgradeEffects.effectActivator.active = true;
+                    this.activeUpgradeEffects.effectActivator.timer = this.activeUpgradeEffects.effectActivator.duration;
+                    // Ativar efeito aleatório
+                    const effects = ['yellow', 'green', 'purple', 'gray'];
+                    const randomEffect = effects[Math.floor(Math.random() * effects.length)];
+                    this.applyBrickEffect(randomEffect);
+                }
+                break;
+        }
+    }
+    
     activateUpgrade() {
         // Super Ímã
-        if (this.hasUpgrade('super_magnet') && !this.activeUpgradeEffects.superMagnet.active) {
+        if (this.hasUpgrade('super_magnet') && !this.activeUpgradeEffects.superMagnet.active && this.activeUpgradeEffects.superMagnet.timer <= 0) {
             this.activeUpgradeEffects.superMagnet.active = true;
             this.activeUpgradeEffects.superMagnet.timer = this.activeUpgradeEffects.superMagnet.duration;
             this.createParticles(this.paddle.x + this.paddle.width / 2, this.paddle.y, '#3498db');
@@ -1036,7 +1158,7 @@ class Game {
         }
         
         // Rede de Segurança
-        if (this.hasUpgrade('safety_net') && !this.activeUpgradeEffects.safetyNet.active) {
+        if (this.hasUpgrade('safety_net') && !this.activeUpgradeEffects.safetyNet.active && this.activeUpgradeEffects.safetyNet.timer <= 0) {
             this.activeUpgradeEffects.safetyNet.active = true;
             this.activeUpgradeEffects.safetyNet.timer = this.activeUpgradeEffects.safetyNet.duration;
             this.createParticles(this.width / 2, this.height - 20, '#2ecc71');
@@ -1346,7 +1468,7 @@ class Game {
                 // Invisibilidade - só aplica se não estiver já ativo
                 if (!this.ballEffects.invisible) {
                     this.ballEffects.invisible = true;
-                    this.ballEffects.invisibleTimer = 120; // 2 segundos a 60fps
+                    this.ballEffects.invisibleTimer = 60;
                     this.ballEffects.invisibleCycle = 1; // Começar invisível
                 }
                 break;
@@ -1358,7 +1480,7 @@ class Game {
             'blue': 1,
             'yellow': 3,
             'green': 1,
-            'purple': 3, // Aumentado de 1 para 3 moedas
+            'purple': 7,
             'gray': 3,
             'red': 10
         };
@@ -1395,16 +1517,16 @@ class Game {
             this.ballEffects.invisibleTimer--;
             
             if (this.ballEffects.invisibleCycle === 1) {
-                // Fase invisível (2 segundos)
+                // Fase invisível (1 segundo)
                 if (this.ballEffects.invisibleTimer <= 0) {
                     this.ballEffects.invisibleCycle = 0; // Mudar para visível
-                    this.ballEffects.invisibleTimer = 120; // 2 segundos visível
+                    this.ballEffects.invisibleTimer = 60;
                 }
             } else {
-                // Fase visível (2 segundos)
+                // Fase visível (1 segundo)
                 if (this.ballEffects.invisibleTimer <= 0) {
                     this.ballEffects.invisibleCycle = 1; // Mudar para invisível
-                    this.ballEffects.invisibleTimer = 120; // 2 segundos invisível
+                    this.ballEffects.invisibleTimer = 60;
                 }
             }
             
@@ -1435,9 +1557,9 @@ class Game {
         // Perder 10 moedas ao perder vida
         this.money = Math.max(0, this.money - 10);
         
-        // Seguro de Vida - ganhar 20 moedas ao invés de perder
+        // Seguro de Vida - ganhar 100 moedas ao invés de perder
         if (this.hasUpgrade('life_insurance')) {
-            this.money += 20;
+            this.money += 100;
         }
         
         this.updateUI();
@@ -1456,7 +1578,10 @@ class Game {
                 trail: [],
                 attached: true // Nova bolinha presa à plataforma
             }];
+            // Resetar efeitos ao perder vida (exceto speedMultiplier do bloco vermelho)
+            const currentSpeedMultiplier = this.ballEffects.speedMultiplier;
             this.resetBallEffects();
+            this.ballEffects.speedMultiplier = currentSpeedMultiplier;
         }
     }
     
@@ -1498,8 +1623,16 @@ class Game {
         const availableUpgrades = this.getAvailableUpgrades();
         const selectedUpgrades = [];
         
-        // Gerar 3 upgrades aleatórios
-        for (let i = 0; i < 3; i++) {
+        // Verificar se há upgrades suficientes
+        if (availableUpgrades.length === 0) {
+            // Se não há upgrades disponíveis, mostrar mensagem
+            upgradesGrid.innerHTML = '<div class="no-upgrades">Todos os upgrades foram comprados!</div>';
+            return;
+        }
+        
+        // Gerar até 3 upgrades aleatórios (ou menos se não houver suficientes)
+        const maxUpgrades = Math.min(3, availableUpgrades.length);
+        for (let i = 0; i < maxUpgrades; i++) {
             const randomIndex = Math.floor(Math.random() * availableUpgrades.length);
             const upgrade = availableUpgrades[randomIndex];
             selectedUpgrades.push(upgrade);
@@ -1525,8 +1658,8 @@ class Game {
     }
     
     getAvailableUpgrades() {
-        // Lista completa de todos os 25 upgrades
-        return [
+        // Lista completa de todos os upgrades
+        const allUpgrades = [
             // Upgrades de Plataforma (1-7)
             {
                 id: 'wide_paddle',
@@ -1759,6 +1892,9 @@ class Game {
                 icon: this.getUpgradeIcon('money_saver')
             }
         ];
+        
+        // Filtrar upgrades já comprados
+        return allUpgrades.filter(upgrade => !this.hasUpgrade(upgrade.id));
     }
     
     selectUpgrade(upgrade, cardElement) {
@@ -1833,7 +1969,7 @@ class Game {
     
     continueToNextPhase() {
         this.currentPhase++;
-        this.resetBallEffects();
+        this.resetBallEffects(); // Resetar todos os efeitos para nova fase
         this.ballHitCount = 0; // Resetar contador da Bolinha Prima
         
         // Verificar se comprou algo na loja
@@ -1892,6 +2028,233 @@ class Game {
                 primeCounter.style.display = 'none';
             }
         }
+        
+        // Atualizar interface de poderes
+        this.updatePowersUI();
+        
+        // Atualizar lista de poderes ativáveis e interface de seleção
+        this.updateActivatablePowers();
+        this.updatePowerSelectionUI();
+    }
+    
+    updatePowersUI() {
+        const powersContainer = document.getElementById('powersContainer');
+        if (!powersContainer) return;
+        
+        // Só recriar a interface se os upgrades mudaram
+        if (this.lastUpgradesCount !== this.activeUpgrades.length) {
+            this.lastUpgradesCount = this.activeUpgrades.length;
+            this.createPowersInterface();
+        }
+        
+        // Atualizar estados dos poderes
+        this.updatePowerStates();
+    }
+    
+    createPowersInterface() {
+        const powersContainer = document.getElementById('powersContainer');
+        if (!powersContainer) return;
+        
+        // Limpar container
+        powersContainer.innerHTML = '';
+        
+        // Mostrar TODOS os upgrades comprados
+        this.activeUpgrades.forEach(upgrade => {
+            const powerItem = document.createElement('div');
+            powerItem.className = 'power-item';
+            powerItem.id = `power-${upgrade.id}`;
+            
+            // Adicionar ícone
+            const icon = document.createElement('div');
+            icon.className = 'power-icon';
+            icon.innerHTML = this.getUpgradeIcon(upgrade.id);
+            powerItem.appendChild(icon);
+            
+            // Adicionar cooldown apenas se o upgrade tiver cooldown
+            if (this.hasCooldown(upgrade.id)) {
+                const cooldown = document.createElement('div');
+                cooldown.className = 'power-cooldown';
+                cooldown.id = `cooldown-${upgrade.id}`;
+                powerItem.appendChild(cooldown);
+            }
+            
+            powersContainer.appendChild(powerItem);
+        });
+    }
+    
+    hasCooldown(upgradeId) {
+        // Lista de upgrades que têm cooldown
+        const upgradesWithCooldown = [
+            'super_magnet',
+            'paddle_dash', 
+            'charged_shot',
+            'safety_net',
+            'effect_activator'
+        ];
+        return upgradesWithCooldown.includes(upgradeId);
+    }
+    
+    updatePowerStates() {
+        // Atualizar apenas upgrades que têm cooldown
+        const upgradesWithCooldown = [
+            'super_magnet',
+            'paddle_dash', 
+            'charged_shot',
+            'safety_net',
+            'effect_activator'
+        ];
+        
+        upgradesWithCooldown.forEach(upgradeId => {
+            if (this.hasUpgrade(upgradeId)) {
+                const powerItem = document.getElementById(`power-${upgradeId}`);
+                const cooldownElement = document.getElementById(`cooldown-${upgradeId}`);
+                
+                if (powerItem && cooldownElement) {
+                    this.updateSinglePowerState(upgradeId, powerItem, cooldownElement);
+                }
+            }
+        });
+    }
+    
+    updateSinglePowerState(upgradeId, powerItem, cooldownElement) {
+        switch (upgradeId) {
+            case 'super_magnet':
+                const superMagnetEffect = this.activeUpgradeEffects.superMagnet;
+                if (superMagnetEffect.active) {
+                    powerItem.className = 'power-item active';
+                    cooldownElement.textContent = 'ATIVO';
+                    cooldownElement.className = 'power-cooldown ready';
+                } else if (superMagnetEffect.timer > 0) {
+                    powerItem.className = 'power-item on-cooldown';
+                    const seconds = Math.ceil(superMagnetEffect.timer / 60);
+                    cooldownElement.textContent = `${seconds}s`;
+                    cooldownElement.className = 'power-cooldown';
+                } else {
+                    powerItem.className = 'power-item';
+                    cooldownElement.textContent = 'PRONTO';
+                    cooldownElement.className = 'power-cooldown ready';
+                }
+                break;
+                
+            case 'paddle_dash':
+                const dashEffect = this.activeUpgradeEffects.paddleDash;
+                if (dashEffect.active) {
+                    powerItem.className = 'power-item active';
+                    const seconds = Math.ceil(dashEffect.timer / 60);
+                    cooldownElement.textContent = `${seconds}s`;
+                    cooldownElement.className = 'power-cooldown ready';
+                } else if (dashEffect.timer > 0) {
+                    powerItem.className = 'power-item on-cooldown';
+                    const seconds = Math.ceil(dashEffect.timer / 60);
+                    cooldownElement.textContent = `${seconds}s`;
+                    cooldownElement.className = 'power-cooldown';
+                } else {
+                    powerItem.className = 'power-item';
+                    cooldownElement.textContent = 'PRONTO';
+                    cooldownElement.className = 'power-cooldown ready';
+                }
+                break;
+                
+            case 'charged_shot':
+                const chargedEffect = this.activeUpgradeEffects.chargedShot;
+                if (chargedEffect.charging) {
+                    powerItem.className = 'power-item active';
+                    const charge = Math.ceil((chargedEffect.chargeLevel / chargedEffect.maxCharge) * 100);
+                    cooldownElement.textContent = `${charge}%`;
+                    cooldownElement.className = 'power-cooldown ready';
+                } else {
+                    powerItem.className = 'power-item';
+                    cooldownElement.textContent = 'PRONTO';
+                    cooldownElement.className = 'power-cooldown ready';
+                }
+                break;
+                
+            case 'safety_net':
+                const safetyEffect = this.activeUpgradeEffects.safetyNet;
+                if (safetyEffect.active) {
+                    powerItem.className = 'power-item active';
+                    const seconds = Math.ceil(safetyEffect.timer / 60);
+                    cooldownElement.textContent = `${seconds}s`;
+                    cooldownElement.className = 'power-cooldown ready';
+                } else if (safetyEffect.timer > 0) {
+                    powerItem.className = 'power-item on-cooldown';
+                    const seconds = Math.ceil(safetyEffect.timer / 60);
+                    cooldownElement.textContent = `${seconds}s`;
+                    cooldownElement.className = 'power-cooldown';
+                } else {
+                    powerItem.className = 'power-item';
+                    cooldownElement.textContent = 'PRONTO';
+                    cooldownElement.className = 'power-cooldown ready';
+                }
+                break;
+                
+            case 'effect_activator':
+                const activatorEffect = this.activeUpgradeEffects.effectActivator;
+                if (activatorEffect.active) {
+                    powerItem.className = 'power-item active';
+                    const seconds = Math.ceil(activatorEffect.timer / 60);
+                    cooldownElement.textContent = `${seconds}s`;
+                    cooldownElement.className = 'power-cooldown ready';
+                } else {
+                    powerItem.className = 'power-item';
+                    cooldownElement.textContent = 'PRONTO';
+                    cooldownElement.className = 'power-cooldown ready';
+                }
+                break;
+        }
+    }
+    
+    updatePowerSelectionUI() {
+        const powerSelectionContainer = document.getElementById('powerSelectionContainer');
+        if (!powerSelectionContainer) return;
+        
+        // Limpar container
+        powerSelectionContainer.innerHTML = '';
+        
+        if (this.activatablePowers.length === 0) {
+            powerSelectionContainer.innerHTML = '<div class="no-powers">Nenhum poder ativável</div>';
+            return;
+        }
+        
+        // Criar interface de seleção
+        const title = document.createElement('div');
+        title.className = 'power-selection-title';
+        title.textContent = 'Poderes Ativáveis';
+        powerSelectionContainer.appendChild(title);
+        
+        this.activatablePowers.forEach((powerId, index) => {
+            const powerItem = document.createElement('div');
+            powerItem.className = `power-selection-item ${index === this.selectedPowerIndex ? 'selected' : ''}`;
+            
+            const icon = document.createElement('div');
+            icon.className = 'power-selection-icon';
+            icon.innerHTML = this.getUpgradeIcon(powerId);
+            powerItem.appendChild(icon);
+            
+            const name = document.createElement('div');
+            name.className = 'power-selection-name';
+            name.textContent = this.getUpgradeName(powerId);
+            powerItem.appendChild(name);
+            
+            powerSelectionContainer.appendChild(powerItem);
+        });
+        
+        // Adicionar instruções
+        const instructions = document.createElement('div');
+        instructions.className = 'power-selection-instructions';
+        instructions.innerHTML = 'W/S ou ↑/↓ para selecionar<br>ESPAÇO para ativar';
+        powerSelectionContainer.appendChild(instructions);
+    }
+    
+    getUpgradeName(upgradeId) {
+        const names = {
+            'super_magnet': 'Super Ímã',
+            'paddle_dash': 'Dash',
+            'charged_shot': 'Tiro Carregado',
+            'safety_net': 'Rede de Segurança',
+            'effect_activator': 'Ativador'
+        };
+        return names[upgradeId] || upgradeId;
     }
     
     render() {

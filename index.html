@@ -25,8 +25,12 @@
                             <div class="control-text">Controlar a plataforma</div>
                         </div>
                         <div class="control-item">
+                            <div class="control-icon">W/S ou ↑/↓</div>
+                            <div class="control-text">Selecionar poder</div>
+                        </div>
+                        <div class="control-item">
                             <div class="control-icon">⎵ Espaço</div>
-                            <div class="control-text">Ativar poderes especiais</div>
+                            <div class="control-text">Ativar poder selecionado</div>
                         </div>
                         <div class="control-item">
                             <div class="control-icon">P</div>
@@ -75,28 +79,46 @@
 
         <!-- Tela do Jogo -->
         <div id="gameScreen" class="screen">
-            <canvas id="gameCanvas" width="800" height="600"></canvas>
-            <div id="gameUI">
-                <div class="ui-panel">
-                    <div class="ui-item">
-                        <span class="ui-label">FASE:</span>
-                        <span id="currentPhase">1</span>
+            <div class="game-container">
+                <!-- Canvas do Jogo -->
+                <div class="canvas-container">
+                    <canvas id="gameCanvas" width="800" height="600"></canvas>
+                    <div id="powersUI">
+                        <div id="powersContainer"></div>
                     </div>
-                    <div class="ui-item">
-                        <span class="ui-label">RECORDE:</span>
-                        <span id="highScore">1</span>
+                </div>
+                
+                <!-- Container de UI -->
+                <div class="ui-container">
+                    <!-- Interface do Jogo -->
+                    <div id="gameUI">
+                        <div class="ui-panel">
+                            <div class="ui-item">
+                                <span class="ui-label">FASE:</span>
+                                <span id="currentPhase">1</span>
+                            </div>
+                            <div class="ui-item">
+                                <span class="ui-label">RECORDE:</span>
+                                <span id="highScore">1</span>
+                            </div>
+                            <div class="ui-item">
+                                <span class="ui-label">DINHEIRO:</span>
+                                <span id="money">0</span> 🪙
+                            </div>
+                            <div class="ui-item">
+                                <span class="ui-label">VIDAS:</span>
+                                <span id="lives">♥️♥️♥️</span>
+                            </div>
+                            <div class="ui-item" id="primeCounter" style="display: none;">
+                                <span class="ui-label">BATIDAS:</span>
+                                <span id="hitCount">0</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="ui-item">
-                        <span class="ui-label">DINHEIRO:</span>
-                        <span id="money">0</span> 🪙
-                    </div>
-                    <div class="ui-item">
-                        <span class="ui-label">VIDAS:</span>
-                        <span id="lives">♥️♥️♥️</span>
-                    </div>
-                    <div class="ui-item" id="primeCounter" style="display: none;">
-                        <span class="ui-label">BATIDAS:</span>
-                        <span id="hitCount">0</span>
+                    
+                    <!-- Interface de Seleção de Poderes -->
+                    <div id="powerSelectionUI">
+                        <div id="powerSelectionContainer"></div>
                     </div>
                 </div>
             </div>
@@ -134,8 +156,12 @@
                                 <div class="control-text">Controlar a plataforma</div>
                             </div>
                             <div class="control-item">
+                                <div class="control-icon">W/S ou ↑/↓</div>
+                                <div class="control-text">Selecionar poder</div>
+                            </div>
+                            <div class="control-item">
                                 <div class="control-icon">⎵ Espaço</div>
-                                <div class="control-text">Ativar poderes especiais</div>
+                                <div class="control-text">Ativar poder selecionado</div>
                             </div>
                             <div class="control-item">
                                 <div class="control-icon">P</div>
