@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brick Rogue: O Desafio dos Efeitos</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="gameContainer">
+        <!-- Tela Inicial -->
+        <div id="mainMenu" class="screen active">
+            <div class="title-container">
+                <h1 class="game-title">Brick Rogue</h1>
+                <h2 class="game-subtitle">O Desafio dos Efeitos</h2>
+            </div>
+            
+            <div class="controls-section">
+                <h3>Controles</h3>
+                <div class="controls-grid">
+                    <div class="control-item">
+                        <div class="control-icon">A/D ou ← →</div>
+                        <div class="control-text">Controlar a plataforma</div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-icon">⎵ Espaço</div>
+                        <div class="control-text">Ativar poderes especiais</div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-icon">🖱️ Clique</div>
+                        <div class="control-text">Navegar / Comprar upgrades</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="startButton" class="start-button">INICIAR</button>
+        </div>
+
+        <!-- Tela do Jogo -->
+        <div id="gameScreen" class="screen">
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+            <div id="gameUI">
+                <div class="ui-panel">
+                    <div class="ui-item">
+                        <span class="ui-label">FASE:</span>
+                        <span id="currentPhase">1</span>
+                    </div>
+                    <div class="ui-item">
+                        <span class="ui-label">RECORDE:</span>
+                        <span id="highScore">1</span>
+                    </div>
+                    <div class="ui-item">
+                        <span class="ui-label">DINHEIRO:</span>
+                        <span id="money">0</span> 🪙
+                    </div>
+                    <div class="ui-item">
+                        <span class="ui-label">VIDAS:</span>
+                        <span id="lives">♥️♥️♥️</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tela de Upgrades -->
+        <div id="upgradeScreen" class="screen">
+            <div class="upgrade-container">
+                <h2>Escolha seus Upgrades</h2>
+                <p class="upgrade-subtitle">Você pode comprar até 2 upgrades</p>
+                <div class="upgrades-grid" id="upgradesGrid">
+                    <!-- Upgrades serão gerados dinamicamente -->
+                </div>
+                <div class="upgrade-actions">
+                    <button id="continueButton" class="continue-button">Continuar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tela de Game Over -->
+        <div id="gameOverScreen" class="screen">
+            <div class="game-over-container">
+                <h2>Game Over</h2>
+                <p>Você chegou até a fase <span id="finalPhase">1</span></p>
+                <p>Seu recorde: <span id="finalRecord">1</span></p>
+                <button id="restartButton" class="restart-button">Jogar Novamente</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
