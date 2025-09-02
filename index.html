@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brick Rogue: O Desafio dos Efeitos</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -63,7 +64,7 @@
                         </div>
                         <div class="brick-effect-item">
                             <div class="brick-block red"></div>
-                            <div class="brick-text">Objetivo da Fase</div>
+                            <div class="brick-text">Objetivo da Fase + Acelera 2% por hit</div>
                         </div>
                     </div>
                 </div>
@@ -92,6 +93,10 @@
                     <div class="ui-item">
                         <span class="ui-label">VIDAS:</span>
                         <span id="lives">♥️♥️♥️</span>
+                    </div>
+                    <div class="ui-item" id="primeCounter" style="display: none;">
+                        <span class="ui-label">BATIDAS:</span>
+                        <span id="hitCount">0</span>
                     </div>
                 </div>
             </div>
@@ -168,7 +173,7 @@
                             </div>
                             <div class="brick-effect-item">
                                 <div class="brick-block red"></div>
-                                <div class="brick-text">Objetivo da Fase</div>
+                                <div class="brick-text">Objetivo da Fase + Acelera 2% por hit</div>
                             </div>
                         </div>
                     </div>

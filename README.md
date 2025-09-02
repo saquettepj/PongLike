@@ -35,13 +35,13 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 | 🟢 Verde | Inversão Horizontal | 1 🪙 |
 | 🟣 Roxo | Zigue-zague | 3 🪙 |
 | ⚫ Cinza | Invisibilidade (ciclo 2s) | 3 🪙 |
-| 🔴 Vermelho (Núcleo) | Objetivo da Fase | 10 🪙 |
+| 🔴 Vermelho (Núcleo) | Objetivo da Fase + Acelera bolinha 2% por hit | 10 🪙 |
 
 ## ⚡ Sistema Roguelike
 
 ### Upgrades Disponíveis (28 total)
 
-#### 🏓 Upgrades de Plataforma
+#### 🏓 Upgrades de Plataforma (7 total)
 1. **Plataforma Larga** - Aumenta tamanho em 50% (120 🪙)
 2. **Canhões Acoplados** - Atira projéteis ao rebater (100 🪙)
 3. **Super Ímã** - Campo magnético para puxar bolinha (120 🪙)
@@ -50,7 +50,7 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 6. **Reforço** - Plataforma 2x mais alta e destrói bloco de trás (80 🪙)
 7. **Tiro Carregado** - Projétil perfurante (90 🪙)
 
-#### ⚽ Upgrades de Bolinha
+#### ⚽ Upgrades de Bolinha (10 total)
 8. **Bolinha Perfurante** - Quebra tijolos azuis sem mudar direção (80 🪙)
 9. **Campo de Fricção** - Reduz velocidade em 10% (120 🪙)
 10. **Bolinha Fantasma** - Primeira queda passa pela parte inferior (100 🪙)
@@ -60,8 +60,9 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 14. **Ativador de Efeito** - Escolhe efeito ativo (110 🪙)
 15. **Bolinha Espelhada** - Destrói bloco simétrico ao quebrar um (90 🪙)
 16. **Bolinha da Fortuna** - Bolinha dourada que dá +1 moeda por bloco (85 🪙)
+17. **Bolinha Prima** - Destrói bloco aleatório a cada número primo de batidas (70 🪙)
 
-#### 🛡️ Upgrades de Utilidade
+#### 🛡️ Upgrades de Utilidade (6 total)
 17. **Coração Extra** - Vida adicional (100 🪙)
 18. **Rede de Segurança** - Barreira temporária (120 🪙)
 19. **Amuleto da Sorte** - +25% dinheiro (80 🪙)
@@ -69,13 +70,12 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 21. **Reciclagem** - Tijolos azuis podem reaparecer (100 🪙)
 22. **Conversor de Risco** - Mais dinheiro com efeitos negativos (120 🪙)
 
-#### 🔥 Upgrades "Quebra-Regras"
+#### 🔥 Upgrades "Quebra-Regras" (5 total)
 23. **Dano Estrutural** - Primeira batida no núcleo conta como duas (80 🪙)
 24. **Visão de Calor** - Rastro térmico mais visível (80 🪙)
 25. **Reversão Controlada** - Inversão só acontece 50% das vezes (100 🪙)
-26. **Atrator de Núcleo** - Atração magnética para o núcleo (70 🪙)
-27. **Investidor** - Sacrifica vida por 50 moedas (0 🪙)
-28. **Poupança** - Mantém até 50 moedas para próxima fase (80 🪙)
+26. **Investidor** - Sacrifica vida por 50 moedas (0 🪙)
+27. **Poupança** - Mantém até 50 moedas para próxima fase (80 🪙)
 
 ## 🎮 Regras do Jogo
 
@@ -90,6 +90,7 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 - **Roxo**: Zigue-zague só ativa se não estiver já ativo
 - **Cinza**: Invisibilidade só ativa se não estiver já ativo
 - **Verde**: Inversão sempre alterna (pode ser aplicado múltiplas vezes)
+- **Vermelho (Núcleo)**: Cooldown de 1 segundo entre danos + acelera bolinha 2% por hit
 
 ## 🚀 Como Jogar
 
@@ -100,6 +101,9 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 5. **Compre upgrades** estratégicos entre as fases
 6. **Pause o jogo** com a tecla P quando necessário
 7. **Sobreviva** o máximo de fases possível!
+
+### 💡 Dica Estratégica
+- **Ponto Fraco**: Os blocos são mais vulneráveis quando atingidos nas quinas!
 
 ## 🛠️ Tecnologias Utilizadas
 

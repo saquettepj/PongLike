@@ -16,6 +16,7 @@ class Game {
         this.lives = 3;
         this.gameRunning = false;
         this.gamePaused = false;
+        this.ballHitCount = 0; // Contador de batidas da bolinha para Bolinha Prima
         this.gameTime = 0; // Tempo de jogo em segundos
         this.lastMultiBallTime = 0; // Último tempo que uma bola foi adicionada
         
@@ -118,10 +119,23 @@ class Game {
         };
     }
     
+
+    
     playSound(soundName) {
         if (this.sounds[soundName]) {
             this.sounds[soundName]();
         }
+    }
+    
+    isPrime(num) {
+        if (num < 2) return false;
+        if (num === 2) return true;
+        if (num % 2 === 0) return false;
+        
+        for (let i = 3; i <= Math.sqrt(num); i += 2) {
+            if (num % i === 0) return false;
+        }
+        return true;
     }
     
     init() {
@@ -299,7 +313,8 @@ class Game {
                     color: color,
                     destroyed: false,
                     hits: color === 'red' ? 6 : 1,
-                    maxHits: color === 'red' ? 6 : 1
+                    maxHits: color === 'red' ? 6 : 1,
+                    lastHitTime: null // Para cooldown do bloco vermelho
                 });
             }
         }
@@ -513,23 +528,7 @@ class Game {
                 vy += Math.cos(this.ballEffects.zigzagTimer * 0.3) * 0.3; // Reduzido de 1 para 0.5
             }
             
-            // Atrator de Núcleo - atração magnética para o tijolo núcleo
-            if (this.hasUpgrade('core_attractor')) {
-                const coreBrick = this.bricks.find(brick => brick.color === 'red' && !brick.destroyed);
-                if (coreBrick) {
-                    const coreX = coreBrick.x + coreBrick.width / 2;
-                    const coreY = coreBrick.y + coreBrick.height / 2;
-                    const dx = coreX - ball.x;
-                    const dy = coreY - ball.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (distance > 0) {
-                        const attraction = 0.1; // Força de atração
-                        vx += (dx / distance) * attraction;
-                        vy += (dy / distance) * attraction;
-                    }
-                }
-            }
+
             
             // Atualizar posição
             ball.x += vx;
@@ -685,10 +684,35 @@ class Game {
     }
     
     checkBallBrickCollision(ball, brick) {
-        return ball.x + ball.radius > brick.x &&
-               ball.x - ball.radius < brick.x + brick.width &&
-               ball.y + ball.radius > brick.y &&
-               ball.y - ball.radius < brick.y + brick.height;
+        // Verificar colisão básica
+        const isColliding = ball.x + ball.radius > brick.x &&
+                           ball.x - ball.radius < brick.x + brick.width &&
+                           ball.y + ball.radius > brick.y &&
+                           ball.y - ball.radius < brick.y + brick.height;
+        
+        if (!isColliding) return false;
+        
+        // Verificar se a bolinha está se aproximando do tijolo
+        // Calcular a distância anterior da bolinha ao tijolo
+        const prevBallX = ball.x - ball.vx;
+        const prevBallY = ball.y - ball.vy;
+        
+        const prevDistance = Math.min(
+            Math.abs(prevBallX - brick.x),
+            Math.abs(prevBallX - (brick.x + brick.width)),
+            Math.abs(prevBallY - brick.y),
+            Math.abs(prevBallY - (brick.y + brick.height))
+        );
+        
+        const currentDistance = Math.min(
+            Math.abs(ball.x - brick.x),
+            Math.abs(ball.x - (brick.x + brick.width)),
+            Math.abs(ball.y - brick.y),
+            Math.abs(ball.y - (brick.y + brick.height))
+        );
+        
+        // A bolinha está se aproximando se a distância atual é menor que a anterior
+        return currentDistance < prevDistance;
     }
     
     handlePaddleCollision(ball) {
@@ -742,9 +766,26 @@ class Game {
     }
     
     handleBrickCollision(ball, brick) {
+        // Incrementar contador de batidas para Bolinha Prima
+        this.ballHitCount++;
+        
+        // Atualizar UI se Bolinha Prima estiver ativa
+        if (this.hasUpgrade('prime_ball')) {
+            this.updateUI();
+        }
+        
         // Verificar upgrades especiais
         let shouldDestroy = true;
         let extraDamage = 0;
+        
+        // Cooldown para bloco vermelho - evitar múltiplos danos em sequência
+        if (brick.color === 'red') {
+            const currentTime = Date.now();
+            if (brick.lastHitTime && (currentTime - brick.lastHitTime) < 1000) {
+                return; // Ignorar colisão se foi há menos de 1 segundo
+            }
+            brick.lastHitTime = currentTime;
+        }
         
         // Dano Estrutural - primeira batida no núcleo conta como duas
         if (brick.color === 'red' && this.hasUpgrade('structural_damage') && brick.hits === brick.maxHits) {
@@ -768,8 +809,27 @@ class Game {
             this.applyBrickEffect(brick.color);
         }
         
+        // Bolinha Prima - destruir bloco aleatório quando contador é primo
+        if (this.hasUpgrade('prime_ball') && this.isPrime(this.ballHitCount)) {
+            const availableBricks = this.bricks.filter(b => !b.destroyed && b.color !== 'red');
+            if (availableBricks.length > 0) {
+                const randomBrick = availableBricks[Math.floor(Math.random() * availableBricks.length)];
+                randomBrick.destroyed = true;
+                this.money += this.getBrickReward(randomBrick.color);
+                this.createParticles(randomBrick.x + randomBrick.width / 2, randomBrick.y + randomBrick.height / 2, this.getBrickColorValue(randomBrick.color));
+            }
+        }
+        
         // Quebrar tijolo
         brick.hits -= (1 + extraDamage);
+        
+        // Efeito especial do bloco vermelho - aumentar velocidade da bolinha
+        if (brick.color === 'red') {
+            this.ballEffects.speedMultiplier += 0.02; // Aumentar velocidade em 2%
+            // Criar partículas especiais para indicar o efeito
+            this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff0000');
+        }
+        
         if (brick.hits <= 0) {
             brick.destroyed = true;
             let reward = this.getBrickReward(brick.color);
@@ -806,8 +866,23 @@ class Game {
             }
         }
         
-        // Reverter direção da bolinha
-        ball.vy = -ball.vy;
+        // Determinar de qual lado a bolinha bateu e reverter direção apropriada
+        const ballPrevX = ball.x - ball.vx;
+        const ballPrevY = ball.y - ball.vy;
+        
+        // Calcular qual lado do tijolo foi atingido baseado na posição anterior
+        const hitLeft = ballPrevX + ball.radius <= brick.x && ball.x + ball.radius > brick.x;
+        const hitRight = ballPrevX - ball.radius >= brick.x + brick.width && ball.x - ball.radius < brick.x + brick.width;
+        const hitTop = ballPrevY + ball.radius <= brick.y && ball.y + ball.radius > brick.y;
+        const hitBottom = ballPrevY - ball.radius >= brick.y + brick.height && ball.y - ball.radius < brick.y + brick.height;
+        
+        // Reverter direção baseado no lado atingido
+        if (hitLeft || hitRight) {
+            ball.vx = -ball.vx; // Inverter direção horizontal
+        }
+        if (hitTop || hitBottom) {
+            ball.vy = -ball.vy; // Inverter direção vertical
+        }
         
         // Bolinha Explosiva - explodir ao atingir tijolo
         if (ball.explosive) {
@@ -1210,13 +1285,17 @@ class Game {
                 <circle cx="16" cy="16" r="2" fill="#2ecc71"/>
             </svg>`,
             
-            'core_attractor': `<svg width="32" height="32" viewBox="0 0 32 32">
-                <circle cx="16" cy="16" r="6" fill="#fdcb6e" stroke="#ff6b35" stroke-width="2"/>
-                <rect x="14" y="6" width="4" height="2" fill="#e74c3c"/>
-                <rect x="14" y="24" width="4" height="2" fill="#e74c3c"/>
-                <rect x="6" y="14" width="2" height="4" fill="#e74c3c"/>
-                <rect x="24" y="14" width="2" height="4" fill="#e74c3c"/>
-                <path d="M16 8 L16 6 M16 24 L16 26 M8 16 L6 16 M24 16 L26 16" stroke="#e74c3c" stroke-width="1"/>
+            'prime_ball': `<svg width="32" height="32" viewBox="0 0 32 32">
+                <circle cx="16" cy="16" r="8" fill="#fdcb6e" stroke="#ff6b35" stroke-width="2"/>
+                <text x="16" y="20" text-anchor="middle" font-family="monospace" font-size="10" font-weight="bold" fill="#e74c3c">P</text>
+                <circle cx="12" cy="12" r="1.5" fill="#2ecc71"/>
+                <circle cx="20" cy="12" r="1.5" fill="#2ecc71"/>
+                <circle cx="12" cy="20" r="1.5" fill="#2ecc71"/>
+                <circle cx="20" cy="20" r="1.5" fill="#2ecc71"/>
+                <circle cx="16" cy="8" r="1" fill="#e74c3c"/>
+                <circle cx="16" cy="24" r="1" fill="#e74c3c"/>
+                <circle cx="8" cy="16" r="1" fill="#e74c3c"/>
+                <circle cx="24" cy="16" r="1" fill="#e74c3c"/>
             </svg>`,
             
             'investor': `<svg width="32" height="32" viewBox="0 0 32 32">
@@ -1656,12 +1735,12 @@ class Game {
                 icon: this.getUpgradeIcon('controlled_reversal')
             },
             {
-                id: 'core_attractor',
-                name: 'Atrator de Núcleo',
-                description: 'A bolinha é levemente atraída magneticamente em direção ao Tijolo Núcleo',
+                id: 'prime_ball',
+                name: 'Bolinha Prima',
+                description: 'A cada número primo de batidas, destrói um bloco aleatório (não vermelho)',
                 price: 70,
                 type: 'special',
-                icon: this.getUpgradeIcon('core_attractor')
+                icon: this.getUpgradeIcon('prime_ball')
             },
             {
                 id: 'investor',
@@ -1726,8 +1805,8 @@ class Game {
                 case 'controlled_reversal':
                     // Implementar reversão controlada
                     break;
-                case 'core_attractor':
-                    // Implementar atração magnética
+                case 'prime_ball':
+                    // Bolinha Prima - contador é gerenciado em handleBrickCollision
                     break;
             }
         });
@@ -1755,6 +1834,7 @@ class Game {
     continueToNextPhase() {
         this.currentPhase++;
         this.resetBallEffects();
+        this.ballHitCount = 0; // Resetar contador da Bolinha Prima
         
         // Verificar se comprou algo na loja
         const moneyBeforeShop = this.moneyBeforeShop || 0;
@@ -1778,7 +1858,7 @@ class Game {
         this.moneyBeforeShop = null;
         
         this.initGameObjects();
-        this.applyUpgrades(); // Aplicar upgrades antes de iniciar a fase
+        this.applyUpgrades(); // Aplicar upgrades após inicializar objetos
         this.generateBricks();
         this.gameRunning = true;
         this.showScreen('gameScreen');
@@ -1800,6 +1880,18 @@ class Game {
         // Atualizar vidas
         const livesElement = document.getElementById('lives');
         livesElement.innerHTML = '♥️'.repeat(this.lives);
+        
+        // Atualizar contador da Bolinha Prima
+        const primeCounter = document.getElementById('primeCounter');
+        const hitCountElement = document.getElementById('hitCount');
+        if (primeCounter && hitCountElement) {
+            if (this.hasUpgrade('prime_ball')) {
+                primeCounter.style.display = 'flex';
+                hitCountElement.textContent = this.ballHitCount;
+            } else {
+                primeCounter.style.display = 'none';
+            }
+        }
     }
     
     render() {

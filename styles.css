@@ -194,6 +194,18 @@ body {
     font-weight: bold;
 }
 
+#primeCounter {
+    background: rgba(46, 204, 113, 0.2);
+    border: 1px solid #2ecc71;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
 /* Tela de Upgrades */
 #upgradeScreen {
     background: linear-gradient(135deg, #2c1810, #3d2317);
