@@ -81,7 +81,7 @@ class Game {
         // - Botões para pular fase e adicionar dinheiro
         // - Ferramentas de debug
         // ========================================
-        this.developerMode = true;
+        this.developerMode = false;
         this.gameRunning = false;
         this.gamePaused = false;
         this.ballHitCount = 0; // Contador de batidas da bolinha para Bolinha Prima
@@ -783,8 +783,16 @@ class Game {
                     ball.vx = ball.savedVx;
                     ball.vy = ball.savedVy;
                     ball.timePaused = false;
+                    
+                    // Restaurar efeito zig-zag se estava ativo antes da pausa
+                    if (ball.savedZigzagState) {
+                        this.ballEffects.zigzag = true;
+                        this.ballEffects.zigzagTimer = 0;
+                    }
+                    
                     delete ball.savedVx;
                     delete ball.savedVy;
+                    delete ball.savedZigzagState;
                 }
             }
         });
@@ -1741,6 +1749,14 @@ class Game {
                 
             case 'time_ball':
                 if (this.activeUpgradeEffects.timeBall.timer <= 0) {
+                    // Salvar estado do efeito zig-zag
+                    const wasZigzagActive = this.ballEffects.zigzag;
+                    
+                    // Desativar efeito zig-zag durante a pausa
+                    if (wasZigzagActive) {
+                        this.ballEffects.zigzag = false;
+                    }
+                    
                     // Salvar velocidades atuais das bolinhas
                     this.balls.forEach(ball => {
                         ball.savedVx = ball.vx;
@@ -1749,6 +1765,7 @@ class Game {
                         ball.vy = 0;
                         ball.timePaused = true;
                         ball.timePauseCountdown = 180; // 3 segundos (60 FPS * 3)
+                        ball.savedZigzagState = wasZigzagActive; // Salvar estado do zig-zag
                     });
                     
                     // Iniciar cooldown de 40 segundos
