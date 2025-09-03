@@ -81,7 +81,7 @@ class Game {
         // - Botões para pular fase e adicionar dinheiro
         // - Ferramentas de debug
         // ========================================
-        this.developerMode = false;
+        this.developerMode = true;
         this.gameRunning = false;
         this.gamePaused = false;
         this.ballHitCount = 0; // Contador de batidas da bolinha para Bolinha Prima
@@ -895,9 +895,6 @@ class Game {
         // Tocar som místico
         this.playSound('chaoticMovement');
         
-        // Efeito visual
-        this.createParticles(this.width / 2, this.height / 2, '#ff6b35');
-        
         // Aplicar efeito do bloco roxo (zigue-zague) apenas se não estiver ativo
         if (!this.ballEffects.zigzag) {
             setTimeout(() => {
@@ -1707,9 +1704,6 @@ class Game {
                     const coinsEarned = this.getBrickReward(randomEffect);
                     this.money += coinsEarned;
                     
-                    // Efeito visual das moedas ganhas
-                    this.createParticles(this.width / 2, this.height / 2, '#f1c40f');
-                    
                     this.playSound('effectActivator');
                 }
                 break;
@@ -1807,14 +1801,6 @@ class Game {
             this.createParticles(this.width / 2, this.height - 20, '#2ecc71');
         }
         
-        // Ativador de Efeito
-        if (this.hasUpgrade('effect_activator') && this.activeUpgradeEffects.effectActivator.cooldown <= 0) {
-            this.activeUpgradeEffects.effectActivator.cooldown = 1200; // 20 segundos cooldown
-            // Ativar efeito aleatório
-            const effects = ['yellow', 'green', 'purple', 'gray'];
-            const randomEffect = effects[Math.floor(Math.random() * effects.length)];
-            this.applyBrickEffect(randomEffect);
-        }
     }
     
     fireChargedShot() {
