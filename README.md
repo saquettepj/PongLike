@@ -38,15 +38,15 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 
 ### Mecânicas Especiais
 - **Tijolos Móveis** (Fase 5+): 10% de chance por fileira de se mover horizontalmente
-- **Novos Tijolos** (Fase 2+): Ao acertar o bloco vermelho, gera 2-5 novos tijolos aleatórios
 
 ### Modificadores Aleatórios (Fase 6+)
 A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modificador dura apenas uma fase e é resetado na próxima.
 
-#### 🌪️ Ventos de Oeste
-- **Efeito**: Uma força sutil e constante empurra a bolinha para a direita
-- **Impacto**: Muda a trajetória natural da bolinha, exigindo ajustes na estratégia
-- **Dificuldade**: Média - requer adaptação do timing
+#### 🌪️ Ventos de Leste e Oeste
+- **Efeito**: Uma força sutil e constante empurra a bolinha, alternando entre direita (Oeste) e esquerda (Leste)
+- **Impacto**: Muda a trajetória natural da bolinha, exigindo ajustes constantes na estratégia
+- **Dificuldade**: Média - requer adaptação do timing e antecipação das mudanças
+- **Indicador**: Mostra direção atual (O/E) e tempo restante para mudança (40 segundos)
 
 #### 💰 Mercado Inflacionado
 - **Efeito**: Todos os upgrades na próxima loja custam 30% a mais
@@ -54,9 +54,10 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 - **Dificuldade**: Alta - reduz significativamente o poder de compra
 
 #### 🔴 Pânico Vermelho
-- **Efeito**: O Tijolo Núcleo se move lentamente pela formação
-- **Impacto**: Alvo móvel torna o objetivo mais difícil de atingir
-- **Dificuldade**: Alta - muda completamente a estratégia de ataque
+- **Efeito**: O Tijolo Núcleo se move lentamente pela formação e restaura blocos destruídos
+- **Impacto**: Alvo móvel torna o objetivo mais difícil de atingir + blocos restaurados aumentam a dificuldade
+- **Dificuldade**: Muito Alta - muda completamente a estratégia e adiciona blocos de volta
+- **Restauração**: Quando o bloco vermelho troca de posição, restaura 3-7 blocos destruídos aleatoriamente
 
 #### 🔋 Bateria Fraca
 - **Efeito**: A plataforma do jogador se move 20% mais devagar
@@ -69,10 +70,10 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 - **Dificuldade**: Muito Alta - força o jogador a jogar sem suas vantagens
 
 #### ⏰ Contagem Regressiva
-- **Efeito**: Timer de 220 segundos aparece na tela
+- **Efeito**: Timer de 120 segundos aparece na tela
 - **Impacto**: Se o Tijolo Vermelho não for acertado antes do tempo acabar, o jogador perde uma vida
 - **Dificuldade**: Muito Alta - pressão de tempo constante
-- **Reset**: O contador reseta para 220 segundos se acertar o tijolo vermelho
+- **Reset**: O contador reseta para 120 segundos se acertar o tijolo vermelho ou quando ele troca de posição
 
 ## 🧱 Sistema de Tijolos
 

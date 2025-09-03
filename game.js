@@ -41,7 +41,7 @@ class Game {
 
             glassCoatingChance: 0.0,
             movingBricksChance: 0.0,
-            newBricksOnRedHit: false,
+
             activeModifier: null,
             modifierStartPhase: 0
         };
@@ -61,6 +61,12 @@ class Game {
         this.countdownTimer = 0;
         this.countdownActive = false;
         
+        // Sistema de ventos de leste e oeste
+        this.windDirection = 'O'; // 'O' para Oeste (direita), 'E' para Leste (esquerda)
+        this.windDirectionTimer = 0; // Timer para mudança de direção (40 segundos)
+        this.windEffectTimer = 0; // Timer para efeito de curva
+        this.windCurveSign = 1; // Sinal da curva do vento (inverte ao bater na plataforma)
+        
         // Poderes desativados pelo modificador "Sem Efeitos Bons"
         this.disabledPowers = [];
         
@@ -76,7 +82,7 @@ class Game {
         // - Botões para pular fase e adicionar dinheiro
         // - Ferramentas de debug
         // ========================================
-        this.developerMode = false;
+        this.developerMode = true;
         this.gameRunning = false;
         this.gamePaused = false;
         this.ballHitCount = 0; // Contador de batidas da bolinha para Bolinha Prima
@@ -265,8 +271,13 @@ class Game {
                     // Soltar todas as bolinhas presas
                     attachedBalls.forEach(ball => {
                         ball.attached = false;
-                        ball.vx = (Math.random() - 0.5) * 4;
-                        ball.vy = -this.config.ballSpeed;
+                        
+                        // Escolher um ângulo inicial suave, similar ao cálculo de colisão com a plataforma
+                        // Ângulo entre -45° e 45°
+                        const angle = (Math.random() * (Math.PI / 2)) - (Math.PI / 4);
+                        const baseSpeed = this.config.ballSpeed; // velocidade base; multiplicadores são aplicados no passo de movimento
+                        ball.vx = Math.sin(angle) * baseSpeed;
+                        ball.vy = -Math.abs(Math.cos(angle) * baseSpeed);
                     });
                 } else {
                     // Se não há bolinhas presas, ativar upgrade selecionado
@@ -537,7 +548,6 @@ class Game {
         const difficulty = Math.min(this.currentPhase / 10, 1);
         const adjustedWeights = weights.map((w, i) => {
             if (i === 0) return w * (1 - difficulty * 0.5); // Menos azuis
-
             if (w === 0) return w; // Não multiplicar se a chance for 0
             return w * (1 + difficulty * 0.3); // Mais coloridos
         });
@@ -583,6 +593,7 @@ class Game {
         this.updateUpgradeEffects();
         this.updateMovingBricks();
         this.updateCountdown();
+        this.updateWindTimer();
         this.checkCollisions();
         this.updateBallEffects();
         
@@ -718,10 +729,16 @@ class Game {
                 
                 // Modificador "Pânico Vermelho" - tijolo vermelho se move
                 if (brick.color === 'red' && this.phaseModifiers.redPanic) {
-                    brick.x += 0.3; // Movimento lento
+                    // Inicializar direção de movimento se não existir
+                    if (brick.redPanicDirection === undefined) {
+                        brick.redPanicDirection = 1; // 1 = direita, -1 = esquerda
+                    }
                     
-                    // Verificar limites e inverter
+                    brick.x += brick.redPanicDirection * 0.3; // Movimento lento
+                    
+                    // Verificar limites e inverter direção
                     if (brick.x <= 0 || brick.x + brick.width >= this.width) {
+                        brick.redPanicDirection *= -1; // Inverter direção
                         brick.x = Math.max(0, Math.min(brick.x, this.width - brick.width));
                     }
                 }
@@ -736,7 +753,19 @@ class Game {
             if (this.countdownTimer <= 0) {
                 // Tempo esgotado - perder vida
                 this.loseLife();
-                this.countdownTimer = 220; // Resetar timer para 220 segundos
+                this.countdownTimer = 120; // Resetar timer para 120 segundos
+            }
+        }
+    }
+    
+    updateWindTimer() {
+        if (this.phaseModifiers.westWinds) {
+            this.windDirectionTimer += 1/60; // Incrementar por frame (60 FPS)
+            
+            // Mudar direção a cada 40 segundos
+            if (this.windDirectionTimer >= 40) {
+                this.windDirection = this.windDirection === 'O' ? 'E' : 'O';
+                this.windDirectionTimer = 0; // Resetar timer
             }
         }
     }
@@ -793,6 +822,43 @@ class Game {
         }
     }
     
+    restoreBricksOnRedPanic() {
+        try {
+            // Restaurar 3 a 7 blocos destruídos quando o bloco vermelho troca de posição
+            const numToRestore = Math.floor(Math.random() * 5) + 3; // 3-7 blocos
+            
+            // Encontrar blocos destruídos para restaurar
+            const destroyedBricks = this.bricks.filter(brick => brick && brick.destroyed);
+            
+            if (destroyedBricks.length === 0) return; // Não há blocos para restaurar
+            
+            // Restaurar blocos aleatórios
+            const bricksToRestore = Math.min(numToRestore, destroyedBricks.length);
+            
+            for (let i = 0; i < bricksToRestore; i++) {
+                if (destroyedBricks.length === 0) break; // Verificar se ainda há blocos
+                
+                const randomIndex = Math.floor(Math.random() * destroyedBricks.length);
+                const brickToRestore = destroyedBricks.splice(randomIndex, 1)[0];
+                
+                if (brickToRestore) {
+                    // Restaurar o bloco
+                    brickToRestore.destroyed = false;
+                    brickToRestore.hits = brickToRestore.maxHits || 1;
+                    brickToRestore.lastHitTime = null;
+                    
+                    // Criar efeito visual de restauração
+                    this.createParticles(brickToRestore.x + brickToRestore.width / 2, brickToRestore.y + brickToRestore.height / 2, this.getBrickColorValue(brickToRestore.color));
+                }
+            }
+            
+            // Atualizar contador de tijolos
+            this.updateBrickCount();
+        } catch (error) {
+            // silencioso
+        }
+    }
+    
     updateBalls() {
         this.balls.forEach((ball, index) => {
             // Se a bolinha está presa à plataforma, seguir o paddle
@@ -814,9 +880,14 @@ class Game {
             let vx = ball.vx * speedMultiplier;
             let vy = ball.vy * speedMultiplier;
             
-            // Modificador "Ventos de Oeste" - força empurrando a bolinha
+            // Modificador "Ventos de Leste e Oeste" - curva simples em direção ao vento
             if (this.phaseModifiers.westWinds) {
-                vx += 0.4;
+                const lateralAccel = 0.12; // aceleração lateral constante
+                if (this.windDirection === 'O') {
+                    vx += lateralAccel; // empurra para a direita
+                } else {
+                    vx -= lateralAccel; // empurra para a esquerda
+                }
             }
             
             // Efeito de inversão
@@ -1053,57 +1124,26 @@ class Game {
     
     handlePaddleCollision(ball) {
         // Resetar efeitos ao tocar no paddle (exceto speedMultiplier do bloco vermelho)
-        const currentSpeedMultiplier = this.ballEffects.speedMultiplier;
         this.resetBallEffects();
-        this.ballEffects.speedMultiplier = currentSpeedMultiplier;
         
-        // Calcular ângulo baseado na posição de impacto
+        // Calcular novo ângulo baseado na posição de impacto
         const hitPos = (ball.x - (this.paddle.x + this.paddle.width / 2)) / (this.paddle.width / 2);
-        const angle = hitPos * Math.PI / 3; // Ângulo máximo de 60 graus
-        
-        let ballSpeed = this.config.ballSpeed;
-        
-        // Plataforma de Aceleração - ativa quando ativada manualmente
-        if (this.hasUpgrade('cushion_paddle') && this.activeUpgradeEffects.cushionPaddle.active) {
-            ballSpeed *= 1.3; // Acelerar 30%
-        }
-        
+        const angle = hitPos * (Math.PI / 3); // Ângulo máximo de 60 graus
+        const ballSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
         ball.vx = Math.sin(angle) * ballSpeed;
         ball.vy = -Math.abs(Math.cos(angle) * ballSpeed);
         
-        // Canhões Acoplados - atirar projéteis
-        if (this.hasUpgrade('attached_cannons')) {
-            // Tocar som de tiro laser
-            this.playSound('laserShot');
-            
-            this.powerUps.push({
-                x: this.paddle.x + this.paddle.width * 0.25,
-                y: this.paddle.y,
-                vx: 0,
-                vy: -3.0, // Aumentado para chegar aos tijolos
-                radius: 3,
-                type: 'cannon_shot',
-                life: 300 // Aumentado para durar mais tempo
-            });
-            this.powerUps.push({
-                x: this.paddle.x + this.paddle.width * 0.75,
-                y: this.paddle.y,
-                vx: 0,
-                vy: -3.0, // Aumentado para chegar aos tijolos
-                radius: 3,
-                type: 'cannon_shot',
-                life: 300 // Aumentado para durar mais tempo
-            });
-        }
-        
-        // Criar partículas
-        this.createParticles(ball.x, ball.y, '#ff6b35');
-        
-        // Tocar som de batida na plataforma
+        // Efeitos visuais
+        this.createParticles(ball.x, ball.y, '#3498db');
         this.playSound('paddleHit');
     }
     
     handleBrickCollision(ball, brick) {
+        // Inverter curva do vento ao bater nos blocos, para a curva "virar" junto da reflexão
+        if (this.phaseModifiers.westWinds) {
+            this.windCurveSign *= -1;
+        }
+        
         // Incrementar contador de batidas para Bolinha Prima
         this.ballHitCount++;
         
@@ -1191,6 +1231,16 @@ class Game {
                 // Criar efeito visual da troca
                 this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff0000');
                 this.createParticles(randomBrick.x + randomBrick.width / 2, randomBrick.y + randomBrick.height / 2, this.getBrickColorValue(randomBrick.color));
+                
+                // Resetar contador de contagem regressiva se ativo quando o bloco vermelho troca de posição
+                if (this.phaseModifiers.countdown && this.countdownActive) {
+                    this.countdownTimer = 120; // Resetar para 120 segundos
+                }
+                
+                // Pânico Vermelho - restaurar blocos quando troca de posição
+                if (this.phaseModifiers.redPanic && this.phaseModifiers.redPanic === true) {
+                    this.restoreBricksOnRedPanic();
+                }
             }
         }
         
@@ -1253,13 +1303,10 @@ class Game {
             if (brick.color === 'red') {
                 // Resetar contador de contagem regressiva se ativo
                 if (this.phaseModifiers.countdown && this.countdownActive) {
-                    this.countdownTimer = 220; // Resetar para 220 segundos
+                    this.countdownTimer = 120; // Resetar para 120 segundos
                 }
                 
-                // Gerar novos tijolos se ativado (a partir da fase 2)
-                if (this.difficultySettings.newBricksOnRedHit) {
-                    this.generateNewBricksOnRedHit();
-                }
+                // Novos tijolos removidos - agora é parte do modificador Pânico Vermelho
                 this.completePhase();
                 return;
             }
@@ -1445,7 +1492,10 @@ class Game {
         
         powerIds.forEach(powerId => {
             if (this.hasUpgrade(powerId)) {
-                this.activatablePowers.push(powerId);
+                // Verificar se o poder não está desativado pelo modificador "Sem Efeitos Bons"
+                if (!this.disabledPowers.includes(powerId)) {
+                    this.activatablePowers.push(powerId);
+                }
             }
         });
         
@@ -2103,11 +2153,10 @@ class Game {
         // Tijolos Móveis: A partir da fase 5, 10% de chance por fileira
         this.difficultySettings.movingBricksChance = this.currentPhase >= 5 ? 0.10 : 0.0;
         
-        // Novos blocos: A partir da fase 2
-        this.difficultySettings.newBricksOnRedHit = this.currentPhase >= 2;
+        // Novos blocos removidos - agora é parte do modificador Pânico Vermelho
         
-        // Modificadores aleatórios: A partir da fase 6
-        if (this.currentPhase >= 6 && this.difficultySettings.activeModifier === null) {
+        // Modificadores aleatórios: A partir da fase 4
+        if (this.currentPhase >= 4 && this.difficultySettings.activeModifier === null) {
             this.selectRandomModifier();
         }
     }
@@ -2127,7 +2176,7 @@ class Game {
         
         // Configurações específicas do modificador
         if (randomModifier === 'countdown') {
-            this.countdownTimer = 220; // 220 segundos (120 + 100)
+            this.countdownTimer = 120; // 120 segundos
             this.countdownActive = true;
         } else if (randomModifier === 'noGoodEffects') {
             // Desativar metade dos poderes aleatoriamente
@@ -2140,7 +2189,7 @@ class Game {
     
     showModifierNotification(modifier) {
         const modifierNames = {
-            'westWinds': 'Ventos de Oeste',
+            'westWinds': 'Ventos de Leste e Oeste',
             'inflatedMarket': 'Mercado Inflacionado',
 
             'redPanic': 'Pânico Vermelho',
@@ -2183,27 +2232,31 @@ class Game {
     }
     
     disableRandomPowers() {
-        // Lista de poderes que podem ser desativados
-        const powerUpgrades = [
-            'super_magnet', 'paddle_dash', 'charged_shot', 'safety_net', 
-            'effect_activator', 'cushion_paddle', 'multi_ball'
-        ];
+        // Obter TODOS os upgrades que o jogador possui
+        const allPlayerUpgrades = this.activeUpgrades.map(upgrade => upgrade.id);
         
-        // Filtrar apenas os poderes que o jogador tem
-        const availablePowers = powerUpgrades.filter(upgrade => this.hasUpgrade(upgrade));
-        
-        // Desativar metade aleatoriamente
-        const halfCount = Math.floor(availablePowers.length / 2);
+        // Desativar exatamente 50% dos upgrades do jogador
+        const halfCount = Math.floor(allPlayerUpgrades.length / 2);
         const disabledPowers = [];
         
+        // Criar uma cópia da lista para não modificar a original
+        const availableUpgrades = [...allPlayerUpgrades];
+        
         for (let i = 0; i < halfCount; i++) {
-            const randomIndex = Math.floor(Math.random() * availablePowers.length);
-            const powerToDisable = availablePowers.splice(randomIndex, 1)[0];
-            disabledPowers.push(powerToDisable);
+            const randomIndex = Math.floor(Math.random() * availableUpgrades.length);
+            const upgradeToDisable = availableUpgrades.splice(randomIndex, 1)[0];
+            disabledPowers.push(upgradeToDisable);
         }
         
-        // Armazenar poderes desativados
+        // Armazenar upgrades desativados
         this.disabledPowers = disabledPowers;
+        
+        // Recriar interface de poderes para mostrar visualmente os desativados
+        this.createPowersInterface();
+        
+        // Atualizar lista de poderes ativáveis
+        this.updateActivatablePowers();
+        this.updatePowerSelectionUI();
     }
     
     resetPhaseModifiers() {
@@ -2211,18 +2264,28 @@ class Game {
         this.phaseModifiers = {
             westWinds: false,
             inflatedMarket: false,
-
             redPanic: false,
             weakBattery: false,
             noGoodEffects: false,
             countdown: false
         };
         
-        // Resetar configurações específicas
+        // Desativar estados relacionados a modificadores
         this.countdownActive = false;
         this.countdownTimer = 0;
+        
+        // Resetar estado dos ventos
+        this.windDirection = 'O';
+        this.windDirectionTimer = 0;
+        this.windEffectTimer = 0;
+        this.windCurveSign = 1;
+        
+        // Resetar poderes desativados
         this.disabledPowers = [];
+
+        // Permitir novo sorteio de modificador na próxima fase (fases 6+)
         this.difficultySettings.activeModifier = null;
+        this.difficultySettings.modifierStartPhase = 0;
     }
     
     updateSpeedDisplay() {
@@ -2313,7 +2376,7 @@ class Game {
 
             glassCoatingChance: 0.0,
             movingBricksChance: 0.0,
-            newBricksOnRedHit: false,
+
             activeModifier: null,
             modifierStartPhase: 0
         };
@@ -2322,7 +2385,6 @@ class Game {
         this.phaseModifiers = {
             westWinds: false,
             inflatedMarket: false,
-
             redPanic: false,
             weakBattery: false,
             noGoodEffects: false,
@@ -2917,6 +2979,12 @@ class Game {
             powerItem.className = 'power-item';
             powerItem.id = `power-${upgrade.id}`;
             
+            // Verificar se o upgrade está desativado pelo modificador "Sem Efeitos Bons"
+            const isDisabled = this.disabledPowers.includes(upgrade.id);
+            if (isDisabled) {
+                powerItem.classList.add('disabled');
+            }
+            
             // Adicionar ícone
             const icon = document.createElement('div');
             icon.className = 'power-icon';
@@ -3193,6 +3261,11 @@ class Game {
         if (this.countdownActive && this.countdownTimer > 0) {
             this.drawCountdownTimer();
         }
+        
+        // Desenhar indicador de vento
+        if (this.phaseModifiers.westWinds) {
+            this.drawWindIndicator();
+        }
     }
     
     drawCountdownTimer() {
@@ -3223,6 +3296,41 @@ class Game {
         this.ctx.font = 'bold 16px Arial';
         this.ctx.textAlign = 'center';
         this.ctx.fillText(timeString, this.width - 70, 45);
+        
+        // Resetar alinhamento
+        this.ctx.textAlign = 'left';
+    }
+    
+    drawWindIndicator() {
+        // Calcular tempo restante para mudança de direção
+        const timeLeft = Math.ceil(40 - this.windDirectionTimer);
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        const timeText = minutes > 0 ? `${minutes}:${seconds.toString().padStart(2, '0')}` : `${seconds}s`;
+        
+        // Configurar estilo do indicador
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.strokeStyle = '#ffffff';
+        this.ctx.lineWidth = 2;
+        this.ctx.font = 'bold 16px Arial';
+        
+        // Desenhar fundo do indicador
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        this.ctx.fillRect(this.width - 120, 20, 100, 40);
+        
+        // Desenhar borda
+        this.ctx.strokeStyle = '#ffffff';
+        this.ctx.strokeRect(this.width - 120, 20, 100, 40);
+        
+        // Desenhar direção do vento
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.font = 'bold 20px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(this.windDirection, this.width - 70, 40);
+        
+        // Desenhar tempo restante
+        this.ctx.font = '12px Arial';
+        this.ctx.fillText(timeText, this.width - 70, 55);
         
         // Resetar alinhamento
         this.ctx.textAlign = 'left';

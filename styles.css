@@ -588,6 +588,14 @@ body {
     animation: pulse 1s infinite;
 }
 
+.power-item.disabled {
+    border-color: #7f8c8d;
+    background: rgba(127, 140, 141, 0.2);
+    filter: grayscale(100%);
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .power-icon {
     width: 32px;
     height: 32px;
