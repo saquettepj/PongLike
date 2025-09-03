@@ -84,6 +84,72 @@
         <!-- Tela do Jogo -->
         <div id="gameScreen" class="screen">
             <div class="game-container">
+                <!-- Interface Lateral Esquerda -->
+                <div class="sidebar-left">
+                    <div class="game-info" id="gameInfoPanel" style="display: none;">
+                        <h3>Informações do Jogo</h3>
+                        <div class="info-item">
+                            <span class="info-label">Velocidade da Bolinha:</span>
+                            <span class="info-value" id="ballSpeedDisplay">100%</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Multiplicador Base:</span>
+                            <span class="info-value" id="baseSpeedDisplay">100%</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Multiplicador Efeitos:</span>
+                            <span class="info-value" id="effectsSpeedDisplay">100%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="brick-counter" id="brickCounterPanel" style="display: none;">
+                        <h3>Contador de Tijolos</h3>
+                        <div class="brick-count-item">
+                            <span class="brick-color blue">🔵</span>
+                            <span class="brick-label">Azul:</span>
+                            <span class="brick-count" id="blueCount">0</span>
+                        </div>
+                        <div class="brick-count-item">
+                            <span class="brick-color yellow">🟡</span>
+                            <span class="brick-label">Amarelo:</span>
+                            <span class="brick-count" id="yellowCount">0</span>
+                        </div>
+                        <div class="brick-count-item">
+                            <span class="brick-color green">🟢</span>
+                            <span class="brick-label">Verde:</span>
+                            <span class="brick-count" id="greenCount">0</span>
+                        </div>
+                        <div class="brick-count-item">
+                            <span class="brick-color purple">🟣</span>
+                            <span class="brick-label">Roxo:</span>
+                            <span class="brick-count" id="purpleCount">0</span>
+                        </div>
+                        <div class="brick-count-item">
+                            <span class="brick-color gray">⚫</span>
+                            <span class="brick-label">Cinza:</span>
+                            <span class="brick-count" id="grayCount">0</span>
+                        </div>
+                        <div class="brick-count-item">
+                            <span class="brick-color white">⚪</span>
+                            <span class="brick-label">Branco:</span>
+                            <span class="brick-count" id="whiteCount">0</span>
+                        </div>
+                        <div class="brick-count-item">
+                            <span class="brick-color red">🔴</span>
+                            <span class="brick-label">Vermelho:</span>
+                            <span class="brick-count" id="redCount">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="developer-panel" id="developerPanel" style="display: none;">
+                        <h3>Modo Desenvolvedor</h3>
+                        <div class="developer-controls" id="developerControls">
+                            <button id="skipPhaseBtn" class="dev-btn">Pular Fase</button>
+                            <button id="addMoneyBtn" class="dev-btn">+200 Moedas</button>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Canvas do Jogo -->
                 <div class="canvas-container">
                     <canvas id="gameCanvas" width="800" height="600"></canvas>

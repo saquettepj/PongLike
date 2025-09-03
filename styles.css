@@ -263,6 +263,148 @@ body {
     margin: 0 auto;
 }
 
+/* Interface Lateral Esquerda */
+.sidebar-left {
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    flex-shrink: 0; /* Não encolhe */
+}
+
+.game-info {
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #ff6b35;
+    border-radius: 10px;
+    padding: 15px;
+    color: #ffffff;
+}
+
+.game-info h3 {
+    margin: 0 0 15px 0;
+    color: #ff6b35;
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+.info-label {
+    color: #bdc3c7;
+}
+
+.info-value {
+    color: #fdcb6e;
+    font-weight: bold;
+}
+
+.developer-panel {
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #e74c3c;
+    border-radius: 10px;
+    padding: 15px;
+    color: #ffffff;
+}
+
+.developer-panel h3 {
+    margin: 0 0 15px 0;
+    color: #e74c3c;
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.developer-btn {
+    width: 100%;
+    padding: 10px;
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.developer-btn:hover {
+    background: linear-gradient(135deg, #c0392b, #a93226);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+}
+
+.developer-controls {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.dev-btn {
+    padding: 8px 12px;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dev-btn:hover {
+    background: linear-gradient(135deg, #2980b9, #1f618d);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(52, 152, 219, 0.4);
+}
+
+/* Contador de Tijolos */
+.brick-counter {
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #2ecc71;
+    border-radius: 10px;
+    padding: 15px;
+    color: #ffffff;
+}
+
+.brick-counter h3 {
+    margin: 0 0 15px 0;
+    color: #2ecc71;
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.brick-count-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    gap: 8px;
+}
+
+.brick-color {
+    font-size: 1.2rem;
+    width: 20px;
+    text-align: center;
+}
+
+.brick-label {
+    color: #bdc3c7;
+    flex: 1;
+}
+
+.brick-count {
+    color: #fdcb6e;
+    font-weight: bold;
+    min-width: 20px;
+    text-align: right;
+}
+
 #gameUI {
     width: 200px;
     z-index: 150;

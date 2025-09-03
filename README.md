@@ -24,6 +24,61 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 - **Tecla P**: Pausar/Despausar o jogo
 - **Clique Esquerdo do Mouse**: Navegar / Comprar upgrades
 
+## 📈 Sistema de Dificuldade Progressiva
+
+### Dificuldades Base
+- **Velocidade da Bolinha**: Aumenta 2% a cada fase (máximo 20% na fase 11+)
+- **Tamanho da Plataforma**: Reduz 3% a cada 2 fases (mínimo 50% do tamanho original)
+- **Densidade de Tijolos**: A cada 2 fases, aumenta chances de tijolos roxos (+1%) e brancos (+2%)
+
+### Novos Tipos de Tijolos
+- **Película de Vidro** (Fase 4+): 15% de chance em qualquer tijolo
+  - Adiciona +1 vida extra ao tijolo
+  - Efeito visual translúcido
+
+### Mecânicas Especiais
+- **Tijolos Móveis** (Fase 5+): 10% de chance por fileira de se mover horizontalmente
+- **Novos Tijolos** (Fase 2+): Ao acertar o bloco vermelho, gera 2-5 novos tijolos aleatórios
+
+### Modificadores Aleatórios (Fase 6+)
+A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modificador dura apenas uma fase e é resetado na próxima.
+
+#### 🌪️ Ventos de Oeste
+- **Efeito**: Uma força sutil e constante empurra a bolinha para a direita
+- **Impacto**: Muda a trajetória natural da bolinha, exigindo ajustes na estratégia
+- **Dificuldade**: Média - requer adaptação do timing
+
+#### 💰 Mercado Inflacionado
+- **Efeito**: Todos os upgrades na próxima loja custam 30% a mais
+- **Impacto**: Dificuldade econômica - força o jogador a ser mais seletivo
+- **Dificuldade**: Alta - reduz significativamente o poder de compra
+
+#### 🌫️ Névoa
+- **Efeito**: Partes da tela ficam cobertas por névoa que esconde a estrutura dos tijolos
+- **Impacto**: Reduz visibilidade, dificultando o planejamento de estratégias
+- **Dificuldade**: Média - requer mais memória e instinto
+
+#### 🔴 Pânico Vermelho
+- **Efeito**: O Tijolo Núcleo se move lentamente pela formação
+- **Impacto**: Alvo móvel torna o objetivo mais difícil de atingir
+- **Dificuldade**: Alta - muda completamente a estratégia de ataque
+
+#### 🔋 Bateria Fraca
+- **Efeito**: A plataforma do jogador se move 20% mais devagar
+- **Impacto**: Reduz a capacidade de resposta e controle
+- **Dificuldade**: Alta - exige antecipação e precisão
+
+#### ❌ Sem Efeitos Bons
+- **Efeito**: Desativa aleatoriamente metade dos poderes do jogador para aquela fase
+- **Impacto**: Remove temporariamente upgrades comprados
+- **Dificuldade**: Muito Alta - força o jogador a jogar sem suas vantagens
+
+#### ⏰ Contagem Regressiva
+- **Efeito**: Timer de 220 segundos aparece na tela
+- **Impacto**: Se o Tijolo Vermelho não for acertado antes do tempo acabar, o jogador perde uma vida
+- **Dificuldade**: Muito Alta - pressão de tempo constante
+- **Reset**: O contador reseta para 220 segundos se acertar o tijolo vermelho
+
 ## 🧱 Sistema de Tijolos
 
 ### Cores e Efeitos
@@ -36,9 +91,15 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 | 🟣 Roxo | Zigue-zague | 7 🪙 |
 | ⚫ Cinza | Invisibilidade (ciclo 1s) | 3 🪙 |
 | ⚪ Branco | Fragmento perigoso que cai e tira vida se acertar plataforma | 5 🪙 |
+
 | 🔴 Vermelho (Núcleo) | Objetivo da Fase + Acelera bolinha 4% por hit + Troca posição com bloco aleatório | 10 🪙 |
 
 ## ⚡ Sistema Roguelike
+
+### Sistema de Loja
+- **Ofertas Limitadas**: A loja oferece apenas 2-4 upgrades aleatoriamente por fase
+- **Seleção Aleatória**: Os upgrades disponíveis mudam a cada fase
+- **Promoções**: A cada 3 fases, a loja entra em promoção com descontos de 20-40%
 
 ### Upgrades Disponíveis (28 total)
 
@@ -91,7 +152,15 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 - **Cinza**: Invisibilidade só ativa se não estiver já ativo
 - **Verde**: Inversão sempre alterna (pode ser aplicado múltiplas vezes)
 - **Branco**: Cria fragmento perigoso que cai e tira vida se acertar a plataforma
+
 - **Vermelho (Núcleo)**: Cooldown de 1 segundo entre danos + acelera bolinha 4% por hit + troca posição com bloco aleatório
+
+### 🆕 Novas Mecânicas por Fase
+- **Fase 2+**: Ao acertar o bloco vermelho, gera 2-5 novos tijolos aleatórios
+
+- **Fase 4+**: Tijolos podem ter película de vidro (+1 vida, 15% de chance)
+- **Fase 5+**: Tijolos podem se mover horizontalmente (10% de chance por fileira)
+- **Fase 6+**: Modificadores aleatórios são aplicados a cada fase
 
 ### 🛡️ Proteção do Núcleo Vermelho
 - **Apenas Toque Direto**: O bloco vermelho só pode ser destruído pelo toque direto da bolinha

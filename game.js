@@ -15,11 +15,68 @@ class Game {
         this.money = 0;
         this.lives = 3;
         
+        // Contador de tijolos atual
+        this.currentBrickCount = {
+            blue: 0,
+            yellow: 0,
+            green: 0,
+            purple: 0,
+            gray: 0,
+            white: 0,
+            red: 0
+        };
+        
         // Sistema de promoção da loja
         this.shopPromotion = {
             active: false,
             discountPercent: 0
         };
+        
+        // Sistema de dificuldades progressivas
+        this.difficultySettings = {
+            ballSpeedMultiplier: 1.0,
+            paddleSizeMultiplier: 1.0,
+            purpleBrickChance: 0.15,
+            whiteBrickChance: 0.05,
+
+            glassCoatingChance: 0.0,
+            movingBricksChance: 0.0,
+            newBricksOnRedHit: false,
+            activeModifier: null,
+            modifierStartPhase: 0
+        };
+        
+        // Modificadores de fase
+        this.phaseModifiers = {
+            westWinds: false,
+            inflatedMarket: false,
+            fog: false,
+            redPanic: false,
+            weakBattery: false,
+            noGoodEffects: false,
+            countdown: false
+        };
+        
+        // Timer para contagem regressiva
+        this.countdownTimer = 0;
+        this.countdownActive = false;
+        
+        // Poderes desativados pelo modificador "Sem Efeitos Bons"
+        this.disabledPowers = [];
+        
+        // ========================================
+        // MODO DESENVOLVEDOR - CONFIGURAÇÃO
+        // ========================================
+        // Para ativar o modo desenvolvedor, altere a linha abaixo para:
+        // this.developerMode = true;
+        // 
+        // O modo desenvolvedor inclui:
+        // - Painel de informações do jogo (velocidade da bolinha, etc.)
+        // - Contador de tijolos em tempo real
+        // - Botões para pular fase e adicionar dinheiro
+        // - Ferramentas de debug
+        // ========================================
+        this.developerMode = false;
         this.gameRunning = false;
         this.gamePaused = false;
         this.ballHitCount = 0; // Contador de batidas da bolinha para Bolinha Prima
@@ -97,7 +154,7 @@ class Game {
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
             this.createSounds();
         } catch (e) {
-            console.log('Web Audio API não suportada');
+
         }
     }
     
@@ -182,6 +239,7 @@ class Game {
     
     init() {
         this.setupEventListeners();
+        this.initializeDeveloperMode();
         this.showScreen('mainMenu');
         this.updateUI();
     }
@@ -231,8 +289,18 @@ class Game {
         document.addEventListener('keyup', (e) => {
             this.keys[e.code] = false;
             
-
+            // Resetar dash quando soltar a tecla
+            if (e.code === 'KeyA' || e.code === 'KeyD' || e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
+                if (this.hasUpgrade('paddle_dash') && this.activeUpgradeEffects.paddleDash.active) {
+                    this.activeUpgradeEffects.paddleDash.active = false;
+                }
+            }
         });
+        
+        // Event listeners para modo desenvolvedor
+
+        document.getElementById('skipPhaseBtn').addEventListener('click', () => this.skipPhase());
+        document.getElementById('addMoneyBtn').addEventListener('click', () => this.addDeveloperMoney());
         
         // Controles do mouse (removidos - apenas teclado)
         
@@ -277,6 +345,8 @@ class Game {
         this.activeUpgrades = [];
         this.resetBallEffects();
         
+        // Atualizar configurações de dificuldade para a fase 1
+        this.updateDifficultySettings();
         
         this.initGameObjects();
         this.generateBricks();
@@ -351,10 +421,11 @@ class Game {
     
     initGameObjects() {
         // Criar paddle
+        const paddleWidth = this.config.paddleWidth * this.difficultySettings.paddleSizeMultiplier;
         this.paddle = {
-            x: this.width / 2 - this.config.paddleWidth / 2,
+            x: this.width / 2 - paddleWidth / 2,
             y: this.height - 50,
-            width: this.config.paddleWidth,
+            width: paddleWidth,
             height: this.config.paddleHeight,
             speed: this.config.paddleSpeed
         };
@@ -387,6 +458,18 @@ class Game {
         const startX = (this.width - totalWidth) / 2; // Centralizar a formação
         const startY = 80;
         
+        // Contador de tijolos por cor
+        const brickCount = {
+            blue: 0,
+            yellow: 0,
+            green: 0,
+            purple: 0,
+            gray: 0,
+            white: 0,
+
+            red: 0
+        };
+        
         // Gerar tijolos comuns
         for (let row = 0; row < rows; row++) {
             for (let col = 0; col < cols; col++) {
@@ -402,6 +485,12 @@ class Game {
                     redMaxHits = 3; // Conversor de Risco diminui vida para 3
                 }
                 
+                // Verificar se deve ter película de vidro
+                const hasGlassCoating = Math.random() < this.difficultySettings.glassCoatingChance;
+                const extraHits = hasGlassCoating ? 1 : 0;
+                
+
+                
                 this.bricks.push({
                     x: x,
                     y: y,
@@ -409,12 +498,22 @@ class Game {
                     height: this.config.brickHeight,
                     color: color,
                     destroyed: false,
-                    hits: color === 'red' ? redMaxHits : 1,
-                    maxHits: color === 'red' ? redMaxHits : 1,
-                    lastHitTime: null // Para cooldown do bloco vermelho
+                    hits: (color === 'red' ? redMaxHits : 1) + extraHits,
+                    maxHits: (color === 'red' ? redMaxHits : 1) + extraHits,
+                    lastHitTime: null, // Para cooldown do bloco vermelho
+                    hasGlassCoating: hasGlassCoating,
+                    isMoving: Math.random() < this.difficultySettings.movingBricksChance,
+                    moveDirection: Math.random() < 0.5 ? 1 : -1, // 1 = direita, -1 = esquerda
+                    moveSpeed: 0.5 // Velocidade de movimento
                 });
+                
+                // Contar tijolo criado
+                brickCount[color]++;
             }
         }
+        
+        // Atualizar contador atual de tijolos
+        this.currentBrickCount = { ...brickCount };
     }
     
     getBrickColor(row, col, rows, cols) {
@@ -425,12 +524,21 @@ class Game {
         
         // Distribuição de cores baseada na fase
         const colors = ['blue', 'yellow', 'green', 'purple', 'gray', 'white'];
-        const weights = [0.35, 0.2, 0.15, 0.15, 0.1, 0.05]; // Probabilidades
+        const weights = [
+            0.35, 
+            0.2, 
+            0.15, 
+            this.difficultySettings.purpleBrickChance, 
+            0.1, 
+            this.difficultySettings.whiteBrickChance
+        ]; // Probabilidades
         
         // Aumentar dificuldade com a fase
         const difficulty = Math.min(this.currentPhase / 10, 1);
         const adjustedWeights = weights.map((w, i) => {
             if (i === 0) return w * (1 - difficulty * 0.5); // Menos azuis
+
+            if (w === 0) return w; // Não multiplicar se a chance for 0
             return w * (1 + difficulty * 0.3); // Mais coloridos
         });
         
@@ -440,6 +548,8 @@ class Game {
         for (let i = 0; i < colors.length; i++) {
             cumulative += adjustedWeights[i];
             if (random <= cumulative) {
+
+
                 return colors[i];
             }
         }
@@ -471,11 +581,16 @@ class Game {
         this.updateFragments();
         this.updatePowerUps();
         this.updateUpgradeEffects();
+        this.updateMovingBricks();
+        this.updateCountdown();
         this.checkCollisions();
         this.updateBallEffects();
         
         // Atualizar UI a cada frame para manter cooldowns em tempo real
         this.updateUI();
+        
+        // Atualizar interface de velocidade
+        this.updateSpeedDisplay();
     }
     
 
@@ -487,6 +602,11 @@ class Game {
         }
         
         let speed = this.paddle.speed;
+        
+        // Modificador "Bateria Fraca" - plataforma 20% mais devagar
+        if (this.phaseModifiers.weakBattery) {
+            speed *= 0.8;
+        }
         
         // Dash de Plataforma
         if (this.hasUpgrade('paddle_dash') && this.activeUpgradeEffects.paddleDash.active) {
@@ -581,6 +701,98 @@ class Game {
         // Eco da Bolinha - apenas efeito de destruir bloco aleatório (sem segunda bolinha)
     }
     
+    updateMovingBricks() {
+        this.bricks.forEach(brick => {
+            if (!brick.destroyed) {
+                // Tijolos móveis normais
+                if (brick.isMoving) {
+                    // Mover tijolo horizontalmente
+                    brick.x += brick.moveDirection * brick.moveSpeed;
+                    
+                    // Verificar limites da tela e inverter direção
+                    if (brick.x <= 0 || brick.x + brick.width >= this.width) {
+                        brick.moveDirection *= -1;
+                        brick.x = Math.max(0, Math.min(brick.x, this.width - brick.width));
+                    }
+                }
+                
+                // Modificador "Pânico Vermelho" - tijolo vermelho se move
+                if (brick.color === 'red' && this.phaseModifiers.redPanic) {
+                    brick.x += 0.3; // Movimento lento
+                    
+                    // Verificar limites e inverter
+                    if (brick.x <= 0 || brick.x + brick.width >= this.width) {
+                        brick.x = Math.max(0, Math.min(brick.x, this.width - brick.width));
+                    }
+                }
+            }
+        });
+    }
+    
+    updateCountdown() {
+        if (this.countdownActive && this.countdownTimer > 0) {
+            this.countdownTimer -= 1/60; // Decrementar por frame (60 FPS)
+            
+            if (this.countdownTimer <= 0) {
+                // Tempo esgotado - perder vida
+                this.loseLife();
+                this.countdownTimer = 220; // Resetar timer para 220 segundos
+            }
+        }
+    }
+    
+    generateNewBricksOnRedHit() {
+        // Gerar 2 a 5 novos tijolos em locais aleatórios
+        const numNewBricks = Math.floor(Math.random() * 4) + 2; // 2-5 tijolos
+        
+        for (let i = 0; i < numNewBricks; i++) {
+            // Encontrar posição aleatória vazia
+            let attempts = 0;
+            let newX, newY;
+            let positionFound = false;
+            
+            while (attempts < 50 && !positionFound) {
+                newX = Math.random() * (this.width - this.config.brickWidth);
+                newY = Math.random() * (this.height * 0.6); // Apenas na parte superior
+                
+                // Verificar se não colide com tijolos existentes
+                positionFound = !this.bricks.some(brick => 
+                    !brick.destroyed && 
+                    Math.abs(brick.x - newX) < this.config.brickWidth + 10 &&
+                    Math.abs(brick.y - newY) < this.config.brickHeight + 10
+                );
+                
+                attempts++;
+            }
+            
+            if (positionFound) {
+                // Escolher cor aleatória (exceto vermelho)
+                const colors = ['blue', 'yellow', 'green', 'purple', 'gray', 'white'];
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                // Verificar se deve ter película de vidro (mesmo para novos tijolos)
+                const hasGlassCoating = Math.random() < this.difficultySettings.glassCoatingChance;
+                const extraHits = hasGlassCoating ? 1 : 0;
+                
+                this.bricks.push({
+                    x: newX,
+                    y: newY,
+                    width: this.config.brickWidth,
+                    height: this.config.brickHeight,
+                    color: randomColor,
+                    destroyed: false,
+                    hits: 1 + extraHits,
+                    maxHits: 1 + extraHits,
+                    lastHitTime: null,
+                    hasGlassCoating: hasGlassCoating,
+                    isMoving: false,
+                    moveDirection: 1,
+                    moveSpeed: 0.5
+                });
+            }
+        }
+    }
+    
     updateBalls() {
         this.balls.forEach((ball, index) => {
             // Se a bolinha está presa à plataforma, seguir o paddle
@@ -596,8 +808,16 @@ class Game {
             if (this.hasUpgrade('risk_converter') && this.riskConverterSpeedMultiplier) {
                 speedMultiplier *= this.riskConverterSpeedMultiplier;
             }
+            // Aplicar multiplicador de dificuldade progressiva
+            speedMultiplier *= this.difficultySettings.ballSpeedMultiplier;
+            
             let vx = ball.vx * speedMultiplier;
             let vy = ball.vy * speedMultiplier;
+            
+            // Modificador "Ventos de Oeste" - força sutil empurrando a bolinha
+            if (this.phaseModifiers.westWinds) {
+                vx += 0.2; // Força sutil para a direita
+            }
             
             // Efeito de inversão
             if (this.ballEffects.inverted) {
@@ -701,6 +921,10 @@ class Game {
                         
                         // Quebrar tijolo
                         brick.destroyed = true;
+                        // Atualizar contador de tijolos
+                        if (this.currentBrickCount[brick.color] > 0) {
+                            this.currentBrickCount[brick.color]--;
+                        }
                         this.money += this.getBrickReward(brick.color);
                         this.updateUI(); // Atualizar UI em tempo real
                         this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, this.getBrickColorValue(brick.color));
@@ -732,6 +956,10 @@ class Game {
                         
                         // Quebrar tijolo
                         brick.destroyed = true;
+                        // Atualizar contador de tijolos
+                        if (this.currentBrickCount[brick.color] > 0) {
+                            this.currentBrickCount[brick.color]--;
+                        }
                         this.money += this.getBrickReward(brick.color);
                         this.updateUI(); // Atualizar UI em tempo real
                         this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, this.getBrickColorValue(brick.color));
@@ -905,6 +1133,10 @@ class Game {
         // Bolinha Perfurante - quebra tijolos azuis sem mudar direção
         if (this.hasUpgrade('piercing_ball') && brick.color === 'blue') {
             brick.destroyed = true;
+            // Atualizar contador de tijolos
+            if (this.currentBrickCount[brick.color] > 0) {
+                this.currentBrickCount[brick.color]--;
+            }
             this.money += this.getBrickReward(brick.color);
             this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, this.getBrickColorValue(brick.color));
             return; // Não muda direção da bolinha
@@ -925,6 +1157,10 @@ class Game {
             if (availableBricks.length > 0) {
                 const randomBrick = availableBricks[Math.floor(Math.random() * availableBricks.length)];
                 randomBrick.destroyed = true;
+                // Atualizar contador de tijolos
+                if (this.currentBrickCount[randomBrick.color] > 0) {
+                    this.currentBrickCount[randomBrick.color]--;
+                }
                 this.money += this.getBrickReward(randomBrick.color);
                 this.createParticles(randomBrick.x + randomBrick.width / 2, randomBrick.y + randomBrick.height / 2, this.getBrickColorValue(randomBrick.color));
             }
@@ -932,6 +1168,8 @@ class Game {
         
         // Quebrar tijolo
         brick.hits -= (1 + extraDamage);
+        
+
         
         // Efeito especial do bloco vermelho - trocar posição com outro bloco
         if (brick.color === 'red') {
@@ -980,6 +1218,11 @@ class Game {
         
         if (brick.hits <= 0) {
             brick.destroyed = true;
+
+            // Atualizar contador de tijolos
+            if (this.currentBrickCount[brick.color] > 0) {
+                this.currentBrickCount[brick.color]--;
+            }
             let reward = this.getBrickReward(brick.color);
             
             // Efeito especial do bloco branco - criar fragmento perigoso
@@ -1008,6 +1251,15 @@ class Game {
             
             // Verificar se é o tijolo núcleo
             if (brick.color === 'red') {
+                // Resetar contador de contagem regressiva se ativo
+                if (this.phaseModifiers.countdown && this.countdownActive) {
+                    this.countdownTimer = 220; // Resetar para 220 segundos
+                }
+                
+                // Gerar novos tijolos se ativado (a partir da fase 2)
+                if (this.difficultySettings.newBricksOnRedHit) {
+                    this.generateNewBricksOnRedHit();
+                }
                 this.completePhase();
                 return;
             }
@@ -1046,6 +1298,10 @@ class Game {
             if (availableBricks.length > 0) {
                 const randomBrick = availableBricks[Math.floor(Math.random() * availableBricks.length)];
                 randomBrick.destroyed = true;
+                // Atualizar contador de tijolos
+                if (this.currentBrickCount[randomBrick.color] > 0) {
+                    this.currentBrickCount[randomBrick.color]--;
+                }
                 this.money += this.getBrickReward(randomBrick.color);
                 this.createParticles(randomBrick.x + randomBrick.width / 2, randomBrick.y + randomBrick.height / 2, this.getBrickColorValue(randomBrick.color));
             }
@@ -1066,6 +1322,10 @@ class Game {
             
             if (mirrorBrick) {
                 mirrorBrick.destroyed = true;
+                // Atualizar contador de tijolos
+                if (this.currentBrickCount[mirrorBrick.color] > 0) {
+                    this.currentBrickCount[mirrorBrick.color]--;
+                }
                 this.money += this.getBrickReward(mirrorBrick.color);
                 this.createParticles(mirrorBrick.x + mirrorBrick.width / 2, mirrorBrick.y + mirrorBrick.height / 2, this.getBrickColorValue(mirrorBrick.color));
             }
@@ -1092,6 +1352,10 @@ class Game {
             
             if (behindBrick) {
                 behindBrick.destroyed = true;
+                // Atualizar contador de tijolos
+                if (this.currentBrickCount[behindBrick.color] > 0) {
+                    this.currentBrickCount[behindBrick.color]--;
+                }
                 this.money += this.getBrickReward(behindBrick.color);
                 this.createParticles(behindBrick.x + behindBrick.width / 2, behindBrick.y + behindBrick.height / 2, this.getBrickColorValue(behindBrick.color));
             }
@@ -1106,6 +1370,10 @@ class Game {
     }
     
     hasUpgrade(upgradeId) {
+        // Verificar se o poder não está desativado pelo modificador "Sem Efeitos Bons"
+        if (this.disabledPowers.includes(upgradeId)) {
+            return false;
+        }
         return this.activeUpgrades.some(upgrade => upgrade.id === upgradeId);
     }
     
@@ -1141,6 +1409,10 @@ class Game {
                 
                 if (distance <= explosionRadius) {
                     brick.destroyed = true;
+                    // Atualizar contador de tijolos
+                    if (this.currentBrickCount[brick.color] > 0) {
+                        this.currentBrickCount[brick.color]--;
+                    }
                     this.money += this.getBrickReward(brick.color);
                     this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, this.getBrickColorValue(brick.color));
                 }
@@ -1593,6 +1865,7 @@ class Game {
             case 'blue':
                 // Efeito padrão - nenhum
                 break;
+
             case 'yellow':
                 // Só aplica se não estiver já ativo
                 if (this.ballEffects.speedMultiplier <= 1) {
@@ -1629,7 +1902,8 @@ class Game {
             'purple': 7,
             'gray': 3,
             'white': 5,
-            'red': 10
+            'red': 10,
+
         };
         return rewards[color] || 1;
     }
@@ -1642,7 +1916,8 @@ class Game {
             'purple': '#9b59b6',
             'gray': '#95a5a6',
             'white': '#ffffff',
-            'red': '#e74c3c'
+            'red': '#e74c3c',
+
         };
         return colors[color] || '#ffffff';
     }
@@ -1780,13 +2055,14 @@ class Game {
     gameOver() {
         this.gameRunning = false;
         
-        // Limpar estado da bolinha eco (não mais necessário)
-        
         // Atualizar recorde
         if (this.currentPhase > this.highScore) {
             this.highScore = this.currentPhase;
             localStorage.setItem('brickRogueHighScore', this.highScore.toString());
         }
+        
+        // Resetar completamente o estado do jogo
+        this.resetGameState();
         
         document.getElementById('finalPhase').textContent = this.currentPhase;
         document.getElementById('finalRecord').textContent = this.highScore;
@@ -1802,6 +2078,317 @@ class Game {
         } else {
             this.shopPromotion.active = false;
             this.shopPromotion.discountPercent = 0;
+        }
+    }
+    
+    updateDifficultySettings() {
+        // Aumento da Velocidade Base da Bolinha: A cada fase, aumente em 2% (máximo 20%)
+        const speedIncrease = Math.min((this.currentPhase - 1) * 0.02, 0.20);
+        this.difficultySettings.ballSpeedMultiplier = 1.0 + speedIncrease;
+        
+        // Redução Sutil da Plataforma: A cada 2 fases, reduza em 3%
+        const paddleReduction = Math.floor((this.currentPhase - 1) / 2) * 0.03;
+        this.difficultySettings.paddleSizeMultiplier = Math.max(0.5, 1.0 - paddleReduction);
+        
+        // Aumento da Densidade de Tijolos: A cada 2 fases, aumente chances
+        const densityIncrease = Math.floor((this.currentPhase - 1) / 2);
+        this.difficultySettings.purpleBrickChance = Math.min(0.35, 0.15 + densityIncrease * 0.01); // Máximo 20% acima do base
+        this.difficultySettings.whiteBrickChance = Math.min(0.25, 0.05 + densityIncrease * 0.02); // Máximo 20% acima do base
+        
+
+        
+        // Película de vidro: A partir da fase 4, 15% de chance
+        this.difficultySettings.glassCoatingChance = this.currentPhase >= 4 ? 0.15 : 0.0;
+        
+        // Tijolos Móveis: A partir da fase 5, 10% de chance por fileira
+        this.difficultySettings.movingBricksChance = this.currentPhase >= 5 ? 0.10 : 0.0;
+        
+        // Novos blocos: A partir da fase 2
+        this.difficultySettings.newBricksOnRedHit = this.currentPhase >= 2;
+        
+        // Modificadores aleatórios: A partir da fase 6
+        if (this.currentPhase >= 6 && this.difficultySettings.activeModifier === null) {
+            this.selectRandomModifier();
+        }
+    }
+    
+    selectRandomModifier() {
+        const modifiers = [
+            'westWinds', 'inflatedMarket', 'fog', 'redPanic', 
+            'weakBattery', 'noGoodEffects', 'countdown'
+        ];
+        
+        const randomModifier = modifiers[Math.floor(Math.random() * modifiers.length)];
+        this.difficultySettings.activeModifier = randomModifier;
+        this.difficultySettings.modifierStartPhase = this.currentPhase;
+        
+        // Ativar o modificador
+        this.phaseModifiers[randomModifier] = true;
+        
+        // Configurações específicas do modificador
+        if (randomModifier === 'countdown') {
+            this.countdownTimer = 220; // 220 segundos (120 + 100)
+            this.countdownActive = true;
+        } else if (randomModifier === 'noGoodEffects') {
+            // Desativar metade dos poderes aleatoriamente
+            this.disableRandomPowers();
+        }
+        
+        // Mostrar notificação do modificador
+        this.showModifierNotification(randomModifier);
+    }
+    
+    showModifierNotification(modifier) {
+        const modifierNames = {
+            'westWinds': 'Ventos de Oeste',
+            'inflatedMarket': 'Mercado Inflacionado',
+            'fog': 'Névoa',
+            'redPanic': 'Pânico Vermelho',
+            'weakBattery': 'Bateria Fraca',
+            'noGoodEffects': 'Sem Efeitos Bons',
+            'countdown': 'Contagem Regressiva'
+        };
+        
+        // Criar notificação visual
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: #ff6b35;
+            padding: 20px;
+            border: 3px solid #ff6b35;
+            border-radius: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            z-index: 10000;
+            box-shadow: 0 0 30px rgba(255, 107, 53, 0.5);
+        `;
+        notification.innerHTML = `
+            <div>Modificador Ativo:</div>
+            <div style="color: #fdcb6e; margin-top: 10px;">${modifierNames[modifier]}</div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Remover após 3 segundos
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 3000);
+    }
+    
+    disableRandomPowers() {
+        // Lista de poderes que podem ser desativados
+        const powerUpgrades = [
+            'super_magnet', 'paddle_dash', 'charged_shot', 'safety_net', 
+            'effect_activator', 'cushion_paddle', 'multi_ball'
+        ];
+        
+        // Filtrar apenas os poderes que o jogador tem
+        const availablePowers = powerUpgrades.filter(upgrade => this.hasUpgrade(upgrade));
+        
+        // Desativar metade aleatoriamente
+        const halfCount = Math.floor(availablePowers.length / 2);
+        const disabledPowers = [];
+        
+        for (let i = 0; i < halfCount; i++) {
+            const randomIndex = Math.floor(Math.random() * availablePowers.length);
+            const powerToDisable = availablePowers.splice(randomIndex, 1)[0];
+            disabledPowers.push(powerToDisable);
+        }
+        
+        // Armazenar poderes desativados
+        this.disabledPowers = disabledPowers;
+    }
+    
+    resetPhaseModifiers() {
+        // Resetar todos os modificadores
+        this.phaseModifiers = {
+            westWinds: false,
+            inflatedMarket: false,
+            fog: false,
+            redPanic: false,
+            weakBattery: false,
+            noGoodEffects: false,
+            countdown: false
+        };
+        
+        // Resetar configurações específicas
+        this.countdownActive = false;
+        this.countdownTimer = 0;
+        this.disabledPowers = [];
+        this.difficultySettings.activeModifier = null;
+    }
+    
+    updateSpeedDisplay() {
+        if (!this.developerMode) return;
+        
+        // Calcular velocidade total da bolinha
+        const baseSpeed = this.difficultySettings.ballSpeedMultiplier;
+        const effectsSpeed = this.ballEffects.speedMultiplier;
+        const totalSpeed = baseSpeed * effectsSpeed;
+        
+        // Atualizar displays
+        document.getElementById('ballSpeedDisplay').textContent = Math.round(totalSpeed * 100) + '%';
+        document.getElementById('baseSpeedDisplay').textContent = Math.round(baseSpeed * 100) + '%';
+        document.getElementById('effectsSpeedDisplay').textContent = Math.round(effectsSpeed * 100) + '%';
+    }
+    
+
+    
+    skipPhase() {
+        if (!this.developerMode) return;
+        
+        // Completar fase atual
+        this.completePhase();
+    }
+    
+    addDeveloperMoney() {
+        if (!this.developerMode) return;
+        
+        this.money += 200;
+        this.updateUI();
+        
+        // Feedback visual
+        this.showDeveloperNotification('+200 Moedas!');
+    }
+    
+    showDeveloperNotification(message) {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(39, 174, 96, 0.9);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 10000;
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+        `;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 2000);
+    }
+    
+    initializeDeveloperMode() {
+        // Inicializar estado do modo desenvolvedor baseado na variável
+        const developerPanel = document.getElementById('developerPanel');
+        const controls = document.getElementById('developerControls');
+        const infoPanel = document.getElementById('gameInfoPanel');
+        const brickCounterPanel = document.getElementById('brickCounterPanel');
+        
+        if (this.developerMode) {
+            developerPanel.style.display = 'block';
+            controls.style.display = 'flex';
+            infoPanel.style.display = 'block';
+            brickCounterPanel.style.display = 'block';
+        } else {
+            developerPanel.style.display = 'none';
+            controls.style.display = 'none';
+            infoPanel.style.display = 'none';
+            brickCounterPanel.style.display = 'none';
+        }
+    }
+    
+    resetGameState() {
+        // Resetar configurações de dificuldade
+        this.difficultySettings = {
+            ballSpeedMultiplier: 1.0,
+            paddleSizeMultiplier: 1.0,
+            purpleBrickChance: 0.15,
+            whiteBrickChance: 0.05,
+
+            glassCoatingChance: 0.0,
+            movingBricksChance: 0.0,
+            newBricksOnRedHit: false,
+            activeModifier: null,
+            modifierStartPhase: 0
+        };
+        
+        // Resetar modificadores de fase
+        this.phaseModifiers = {
+            westWinds: false,
+            inflatedMarket: false,
+            fog: false,
+            redPanic: false,
+            weakBattery: false,
+            noGoodEffects: false,
+            countdown: false
+        };
+        
+        // Resetar configurações específicas
+        this.countdownActive = false;
+        this.countdownTimer = 0;
+        this.disabledPowers = [];
+        
+        // Resetar efeitos da bolinha
+        this.resetBallEffects();
+        
+        // Resetar contador de batidas
+        this.ballHitCount = 0;
+        
+        // Resetar tempo de jogo
+        this.gameTime = 0;
+        
+        // Resetar multiplicador do conversor de risco
+        this.riskConverterSpeedMultiplier = null;
+        this.riskConverterTimer = null;
+        
+        // Resetar último tempo de multi-bola
+        this.lastMultiBallTime = 0;
+        
+        // Resetar fase para 1
+        this.currentPhase = 1;
+        
+        // Resetar vidas para 3
+        this.lives = 3;
+        
+        // Resetar dinheiro para 0
+        this.money = 0;
+        
+        // Resetar upgrades ativos
+        this.activeUpgrades = [];
+        
+        // Resetar efeitos ativos de upgrades
+        this.activeUpgradeEffects = {
+            superMagnet: { active: false, timer: 0, duration: 600 },
+            paddleDash: { active: false, timer: 0, cooldown: 1200 },
+            chargedShot: { charging: false, chargeLevel: 0 },
+            safetyNet: { active: false, timer: 0, duration: 300 },
+            effectActivator: { cooldown: 0 },
+            cushionPaddle: { active: false, timer: 0, duration: 600 }
+        };
+        
+        // Resetar timers de upgrades
+        this.upgradeTimers = {
+            explosiveBall: 0
+        };
+        
+        // Resetar promoção da loja
+        this.shopPromotion = {
+            active: false,
+            discountPercent: 0
+        };
+        
+        // Resetar dinheiro antes da loja
+        this.moneyBeforeShop = 0;
+        
+        // Resetar interface do modo desenvolvedor se necessário
+        if (this.developerMode) {
+            this.initializeDeveloperMode();
         }
     }
     
@@ -1830,8 +2417,18 @@ class Game {
             return;
         }
         
-        // Mostrar todos os upgrades disponíveis (sem restrição de quantidade)
-        availableUpgrades.forEach(upgrade => {
+        // Selecionar entre 2 a 4 upgrades aleatoriamente
+        const numOffers = Math.floor(Math.random() * 3) + 2; // 2-4 upgrades
+        const selectedUpgrades = [];
+        
+        // Embaralhar e selecionar upgrades
+        const shuffledUpgrades = [...availableUpgrades].sort(() => Math.random() - 0.5);
+        for (let i = 0; i < Math.min(numOffers, shuffledUpgrades.length); i++) {
+            selectedUpgrades.push(shuffledUpgrades[i]);
+        }
+        
+        // Mostrar upgrades selecionados
+        selectedUpgrades.forEach(upgrade => {
             // Aplicar desconto se promoção estiver ativa
             let displayPrice = upgrade.price;
             if (this.shopPromotion.active) {
@@ -2099,7 +2696,12 @@ class Game {
     }
     
     selectUpgrade(upgrade, cardElement, discountedPrice = null) {
-        const priceToPay = discountedPrice !== null ? discountedPrice : upgrade.price;
+        let priceToPay = discountedPrice !== null ? discountedPrice : upgrade.price;
+        
+        // Modificador "Mercado Inflacionado" - upgrades custam 30% a mais
+        if (this.phaseModifiers.inflatedMarket) {
+            priceToPay = Math.floor(priceToPay * 1.3);
+        }
         
         if (this.money >= priceToPay) {
             this.money -= priceToPay;
@@ -2186,6 +2788,12 @@ class Game {
         this.resetBallEffects(); // Resetar todos os efeitos para nova fase
         this.ballHitCount = 0; // Resetar contador da Bolinha Prima
         
+        // Resetar modificadores de fase
+        this.resetPhaseModifiers();
+        
+        // Atualizar configurações de dificuldade
+        this.updateDifficultySettings();
+        
         // Verificar se comprou algo na loja
         const moneyBeforeShop = this.moneyBeforeShop || 0;
         const moneySpent = moneyBeforeShop - this.money;
@@ -2256,9 +2864,26 @@ class Game {
         // Atualizar interface de poderes
         this.updatePowersUI();
         
+        // Atualizar contador de tijolos
+        this.updateBrickCounter();
+        
         // Atualizar lista de poderes ativáveis e interface de seleção
         this.updateActivatablePowers();
         this.updatePowerSelectionUI();
+    }
+    
+    updateBrickCounter() {
+        // Só atualizar se o modo desenvolvedor estiver ativo
+        if (!this.developerMode) return;
+        
+        // Atualizar contadores de tijolos na interface
+        document.getElementById('blueCount').textContent = this.currentBrickCount.blue;
+        document.getElementById('yellowCount').textContent = this.currentBrickCount.yellow;
+        document.getElementById('greenCount').textContent = this.currentBrickCount.green;
+        document.getElementById('purpleCount').textContent = this.currentBrickCount.purple;
+        document.getElementById('grayCount').textContent = this.currentBrickCount.gray;
+        document.getElementById('whiteCount').textContent = this.currentBrickCount.white;
+        document.getElementById('redCount').textContent = this.currentBrickCount.red;
     }
     
     updatePowersUI() {
@@ -2563,13 +3188,52 @@ class Game {
         
         // Desenhar efeitos visuais dos upgrades
         this.drawUpgradeEffects();
+        
+        // Desenhar timer de contagem regressiva
+        if (this.countdownActive && this.countdownTimer > 0) {
+            this.drawCountdownTimer();
+        }
+    }
+    
+    drawCountdownTimer() {
+        const timeLeft = Math.ceil(this.countdownTimer);
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        // Cor baseada no tempo restante
+        let color = '#2ecc71'; // Verde
+        if (timeLeft <= 30) {
+            color = '#e74c3c'; // Vermelho
+        } else if (timeLeft <= 60) {
+            color = '#f39c12'; // Laranja
+        }
+        
+        // Fundo semi-transparente
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        this.ctx.fillRect(this.width - 120, 20, 100, 40);
+        
+        // Borda
+        this.ctx.strokeStyle = color;
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeRect(this.width - 120, 20, 100, 40);
+        
+        // Texto
+        this.ctx.fillStyle = color;
+        this.ctx.font = 'bold 16px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(timeString, this.width - 70, 45);
+        
+        // Resetar alinhamento
+        this.ctx.textAlign = 'left';
     }
     
     drawBrick(brick) {
-        const color = this.getBrickColorValue(brick.color);
+        let color = this.getBrickColorValue(brick.color);
+        
+        this.ctx.fillStyle = color;
         
         // Desenhar tijolo com efeito 2.5D
-        this.ctx.fillStyle = color;
         this.ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
         
         // Borda superior e esquerda (mais clara)
@@ -2581,6 +3245,16 @@ class Game {
         this.ctx.fillStyle = this.darkenColor(color, 0.3);
         this.ctx.fillRect(brick.x, brick.y + brick.height - 2, brick.width, 2);
         this.ctx.fillRect(brick.x + brick.width - 2, brick.y, 2, brick.height);
+        
+        // Película de vidro protetora
+        if (brick.hasGlassCoating) {
+            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            this.ctx.fillRect(brick.x + 2, brick.y + 2, brick.width - 4, brick.height - 4);
+            
+            // Efeito de brilho
+            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            this.ctx.fillRect(brick.x + 4, brick.y + 4, brick.width - 8, 2);
+        }
         
         // Mostrar rachaduras se for o tijolo núcleo
         if (brick.color === 'red' && brick.hits < brick.maxHits) {
