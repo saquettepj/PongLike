@@ -92,6 +92,12 @@ class Game {
         this.activatablePowers = []; // Lista de poderes que podem ser ativados
         this.powerUIUpdateTimer = 0; // Timer para atualizar UI de poderes a cada segundo
         
+        // Sistema de Combo
+        this.currentPhaseCombo = 0; // Combo atual da fase
+        this.maxPhaseCombo = 0; // Maior combo da fase atual
+        this.lastBrickHitTime = 0; // Tempo da última colisão com bloco
+        this.comboTexts = []; // Array de textos de combo ativos
+        
         // Objetos do jogo
         this.paddle = null;
         this.balls = [];
@@ -661,6 +667,7 @@ class Game {
         this.updatePaddle();
         this.updateBalls();
         this.updateParticles();
+        this.updateComboTexts();
         this.updateFragments();
         this.updatePowerUps();
         this.updateUpgradeEffects();
@@ -1079,6 +1086,27 @@ class Game {
         });
     }
     
+    updateComboTexts() {
+        this.comboTexts.forEach((comboText, index) => {
+            comboText.x += comboText.vx;
+            comboText.y += comboText.vy;
+            comboText.life--;
+            comboText.alpha = comboText.life / comboText.maxLife;
+            
+            // Efeito de escala (cresce e depois diminui)
+            const progress = 1 - (comboText.life / comboText.maxLife);
+            if (progress < 0.3) {
+                comboText.scale = 1 + progress * 2; // Cresce até 1.6
+            } else {
+                comboText.scale = 1.6 - (progress - 0.3) * 0.6; // Diminui até 1
+            }
+            
+            if (comboText.life <= 0) {
+                this.comboTexts.splice(index, 1);
+            }
+        });
+    }
+    
     updateFragments() {
         this.fragments.forEach((fragment, index) => {
             fragment.x += fragment.vx;
@@ -1258,6 +1286,9 @@ class Game {
         // Resetar efeitos ao tocar no paddle (exceto speedMultiplier do bloco vermelho)
         this.resetBallEffects();
         
+        // Resetar combo atual da fase quando a bolinha toca na plataforma
+        this.currentPhaseCombo = 0;
+        
         // Calcular novo ângulo baseado na posição de impacto
         const hitPos = (ball.x - (this.paddle.x + this.paddle.width / 2)) / (this.paddle.width / 2);
         const angle = hitPos * (Math.PI / 3); // Ângulo máximo de 60 graus
@@ -1429,11 +1460,39 @@ class Game {
         if (brick.hits <= 0) {
             brick.destroyed = true;
 
+            // Sistema de Combo
+            const currentTime = Date.now();
+            const timeSinceLastHit = currentTime - this.lastBrickHitTime;
+            
+            // Se passou mais de 2 segundos desde a última colisão, resetar combo
+            if (timeSinceLastHit > 2000) {
+                this.currentPhaseCombo = 0;
+            }
+            
+            // Incrementar combo atual da fase
+            this.currentPhaseCombo++;
+            this.lastBrickHitTime = currentTime;
+            
+            // Atualizar combo máximo da fase
+            if (this.currentPhaseCombo > this.maxPhaseCombo) {
+                this.maxPhaseCombo = this.currentPhaseCombo;
+            }
+            
+            // Se é um combo (mais de 1 bloco consecutivo), criar texto COMBO!
+            if (this.currentPhaseCombo > 1) {
+                this.createComboText(brick.x + brick.width / 2, brick.y + brick.height / 2);
+            }
+
             // Atualizar contador de tijolos
             if (this.currentBrickCount[brick.color] > 0) {
                 this.currentBrickCount[brick.color]--;
             }
             let reward = this.getBrickReward(brick.color);
+            
+            // Bônus de combo: +1 moeda por bloco em combo
+            if (this.currentPhaseCombo > 1) {
+                reward += 1;
+            }
             
             // Efeito especial do bloco branco - criar fragmento perigoso
             if (brick.color === 'white') {
@@ -2216,6 +2275,20 @@ class Game {
         }
     }
     
+    createComboText(x, y) {
+        this.comboTexts.push({
+            x: x,
+            y: y,
+            text: 'COMBO!',
+            life: 120, // 2 segundos a 60 FPS
+            maxLife: 120,
+            alpha: 1,
+            scale: 1,
+            vx: (Math.random() - 0.5) * 2, // Movimento aleatório leve
+            vy: -1 // Movimento para cima
+        });
+    }
+    
     createFragment(x, y) {
         this.fragments.push({
             x: x,
@@ -2415,6 +2488,52 @@ class Game {
         
         document.body.appendChild(notification);
         
+        // Efeito de fade out suave após 2.5 segundos
+        setTimeout(() => {
+            notification.style.transition = 'opacity 0.5s ease-out';
+            notification.style.opacity = '0';
+        }, 2500);
+        
+        // Remover após 3 segundos
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 3000);
+    }
+    
+    showComboRewardNotification(comboCount) {
+        // Criar notificação visual para recompensa de combo
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: #ff6b35;
+            padding: 20px;
+            border: 3px solid #ff6b35;
+            border-radius: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            z-index: 10000;
+            box-shadow: 0 0 30px rgba(255, 107, 53, 0.5);
+        `;
+        notification.innerHTML = `
+            <div>Recompensa de Combo:</div>
+            <div style="color: #fdcb6e; margin-top: 10px;">+${comboCount} moedas 🪙 ganhas pelo combo máximo</div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Efeito de fade out suave após 2.5 segundos
+        setTimeout(() => {
+            notification.style.transition = 'opacity 0.5s ease-out';
+            notification.style.opacity = '0';
+        }, 2500);
+        
         // Remover após 3 segundos
         setTimeout(() => {
             if (notification.parentNode) {
@@ -2591,6 +2710,10 @@ class Game {
         // Resetar contador de batidas
         this.ballHitCount = 0;
         
+        // Resetar combo da fase
+        this.currentPhaseCombo = 0;
+        this.maxPhaseCombo = 0;
+        
         // Resetar tempo de jogo
         this.gameTime = 0;
         
@@ -2646,6 +2769,14 @@ class Game {
     }
     
     showUpgradeScreen() {
+        // Recompensa de fase: somar combo atual da fase nas moedas
+        if (this.currentPhaseCombo > 0) {
+            this.money += this.currentPhaseCombo;
+            
+            // Feedback visual da recompensa
+            this.showComboRewardNotification(this.currentPhaseCombo);
+        }
+        
         // Armazenar dinheiro antes de entrar na loja
         this.moneyBeforeShop = this.money;
         
@@ -3075,6 +3206,10 @@ class Game {
         this.ballHitCount = 0; // Resetar contador da Bolinha Prima
         this.paddle.hitCount = 0; // Resetar contador de batidas da plataforma para Canhões Acoplados
         
+        // Resetar combo da fase para nova fase
+        this.currentPhaseCombo = 0;
+        this.maxPhaseCombo = 0;
+        
         // Resetar cooldowns de todos os poderes ativos
         Object.keys(this.activeUpgradeEffects).forEach(key => {
             this.activeUpgradeEffects[key].timer = 0;
@@ -3155,6 +3290,12 @@ class Game {
             } else {
                 primeCounter.style.display = 'none';
             }
+        }
+        
+        // Atualizar combo máximo da fase
+        const maxComboElement = document.getElementById('maxCombo');
+        if (maxComboElement) {
+            maxComboElement.textContent = this.maxPhaseCombo;
         }
         
         // Atualizar interface de poderes
@@ -3495,6 +3636,11 @@ class Game {
             this.drawParticle(particle);
         });
         
+        // Desenhar textos de combo
+        this.comboTexts.forEach(comboText => {
+            this.drawComboText(comboText);
+        });
+        
         // Desenhar fragmentos
         this.fragments.forEach(fragment => {
             this.drawFragment(fragment);
@@ -3789,6 +3935,27 @@ class Game {
         this.ctx.beginPath();
         this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
         this.ctx.fill();
+        this.ctx.restore();
+    }
+    
+    drawComboText(comboText) {
+        this.ctx.save();
+        this.ctx.globalAlpha = comboText.alpha;
+        
+        // Aplicar escala
+        this.ctx.translate(comboText.x, comboText.y);
+        this.ctx.scale(comboText.scale, comboText.scale);
+        this.ctx.translate(-comboText.x, -comboText.y);
+        
+        // Cor laranja neon igual à bolinha (sem borda)
+        this.ctx.fillStyle = '#ff6b35';
+        this.ctx.font = 'bold 17px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        
+        // Desenhar apenas o texto (sem contorno)
+        this.ctx.fillText(comboText.text, comboText.x, comboText.y);
+        
         this.ctx.restore();
     }
     

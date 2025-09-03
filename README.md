@@ -77,6 +77,11 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 
 ## 🧱 Sistema de Tijolos
 
+### 🎯 Sistema de COMBO
+- **Ativação**: Quando a bolinha acerta mais de um bloco diferente consecutivamente sem tocar na plataforma
+- **Recompensa Imediata**: Cada bloco destruído em combo dá +1 moeda extra
+- **Recompensa de Fase**: Ao entrar na loja, o combo atual da fase é somado às moedas
+
 ### Cores e Efeitos
 
 | Cor | Efeito | Recompensa |
