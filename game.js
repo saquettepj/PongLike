@@ -2491,10 +2491,14 @@ class Game {
         
         // Mostrar upgrades selecionados
         selectedUpgrades.forEach(upgrade => {
-            // Aplicar desconto se promoção estiver ativa
+            // Calcular preço base considerando promoção
             let displayPrice = upgrade.price;
             if (this.shopPromotion.active) {
                 displayPrice = Math.floor(upgrade.price * (1 - this.shopPromotion.discountPercent / 100));
+            }
+            // Aplicar Modificador "Mercado Inflacionado" para exibição (+50%)
+            if (this.phaseModifiers && this.phaseModifiers.inflatedMarket) {
+                displayPrice = Math.floor(displayPrice * 1.5);
             }
             
             const upgradeCard = document.createElement('div');
@@ -2516,7 +2520,13 @@ class Game {
                 </div>
             `;
             
+            // Desabilitar imediatamente se já comprado (nunca oferecer duplicado, por segurança visual)
+            if (this.hasUpgrade(upgrade.id)) {
+                upgradeCard.classList.add('disabled');
+            }
+
             upgradeCard.addEventListener('click', () => {
+                if (upgradeCard.classList.contains('disabled')) return;
                 this.selectUpgrade(upgrade, upgradeCard, displayPrice);
             });
             
@@ -2758,13 +2768,21 @@ class Game {
     }
     
     selectUpgrade(upgrade, cardElement, discountedPrice = null) {
-        let priceToPay = discountedPrice !== null ? discountedPrice : upgrade.price;
-        
-        // Modificador "Mercado Inflacionado" - upgrades custam 30% a mais
-        if (this.phaseModifiers.inflatedMarket) {
-            priceToPay = Math.floor(priceToPay * 1.3);
+        // Se já possui este upgrade, não permitir nova compra
+        if (this.hasUpgrade(upgrade.id)) {
+            if (cardElement) {
+                cardElement.classList.add('disabled');
+            }
+            return;
         }
-        
+
+        let priceToPay = discountedPrice !== null ? discountedPrice : upgrade.price;
+
+        // Modificador "Mercado Inflacionado" - upgrades custam 50% a mais
+        if (this.phaseModifiers.inflatedMarket) {
+            priceToPay = Math.floor(priceToPay * 1.5);
+        }
+
         if (this.money >= priceToPay) {
             this.money -= priceToPay;
             
@@ -2772,8 +2790,15 @@ class Game {
             this.playSound('purchase');
             
             this.updateUI(); // Atualizar UI em tempo real
-            this.activeUpgrades.push(upgrade);
-            cardElement.classList.add('selected');
+            // Garantir que não haja duplicatas
+            if (!this.hasUpgrade(upgrade.id)) {
+                this.activeUpgrades.push(upgrade);
+            }
+            // Marcar visualmente como comprado e desabilitar novas compras
+            if (cardElement) {
+                cardElement.classList.add('selected');
+                cardElement.classList.add('disabled');
+            }
             this.updateUI();
             
             // Aplicar upgrade imediatamente se for do tipo especial
@@ -2900,11 +2925,14 @@ class Game {
         // Atualizar subtitle da loja
         const upgradeSubtitle = document.getElementById('upgradeSubtitle');
         if (upgradeSubtitle) {
+            const parts = [];
             if (this.shopPromotion.active) {
-                upgradeSubtitle.textContent = `A loja está com ${this.shopPromotion.discountPercent}% em promoção!`;
-            } else {
-                upgradeSubtitle.textContent = 'Escolha seus upgrades';
+                parts.push(`Promoção: -${this.shopPromotion.discountPercent}%`);
             }
+            if (this.phaseModifiers && this.phaseModifiers.inflatedMarket) {
+                parts.push('Mercado Inflacionado: +50%');
+            }
+            upgradeSubtitle.textContent = parts.length ? parts.join(' | ') : 'Escolha seus upgrades';
         }
         
         // Atualizar vidas

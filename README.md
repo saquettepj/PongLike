@@ -49,7 +49,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 - **Indicador**: Mostra direção atual (O/E) e tempo restante para mudança (40 segundos)
 
 #### 💰 Mercado Inflacionado
-- **Efeito**: Todos os upgrades na próxima loja custam 30% a mais
+- **Efeito**: Todos os upgrades na próxima loja custam 50% a mais
 - **Impacto**: Dificuldade econômica - força o jogador a ser mais seletivo
 - **Dificuldade**: Alta - reduz significativamente o poder de compra
 

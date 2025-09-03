@@ -773,6 +773,7 @@ body {
 .upgrade-card.disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    filter: grayscale(1);
 }
 
 .upgrade-card.disabled:hover {
