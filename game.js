@@ -1607,21 +1607,28 @@ class Game {
             this.money += 1;
         }
         
-        // Reforço - destruir bloco de trás
+        // Reforço - destruir bloco de trás (linha de cima)
         if (this.hasUpgrade('repulsor_shield')) {
-            // Calcular direção da bolinha para determinar qual é o "bloco de trás"
-            const ballDirection = ball.vx > 0 ? 1 : -1; // 1 = direita, -1 = esquerda
-            const behindX = brick.x + (ballDirection > 0 ? -this.config.brickWidth - this.config.brickSpacing : this.config.brickWidth + this.config.brickSpacing);
+            // Verificar se o bloco atingido está se movendo
+            const hitBrickIsMoving = brick.isMoving;
             
-            // Encontrar bloco de trás
+            // Calcular posição do bloco de trás (linha de cima)
+            // O bloco de trás é o bloco que está na linha superior, mesma coluna
+            const behindY = brick.y - this.config.brickHeight - this.config.brickSpacing;
+            
+            // Encontrar bloco de trás (linha de cima, mesma coluna)
             const behindBrick = this.bricks.find(b => 
                 !b.destroyed && 
                 b.color !== 'red' &&
-                Math.abs(b.x - behindX) < 5 && // Tolerância de 5 pixels
-                Math.abs(b.y - brick.y) < 5 // Mesma linha
+                Math.abs(b.x - brick.x) < 5 && // Mesma coluna (tolerância de 5 pixels)
+                Math.abs(b.y - behindY) < 5 // Linha de cima
             );
             
-            if (behindBrick) {
+            // Só destruir o bloco de trás se:
+            // 1. Existe um bloco na linha de cima
+            // 2. Nem o bloco atingido nem o bloco de cima estiverem se movendo
+            // Se não houver bloco na linha de cima, simplesmente ignora (não faz nada extra)
+            if (behindBrick && !hitBrickIsMoving && !behindBrick.isMoving) {
                 behindBrick.destroyed = true;
                 // Atualizar contador de tijolos
                 if (this.currentBrickCount[behindBrick.color] > 0) {
@@ -1630,6 +1637,7 @@ class Game {
                 this.money += this.getBrickReward(behindBrick.color);
                 this.createParticles(behindBrick.x + behindBrick.width / 2, behindBrick.y + behindBrick.height / 2, this.getBrickColorValue(behindBrick.color));
             }
+            // Se não houver bloco na linha de cima, o upgrade não faz nada adicional
         }
         
         // Tocar som de batida no tijolo

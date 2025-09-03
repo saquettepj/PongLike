@@ -110,7 +110,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 3. **Super Ímã** - Campo magnético para puxar bolinha (180 🪙)
 4. **Dash de Plataforma** - Movimento rápido lateral por 3s (cooldown 60s) (140 🪙)
 5. **Plataforma de Aceleração** - Ativa aceleração de 30% na bolinha por 10 segundos. (cooldown 20s) (80 🪙)
-6. **Reforço** - Plataforma 2x mais alta e destrói bloco de trás (220 🪙)
+6. **Reforço** - Plataforma 2x mais alta e destrói bloco da linha de cima (220 🪙)
 7. **Tiro Carregado** - Atira projétil perfurante imediatamente (190 🪙)
 
 #### ⚽ Upgrades de Bolinha (12 total)
