@@ -114,7 +114,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 10. **Multi-bola** - Cria uma nova bolinha grudada na plataforma. (cooldown 60s) (200 🪙)
 11. **Bolinha Explosiva** - Explode ao atingir tijolos (não afeta o núcleo vermelho) (350 🪙)
 12. **Eco da Bolinha** - Destrói um bloco aleatório adicional a cada batida (250 🪙)
-13. **Ativador de Efeito** - Ativa efeito aleatório dos blocos na bolinha (cooldown 20s) (30 🪙)
+13. **Ativador de Efeito** - Ativa efeito aleatório dos blocos na bolinha e ganha moedas baseadas na cor do bloco do efeito ativado (cooldown 20s) (60 🪙)
 14. **Bolinha Espelhada** - Destrói bloco simétrico ao quebrar um (250 🪙)
 15. **Bolinha da Fortuna** - Bolinha dourada que dá +1 moeda por bloco (150 🪙)
 16. **Bolinha do Tempo** - Para a bolinha por 3 segundos. (cooldown 40s) (180 🪙)
@@ -126,12 +126,12 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 20. **Amuleto da Sorte** - +25% dinheiro (30 🪙)
 21. **Seguro de Vida** - Ganha 100 moedas ao perder vida (150 🪙)
 22. **Reciclagem** - Tijolos azuis podem reaparecer (30 🪙)
-23. **Conversor de Risco** - Diminui vida do bloco vermelho para 3 e muda velocidade da bolinha entre 80%-140% a cada 5s (50 🪙)
+23. **Conversor de Risco** - Diminui vida do bloco vermelho para 3, muda velocidade da bolinha entre 80%-140% a cada 5s e desativa a troca de posição do bloco vermelho (100 🪙)
 
 #### 🔥 Upgrades "Quebra-Regras" (5 total)
 24. **Dano Estrutural** - Primeira batida no núcleo conta como duas (180 🪙)
 25. **Visão de Calor** - Rastro térmico mais visível (100 🪙)
-26. **Reversão Controlada** - Inversão só acontece 50% das vezes (40 🪙)
+26. **Reversão Controlada** - Desativa completamente o efeito de Inversão do tijolo verde (120 🪙)
 27. **Investidor** - Sacrifica vida por 50 moedas (0 🪙)
 28. **Poupança** - Mantém até 50 moedas para próxima fase (80 🪙)
 

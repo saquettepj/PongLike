@@ -1305,9 +1305,8 @@ class Game {
         
         // Aplicar efeito do tijolo (com reversão controlada)
         if (brick.color === 'green' && this.hasUpgrade('controlled_reversal')) {
-            if (Math.random() < 0.5) {
-                this.applyBrickEffect(brick.color);
-            }
+            // Reversão Controlada desativa completamente a reversão do bloco verde
+            // Não aplicar o efeito de reversão
         } else {
             this.applyBrickEffect(brick.color);
         }
@@ -1334,33 +1333,36 @@ class Game {
         
         // Efeito especial do bloco vermelho - trocar posição com outro bloco
         if (brick.color === 'red') {
-            // Encontrar blocos disponíveis para troca (não destruídos e não vermelhos)
-            const availableBricks = this.bricks.filter(b => !b.destroyed && b.color !== 'red' && b !== brick);
-            
-            if (availableBricks.length > 0) {
-                // Escolher um bloco aleatório para trocar
-                const randomBrick = availableBricks[Math.floor(Math.random() * availableBricks.length)];
+            // Conversor de Risco desativa a troca de posição do bloco vermelho
+            if (!this.hasUpgrade('risk_converter')) {
+                // Encontrar blocos disponíveis para troca (não destruídos e não vermelhos)
+                const availableBricks = this.bricks.filter(b => !b.destroyed && b.color !== 'red' && b !== brick);
                 
-                // Trocar posições
-                const tempX = brick.x;
-                const tempY = brick.y;
-                brick.x = randomBrick.x;
-                brick.y = randomBrick.y;
-                randomBrick.x = tempX;
-                randomBrick.y = tempY;
-                
-                // Criar efeito visual da troca
-                this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff0000');
-                this.createParticles(randomBrick.x + randomBrick.width / 2, randomBrick.y + randomBrick.height / 2, this.getBrickColorValue(randomBrick.color));
-                
-                // Resetar contador de contagem regressiva se ativo quando o bloco vermelho troca de posição
-                if (this.phaseModifiers.countdown && this.countdownActive) {
-                    this.countdownTimer = 120; // Resetar para 120 segundos
-                }
-                
-                // Pânico Vermelho - restaurar blocos quando troca de posição
-                if (this.phaseModifiers.redPanic && this.phaseModifiers.redPanic === true) {
-                    this.restoreBricksOnRedPanic();
+                if (availableBricks.length > 0) {
+                    // Escolher um bloco aleatório para trocar
+                    const randomBrick = availableBricks[Math.floor(Math.random() * availableBricks.length)];
+                    
+                    // Trocar posições
+                    const tempX = brick.x;
+                    const tempY = brick.y;
+                    brick.x = randomBrick.x;
+                    brick.y = randomBrick.y;
+                    randomBrick.x = tempX;
+                    randomBrick.y = tempY;
+                    
+                    // Criar efeito visual da troca
+                    this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff0000');
+                    this.createParticles(randomBrick.x + randomBrick.width / 2, randomBrick.y + randomBrick.height / 2, this.getBrickColorValue(randomBrick.color));
+                    
+                    // Resetar contador de contagem regressiva se ativo quando o bloco vermelho troca de posição
+                    if (this.phaseModifiers.countdown && this.countdownActive) {
+                        this.countdownTimer = 120; // Resetar para 120 segundos
+                    }
+                    
+                    // Pânico Vermelho - restaurar blocos quando troca de posição
+                    if (this.phaseModifiers.redPanic && this.phaseModifiers.redPanic === true) {
+                        this.restoreBricksOnRedPanic();
+                    }
                 }
             }
         }
@@ -1692,6 +1694,14 @@ class Game {
                     const effects = ['yellow', 'green', 'purple', 'gray'];
                     const randomEffect = effects[Math.floor(Math.random() * effects.length)];
                     this.applyBrickEffect(randomEffect);
+                    
+                    // Ganhar moedas baseadas na cor do efeito ativado
+                    const coinsEarned = this.getBrickReward(randomEffect);
+                    this.money += coinsEarned;
+                    
+                    // Efeito visual das moedas ganhas
+                    this.createParticles(this.width / 2, this.height / 2, '#f1c40f');
+                    
                     this.playSound('effectActivator');
                 }
                 break;
@@ -2793,8 +2803,8 @@ class Game {
             {
                 id: 'effect_activator',
                 name: 'Ativador de Efeito',
-                description: 'Ativa efeito aleatório dos blocos na bolinha (cooldown 20s)',
-                price: 30,
+                description: 'Ativa efeito aleatório dos blocos na bolinha e ganha moedas baseadas na cor do efeito ativado (cooldown 20s)',
+                price: 60,
                 type: 'ball',
                 icon: this.getUpgradeIcon('effect_activator')
             },
@@ -2859,8 +2869,8 @@ class Game {
             {
                 id: 'risk_converter',
                 name: 'Conversor de Risco',
-                description: 'Diminui vida do bloco vermelho para 3 e muda velocidade da bolinha entre 80%-140% a cada 5s',
-                price: 50,
+                description: 'Diminui vida do bloco vermelho para 3, muda velocidade da bolinha entre 80%-140% a cada 5s e desativa a troca de posição do bloco vermelho',
+                price: 100,
                 type: 'utility',
                 icon: this.getUpgradeIcon('risk_converter')
             },
@@ -2885,8 +2895,8 @@ class Game {
             {
                 id: 'controlled_reversal',
                 name: 'Reversão Controlada',
-                description: 'O efeito de Inversão do tijolo verde só acontece 50% das vezes',
-                price: 40,
+                description: 'Desativa completamente o efeito de Inversão do tijolo verde',
+                price: 120,
                 type: 'special',
                 icon: this.getUpgradeIcon('controlled_reversal')
             },
