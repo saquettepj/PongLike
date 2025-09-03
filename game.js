@@ -386,8 +386,50 @@ class Game {
     }
     
     resumeGame() {
-        this.gamePaused = false;
+        // Em vez de despausar imediatamente, iniciar contagem regressiva
+        this.startResumeCountdown();
+    }
+
+    startResumeCountdown() {
+        const overlay = document.getElementById('countdownOverlay');
+        const numberEl = document.getElementById('countdownNumber');
+        if (!overlay || !numberEl) {
+            // Fallback: se overlay não existir, despausa direto
+            this.gamePaused = false;
+            this.showScreen('gameScreen');
+            return;
+        }
+
         this.showScreen('gameScreen');
+        overlay.style.display = 'flex';
+
+        const sequence = ['3', '2', '1'];
+        let idx = 0;
+
+        const tick = () => {
+            numberEl.textContent = sequence[idx];
+            // Reinicia animação pop
+            numberEl.style.animation = 'none';
+            // Force reflow
+            void numberEl.offsetWidth;
+            numberEl.style.animation = 'titleGlow 2s ease-in-out infinite alternate, countdownPop 0.6s ease forwards';
+
+            idx++;
+            if (idx < sequence.length) {
+                this._countdownTimer = setTimeout(tick, 800);
+            } else {
+                this._countdownTimer = setTimeout(() => {
+                    overlay.style.display = 'none';
+                    this.gamePaused = false;
+                }, 800);
+            }
+        };
+
+        // Cancela contagem anterior, se houver
+        if (this._countdownTimer) {
+            clearTimeout(this._countdownTimer);
+        }
+        tick();
     }
     
     updatePurchasedPowersUI() {
