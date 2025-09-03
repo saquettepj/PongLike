@@ -81,7 +81,7 @@ class Game {
         // - Botões para pular fase e adicionar dinheiro
         // - Ferramentas de debug
         // ========================================
-        this.developerMode = false;
+        this.developerMode = true;
         this.gameRunning = false;
         this.gamePaused = false;
         this.ballHitCount = 0; // Contador de batidas da bolinha para Bolinha Prima
@@ -329,6 +329,8 @@ class Game {
             if (e.code === 'KeyA' || e.code === 'KeyD' || e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
                 if (this.hasUpgrade('paddle_dash') && this.activeUpgradeEffects.paddleDash.active) {
                     this.activeUpgradeEffects.paddleDash.active = false;
+                    // Iniciar cooldown quando o dash é desativado manualmente
+                    this.activeUpgradeEffects.paddleDash.timer = this.activeUpgradeEffects.paddleDash.cooldown;
                 }
             }
         });
@@ -2754,7 +2756,7 @@ class Game {
             {
                 id: 'paddle_dash',
                 name: 'Dash de Plataforma',
-                description: 'Permite um movimento rápido (dash) para a esquerda ou direita uma vez a cada 5 segundos',
+                description: 'Permite um movimento rápido (dash) para a esquerda ou direita por 3 segundos.',
                 price: 140,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('paddle_dash')
