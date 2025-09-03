@@ -1811,13 +1811,6 @@ class Game {
             this.createParticles(this.paddle.x + this.paddle.width / 2, this.paddle.y, '#3498db');
         }
         
-        // Dash de Plataforma
-        if (this.hasUpgrade('paddle_dash') && this.activeUpgradeEffects.paddleDash.timer <= 0) {
-            this.activeUpgradeEffects.paddleDash.active = true;
-            this.activeUpgradeEffects.paddleDash.timer = this.activeUpgradeEffects.paddleDash.cooldown;
-            this.createParticles(this.paddle.x + this.paddle.width / 2, this.paddle.y, '#f1c40f');
-        }
-        
         // Tiro Carregado
         if (this.hasUpgrade('charged_shot') && !this.activeUpgradeEffects.chargedShot.charging) {
             this.activeUpgradeEffects.chargedShot.charging = true;
