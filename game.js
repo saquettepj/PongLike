@@ -81,7 +81,7 @@ class Game {
         // - Botões para pular fase e adicionar dinheiro
         // - Ferramentas de debug
         // ========================================
-        this.developerMode = true;
+        this.developerMode = false;
         this.gameRunning = false;
         this.gamePaused = false;
         this.ballHitCount = 0; // Contador de batidas da bolinha para Bolinha Prima
@@ -131,7 +131,8 @@ class Game {
             safetyNet: { active: false, timer: 0, duration: 900, cooldown: 4800 },
             effectActivator: { active: false, timer: 0, duration: 0, cooldown: 1200 },
             cushionPaddle: { active: false, timer: 0, duration: 600, cooldown: 1200 },
-            multiBall: { active: false, timer: 0, duration: 0, cooldown: 3600 }
+            multiBall: { active: false, timer: 0, duration: 0, cooldown: 3600 },
+            timeBall: { active: false, timer: 0, duration: 180, cooldown: 2400 }
         };
         
         // Configurações
@@ -716,16 +717,23 @@ class Game {
             // Desativar efeitos quando o timer chegar a zero
             if (effect.timer <= 0 && effect.active) {
                 effect.active = false;
-                // Se for Super Ímã, Dash de Plataforma, Rede de Segurança ou Plataforma de Aceleração, iniciar cooldown
-                if ((key === 'superMagnet' || key === 'paddleDash' || key === 'safetyNet' || key === 'cushionPaddle') && effect.cooldown) {
+                // Se for Super Ímã, Dash de Plataforma, Rede de Segurança, Plataforma de Aceleração ou Bolinha do Tempo, iniciar cooldown
+                if ((key === 'superMagnet' || key === 'paddleDash' || key === 'safetyNet' || key === 'cushionPaddle' || key === 'timeBall') && effect.cooldown) {
                     effect.timer = effect.cooldown;
                 }
             }
+            
+
         });
         
         // Decrementar cooldown do tiro carregado
         if (this.activeUpgradeEffects.chargedShot.cooldown > 0) {
             this.activeUpgradeEffects.chargedShot.cooldown--;
+        }
+        
+        // Decrementar cooldown do ativador de efeito
+        if (this.activeUpgradeEffects.effectActivator.cooldown > 0) {
+            this.activeUpgradeEffects.effectActivator.cooldown--;
         }
         
         // Conversor de Risco - mudar velocidade da bolinha aleatoriamente a cada 5 segundos
@@ -763,6 +771,14 @@ class Game {
                     ball.vx += (dx / distance) * attraction;
                     ball.vy += (dy / distance) * attraction;
                 }
+            });
+        }
+        
+        // Aplicar efeito da Bolinha do Tempo
+        if (this.activeUpgradeEffects.timeBall.active) {
+            this.balls.forEach(ball => {
+                ball.vx = 0;
+                ball.vy = 0;
             });
         }
         
@@ -1705,6 +1721,16 @@ class Game {
                     this.playSound('multiBall');
                 }
                 break;
+                
+            case 'time_ball':
+                if (!this.activeUpgradeEffects.timeBall.active && this.activeUpgradeEffects.timeBall.timer <= 0) {
+                    this.activeUpgradeEffects.timeBall.active = true;
+                    this.activeUpgradeEffects.timeBall.timer = this.activeUpgradeEffects.timeBall.duration;
+                    this.activeUpgradeEffects.timeBall.cooldown = 2400; // 40 segundos
+                    this.createParticles(this.width / 2, this.height / 2, '#3498db');
+                    this.playSound('chaoticMovement'); // Reutilizar som místico
+                }
+                break;
         }
     }
     
@@ -2000,6 +2026,15 @@ class Game {
                 <circle cx="16" cy="16" r="4" fill="#f1c40f" stroke="#f39c12" stroke-width="1"/>
                 <text x="16" y="19" text-anchor="middle" font-family="Arial" font-size="8" fill="#2c3e50">$</text>
                 <rect x="14" y="4" width="4" height="2" fill="#95a5a6"/>
+            </svg>`,
+            
+            'time_ball': `<svg width="32" height="32" viewBox="0 0 32 32">
+                <circle cx="16" cy="16" r="8" fill="#2c3e50" stroke="#34495e" stroke-width="2"/>
+                <circle cx="16" cy="16" r="6" fill="#3498db" stroke="#2980b9" stroke-width="1"/>
+                <circle cx="16" cy="16" r="2" fill="#ecf0f1"/>
+                <path d="M16 8 L16 16 L20 20" stroke="#e74c3c" stroke-width="2" fill="none"/>
+                <path d="M16 8 L16 16 L12 20" stroke="#e74c3c" stroke-width="2" fill="none"/>
+                <circle cx="16" cy="16" r="1" fill="#e74c3c"/>
             </svg>`
         };
         
@@ -2855,6 +2890,14 @@ class Game {
                 price: 80,
                 type: 'passive',
                 icon: this.getUpgradeIcon('money_saver')
+            },
+            {
+                id: 'time_ball',
+                name: 'Bolinha do Tempo',
+                description: 'Para a bolinha por 3 segundos.',
+                price: 180,
+                type: 'ball',
+                icon: this.getUpgradeIcon('time_ball')
             }
         ];
         
@@ -3282,6 +3325,20 @@ class Game {
                     cooldownElement.className = 'power-cooldown ready';
                 }
                 break;
+                
+            case 'time_ball':
+                const timeBallEffect = this.activeUpgradeEffects.timeBall;
+                if (timeBallEffect.timer > 0 || timeBallEffect.cooldown > 0) {
+                    powerItem.className = 'power-item on-cooldown';
+                    const seconds = Math.ceil(Math.max(timeBallEffect.timer, timeBallEffect.cooldown) / 60);
+                    cooldownElement.textContent = `${seconds}s`;
+                    cooldownElement.className = 'power-cooldown';
+                } else {
+                    powerItem.className = 'power-item';
+                    cooldownElement.textContent = 'PRONTO';
+                    cooldownElement.className = 'power-cooldown ready';
+                }
+                break;
         }
     }
     
@@ -3642,6 +3699,16 @@ class Game {
             this.ctx.arc(point.x, point.y, ball.radius * alpha, 0, Math.PI * 2);
             this.ctx.fill();
         });
+        
+        // Desenhar contador da Bolinha do Tempo
+        if (this.hasUpgrade('time_ball') && this.activeUpgradeEffects.timeBall.active) {
+            const timeLeft = Math.ceil(this.activeUpgradeEffects.timeBall.timer / 60);
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.font = 'bold 12px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText(timeLeft.toString(), ball.x, ball.y + 4);
+            this.ctx.textAlign = 'left';
+        }
     }
     
     drawParticle(particle) {
