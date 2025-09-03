@@ -53,11 +53,6 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 - **Impacto**: Dificuldade econômica - força o jogador a ser mais seletivo
 - **Dificuldade**: Alta - reduz significativamente o poder de compra
 
-#### 🌫️ Névoa
-- **Efeito**: Partes da tela ficam cobertas por névoa que esconde a estrutura dos tijolos
-- **Impacto**: Reduz visibilidade, dificultando o planejamento de estratégias
-- **Dificuldade**: Média - requer mais memória e instinto
-
 #### 🔴 Pânico Vermelho
 - **Efeito**: O Tijolo Núcleo se move lentamente pela formação
 - **Impacto**: Alvo móvel torna o objetivo mais difícil de atingir

@@ -50,7 +50,7 @@ class Game {
         this.phaseModifiers = {
             westWinds: false,
             inflatedMarket: false,
-            fog: false,
+
             redPanic: false,
             weakBattery: false,
             noGoodEffects: false,
@@ -2114,7 +2114,7 @@ class Game {
     
     selectRandomModifier() {
         const modifiers = [
-            'westWinds', 'inflatedMarket', 'fog', 'redPanic', 
+            'westWinds', 'inflatedMarket', 'redPanic', 
             'weakBattery', 'noGoodEffects', 'countdown'
         ];
         
@@ -2142,7 +2142,7 @@ class Game {
         const modifierNames = {
             'westWinds': 'Ventos de Oeste',
             'inflatedMarket': 'Mercado Inflacionado',
-            'fog': 'Névoa',
+
             'redPanic': 'Pânico Vermelho',
             'weakBattery': 'Bateria Fraca',
             'noGoodEffects': 'Sem Efeitos Bons',
@@ -2211,7 +2211,7 @@ class Game {
         this.phaseModifiers = {
             westWinds: false,
             inflatedMarket: false,
-            fog: false,
+
             redPanic: false,
             weakBattery: false,
             noGoodEffects: false,
@@ -2322,7 +2322,7 @@ class Game {
         this.phaseModifiers = {
             westWinds: false,
             inflatedMarket: false,
-            fog: false,
+
             redPanic: false,
             weakBattery: false,
             noGoodEffects: false,
