@@ -852,6 +852,23 @@ class Game {
                         brick.x = Math.max(0, Math.min(brick.x, this.width - brick.width));
                     }
                 }
+                
+                // Proteção adicional para bloco vermelho - garantir que sempre fique dentro dos limites
+                if (brick.color === 'red') {
+                    // Verificar limites horizontais
+                    if (brick.x < 0) {
+                        brick.x = 0;
+                    } else if (brick.x + brick.width > this.width) {
+                        brick.x = this.width - brick.width;
+                    }
+                    
+                    // Verificar limites verticais (manter na área superior da tela)
+                    if (brick.y < 0) {
+                        brick.y = 0;
+                    } else if (brick.y + brick.height > this.height * 0.8) {
+                        brick.y = this.height * 0.8 - brick.height;
+                    }
+                }
             }
         });
     }
@@ -1417,6 +1434,24 @@ class Game {
                     brick.y = randomBrick.y;
                     randomBrick.x = tempX;
                     randomBrick.y = tempY;
+                    
+                    // Garantir que o bloco vermelho fique dentro dos limites da tela
+                    // Se o bloco vermelho estiver se movendo, ajustar sua posição para ficar dentro da tela
+                    if (brick.isMoving) {
+                        // Verificar limites horizontais
+                        if (brick.x < 0) {
+                            brick.x = 0;
+                        } else if (brick.x + brick.width > this.width) {
+                            brick.x = this.width - brick.width;
+                        }
+                        
+                        // Verificar limites verticais (se necessário)
+                        if (brick.y < 0) {
+                            brick.y = 0;
+                        } else if (brick.y + brick.height > this.height * 0.8) { // Limitar à área superior da tela
+                            brick.y = this.height * 0.8 - brick.height;
+                        }
+                    }
                     
                     // Criar efeito visual da troca
                     this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, '#ff0000');
