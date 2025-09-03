@@ -42,11 +42,11 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 ### Modificadores Aleatórios (Fase 6+)
 A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modificador dura apenas uma fase e é resetado na próxima.
 
-#### 🌪️ Ventos de Leste e Oeste
-- **Efeito**: Uma força sutil e constante empurra a bolinha, alternando entre direita (Oeste) e esquerda (Leste)
-- **Impacto**: Muda a trajetória natural da bolinha, exigindo ajustes constantes na estratégia
-- **Dificuldade**: Média - requer adaptação do timing e antecipação das mudanças
-- **Indicador**: Mostra direção atual (O/E) e tempo restante para mudança (40 segundos)
+#### 🌪️ Movimento Caótico
+- **Efeito**: A bolinha muda completamente de direção a cada 20 segundos
+- **Impacto**: Dificuldade extrema de previsão - movimento totalmente imprevisível
+- **Dificuldade**: Muito Alta - exige reação rápida e adaptação constante
+- **Indicador**: Mostra ícone de tornado e tempo restante para próxima mudança (20 segundos)
 
 #### 💰 Mercado Inflacionado
 - **Efeito**: Todos os upgrades na próxima loja custam 50% a mais

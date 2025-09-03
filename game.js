@@ -48,7 +48,7 @@ class Game {
         
         // Modificadores de fase
         this.phaseModifiers = {
-            westWinds: false,
+            chaoticMovement: false,
             inflatedMarket: false,
 
             redPanic: false,
@@ -60,12 +60,11 @@ class Game {
         // Timer para contagem regressiva
         this.countdownTimer = 0;
         this.countdownActive = false;
+        // Contagem de retomada (overlay 3-2-1)
+        this.resumeCountdownActive = false;
         
-        // Sistema de ventos de leste e oeste
-        this.windDirection = 'O'; // 'O' para Oeste (direita), 'E' para Leste (esquerda)
-        this.windDirectionTimer = 0; // Timer para mudança de direção (40 segundos)
-        this.windEffectTimer = 0; // Timer para efeito de curva
-        this.windCurveSign = 1; // Sinal da curva do vento (inverte ao bater na plataforma)
+        // Sistema de movimento caótico
+        this.chaoticMovementTimer = 0; // Timer para mudança de direção (20 segundos)
         
         // Poderes desativados pelo modificador "Sem Efeitos Bons"
         this.disabledPowers = [];
@@ -197,6 +196,9 @@ class Game {
         
         // Som para multi-bola - som de "pop" ou "sploosh" para criação de bola
         this.sounds.multiBall = this.createTone(400, 0.2, 'triangle');
+        
+        // Som místico para movimento caótico
+        this.sounds.chaoticMovement = this.createMysticalSound();
     }
     
     createTone(frequency, duration, type = 'sine') {
@@ -217,6 +219,28 @@ class Game {
             
             oscillator.start(this.audioContext.currentTime);
             oscillator.stop(this.audioContext.currentTime + duration);
+        };
+    }
+    
+    createMysticalSound() {
+        return () => {
+            if (!this.audioContext) return;
+            
+            const oscillator = this.audioContext.createOscillator();
+            const gainNode = this.audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+            
+            // Som simples e místico
+            oscillator.frequency.setValueAtTime(440, this.audioContext.currentTime);
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.8);
+            
+            oscillator.start(this.audioContext.currentTime);
+            oscillator.stop(this.audioContext.currentTime + 0.8);
         };
     }
     
@@ -397,11 +421,13 @@ class Game {
             // Fallback: se overlay não existir, despausa direto
             this.gamePaused = false;
             this.showScreen('gameScreen');
+            this.resumeCountdownActive = false;
             return;
         }
 
         this.showScreen('gameScreen');
         overlay.style.display = 'flex';
+        this.resumeCountdownActive = true;
 
         const sequence = ['3', '2', '1'];
         let idx = 0;
@@ -420,6 +446,7 @@ class Game {
             } else {
                 this._countdownTimer = setTimeout(() => {
                     overlay.style.display = 'none';
+                    this.resumeCountdownActive = false;
                     this.gamePaused = false;
                 }, 800);
             }
@@ -635,7 +662,7 @@ class Game {
         this.updateUpgradeEffects();
         this.updateMovingBricks();
         this.updateCountdown();
-        this.updateWindTimer();
+        this.updateChaoticMovementTimer();
         this.checkCollisions();
         this.updateBallEffects();
         
@@ -800,15 +827,54 @@ class Game {
         }
     }
     
-    updateWindTimer() {
-        if (this.phaseModifiers.westWinds) {
-            this.windDirectionTimer += 1/60; // Incrementar por frame (60 FPS)
+    updateChaoticMovementTimer() {
+        if (this.phaseModifiers.chaoticMovement) {
+            this.chaoticMovementTimer += 1/60; // Incrementar por frame (60 FPS)
             
-            // Mudar direção a cada 40 segundos
-            if (this.windDirectionTimer >= 40) {
-                this.windDirection = this.windDirection === 'O' ? 'E' : 'O';
-                this.windDirectionTimer = 0; // Resetar timer
+            // Mudar direção a cada 20 segundos
+            if (this.chaoticMovementTimer >= 20) {
+                this.chaoticMovementTimer = 0; // Resetar timer
+                this.changeBallDirection();
             }
+        }
+    }
+    
+    changeBallDirection() {
+        // Mudar completamente o sentido de todas as bolinhas
+        this.balls.forEach(ball => {
+            const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+            
+            // Gerar ângulo evitando direções muito horizontais
+            let angle;
+            do {
+                angle = Math.random() * Math.PI * 2;
+                // Calcular o ângulo em relação ao eixo horizontal
+                const horizontalAngle = Math.abs(Math.atan2(Math.sin(angle), Math.cos(angle)));
+                // Evitar ângulos muito próximos de 0° e 180° (muito horizontais)
+                // Permitir apenas ângulos entre 8° e 172°, e entre 188° e 352°
+                const isTooHorizontal = (horizontalAngle < Math.PI / 22.5) || // < 8°
+                                       (horizontalAngle > Math.PI - Math.PI / 22.5); // > 172°
+                if (!isTooHorizontal) break;
+            } while (true);
+            
+            ball.vx = Math.cos(angle) * speed;
+            ball.vy = Math.sin(angle) * speed;
+        });
+        
+        // Tocar som místico
+        this.playSound('chaoticMovement');
+        
+        // Efeito visual
+        this.createParticles(this.width / 2, this.height / 2, '#ff6b35');
+        
+        // Aplicar efeito do bloco roxo (zigue-zague) apenas se não estiver ativo
+        if (!this.ballEffects.zigzag) {
+            setTimeout(() => {
+                if (!this.ballEffects.zigzag) {
+                    this.ballEffects.zigzag = true;
+                    this.ballEffects.zigzagTimer = 0;
+                }
+            }, 1000); // 1 segundo depois
         }
     }
     
@@ -922,15 +988,8 @@ class Game {
             let vx = ball.vx * speedMultiplier;
             let vy = ball.vy * speedMultiplier;
             
-            // Modificador "Ventos de Leste e Oeste" - curva simples em direção ao vento
-            if (this.phaseModifiers.westWinds) {
-                const lateralAccel = 0.12; // aceleração lateral constante
-                if (this.windDirection === 'O') {
-                    vx += lateralAccel; // empurra para a direita
-                } else {
-                    vx -= lateralAccel; // empurra para a esquerda
-                }
-            }
+            // Modificador "Movimento Caótico" - direção muda a cada 20 segundos
+            // (a mudança de direção é feita em updateChaoticMovementTimer)
             
             // Efeito de inversão
             if (this.ballEffects.inverted) {
@@ -1181,10 +1240,7 @@ class Game {
     }
     
     handleBrickCollision(ball, brick) {
-        // Inverter curva do vento ao bater nos blocos, para a curva "virar" junto da reflexão
-        if (this.phaseModifiers.westWinds) {
-            this.windCurveSign *= -1;
-        }
+        // Movimento Caótico não precisa de lógica especial na colisão
         
         // Incrementar contador de batidas para Bolinha Prima
         this.ballHitCount++;
@@ -2205,7 +2261,7 @@ class Game {
     
     selectRandomModifier() {
         const modifiers = [
-            'westWinds', 'inflatedMarket', 'redPanic', 
+            'chaoticMovement', 'inflatedMarket', 'redPanic', 
             'weakBattery', 'noGoodEffects', 'countdown'
         ];
         
@@ -2231,7 +2287,7 @@ class Game {
     
     showModifierNotification(modifier) {
         const modifierNames = {
-            'westWinds': 'Ventos de Leste e Oeste',
+            'chaoticMovement': 'Movimento Caótico',
             'inflatedMarket': 'Mercado Inflacionado',
 
             'redPanic': 'Pânico Vermelho',
@@ -2304,7 +2360,7 @@ class Game {
     resetPhaseModifiers() {
         // Resetar todos os modificadores
         this.phaseModifiers = {
-            westWinds: false,
+            chaoticMovement: false,
             inflatedMarket: false,
             redPanic: false,
             weakBattery: false,
@@ -2316,11 +2372,8 @@ class Game {
         this.countdownActive = false;
         this.countdownTimer = 0;
         
-        // Resetar estado dos ventos
-        this.windDirection = 'O';
-        this.windDirectionTimer = 0;
-        this.windEffectTimer = 0;
-        this.windCurveSign = 1;
+        // Resetar estado do movimento caótico
+        this.chaoticMovementTimer = 0;
         
         // Resetar poderes desativados
         this.disabledPowers = [];
@@ -2425,7 +2478,7 @@ class Game {
         
         // Resetar modificadores de fase
         this.phaseModifiers = {
-            westWinds: false,
+            chaoticMovement: false,
             inflatedMarket: false,
             redPanic: false,
             weakBattery: false,
@@ -3203,7 +3256,7 @@ class Game {
                     powerItem.className = 'power-item active';
                     const seconds = Math.ceil(cushionEffect.timer / 60);
                     cooldownElement.textContent = `${seconds}s`;
-                    cooldownElement.className = 'power-cooldown';
+                    cooldownElement.className = 'power-cooldown ready';
                 } else if (cushionEffect.timer > 0) {
                     powerItem.className = 'power-item on-cooldown';
                     const seconds = Math.ceil(cushionEffect.timer / 60);
@@ -3332,9 +3385,9 @@ class Game {
             this.drawCountdownTimer();
         }
         
-        // Desenhar indicador de vento
-        if (this.phaseModifiers.westWinds) {
-            this.drawWindIndicator();
+        // Desenhar indicador de movimento caótico
+        if (this.phaseModifiers.chaoticMovement) {
+            this.drawChaoticMovementIndicator();
         }
     }
     
@@ -3371,36 +3424,34 @@ class Game {
         this.ctx.textAlign = 'left';
     }
     
-    drawWindIndicator() {
+    drawChaoticMovementIndicator() {
         // Calcular tempo restante para mudança de direção
-        const timeLeft = Math.ceil(40 - this.windDirectionTimer);
-        const minutes = Math.floor(timeLeft / 60);
+        const timeLeft = Math.ceil(20 - this.chaoticMovementTimer);
         const seconds = timeLeft % 60;
-        const timeText = minutes > 0 ? `${minutes}:${seconds.toString().padStart(2, '0')}` : `${seconds}s`;
+        const timeString = `${seconds}s`;
         
-        // Configurar estilo do indicador
-        this.ctx.fillStyle = '#ffffff';
-        this.ctx.strokeStyle = '#ffffff';
-        this.ctx.lineWidth = 2;
-        this.ctx.font = 'bold 16px Arial';
+        // Cor baseada no tempo restante (igual ao drawCountdownTimer)
+        let color = '#2ecc71'; // Verde
+        if (timeLeft <= 5) {
+            color = '#e74c3c'; // Vermelho
+        } else if (timeLeft <= 10) {
+            color = '#f39c12'; // Laranja
+        }
         
-        // Desenhar fundo do indicador
+        // Fundo semi-transparente (mesma posição do drawCountdownTimer)
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         this.ctx.fillRect(this.width - 120, 20, 100, 40);
         
-        // Desenhar borda
-        this.ctx.strokeStyle = '#ffffff';
+        // Borda
+        this.ctx.strokeStyle = color;
+        this.ctx.lineWidth = 2;
         this.ctx.strokeRect(this.width - 120, 20, 100, 40);
         
-        // Desenhar direção do vento
-        this.ctx.fillStyle = '#ffffff';
-        this.ctx.font = 'bold 20px Arial';
+        // Texto (mesmo estilo do drawCountdownTimer)
+        this.ctx.fillStyle = color;
+        this.ctx.font = 'bold 16px Arial';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText(this.windDirection, this.width - 70, 40);
-        
-        // Desenhar tempo restante
-        this.ctx.font = '12px Arial';
-        this.ctx.fillText(timeText, this.width - 70, 55);
+        this.ctx.fillText(timeString, this.width - 70, 45);
         
         // Resetar alinhamento
         this.ctx.textAlign = 'left';
@@ -3518,6 +3569,36 @@ class Game {
             return;
         }
         
+        // Durante a contagem de retomada, desenhar um guia tracejado à frente da bola
+        if (this.resumeCountdownActive) {
+            this.ctx.save();
+            this.ctx.strokeStyle = 'rgba(200, 200, 200, 0.6)';
+            this.ctx.lineWidth = 2;
+            this.ctx.setLineDash([12, 8]);
+
+            const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy) || 1;
+            const dirX = ball.vx / speed;
+            const dirY = ball.vy / speed;
+
+            const segmentLen = 12;
+            const gapLen = 8;
+            const totalDistance = 5 * (segmentLen + gapLen);
+
+            for (let i = 1; i <= 5; i++) {
+                const startX = ball.x + dirX * (i * (segmentLen + gapLen));
+                const startY = ball.y + dirY * (i * (segmentLen + gapLen));
+                const endX = startX + dirX * segmentLen;
+                const endY = startY + dirY * segmentLen;
+                this.ctx.beginPath();
+                this.ctx.moveTo(startX, startY);
+                this.ctx.lineTo(endX, endY);
+                this.ctx.stroke();
+            }
+
+            this.ctx.setLineDash([]);
+            this.ctx.restore();
+        }
+
         // Desenhar bolinha com efeito 2.5D
         const gradient = this.ctx.createRadialGradient(
             ball.x - ball.radius / 3, ball.y - ball.radius / 3, 0,
