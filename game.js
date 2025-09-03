@@ -2886,11 +2886,15 @@ class Game {
                 upgradeCard.classList.add('promotion-active');
             }
             
+            // Determinar cor do preço baseado no dinheiro disponível
+            const canAfford = this.money >= displayPrice;
+            const priceColorClass = canAfford ? 'price-affordable' : 'price-expensive';
+            
             upgradeCard.innerHTML = `
                 <div class="upgrade-icon">${upgrade.icon}</div>
                 <div class="upgrade-name">${upgrade.name}</div>
                 <div class="upgrade-description">${upgrade.description}</div>
-                <div class="upgrade-price">
+                <div class="upgrade-price ${priceColorClass}">
                     ${this.shopPromotion.active ? `<span class="original-price">${upgrade.price}</span>` : ''}
                     ${displayPrice} 🪙
                     ${this.shopPromotion.active ? `<span class="discount-badge">-${this.shopPromotion.discountPercent}%</span>` : ''}
@@ -2909,6 +2913,9 @@ class Game {
             
             upgradesGrid.appendChild(upgradeCard);
         });
+        
+        // Atualizar cores dos preços após gerar todos os upgrades
+        this.updateUpgradePriceColors();
     }
     
     getAvailableUpgrades() {
@@ -3194,6 +3201,9 @@ class Game {
             }
             this.updateUI();
             
+            // Atualizar cores dos preços após a compra
+            this.updateUpgradePriceColors();
+            
             // Aplicar upgrade imediatamente se for do tipo especial
             if (upgrade.id === 'investor') {
                 this.lives--;
@@ -3370,6 +3380,32 @@ class Game {
         // Atualizar lista de poderes ativáveis e interface de seleção
         this.updateActivatablePowers();
         this.updatePowerSelectionUI();
+    }
+    
+    updateUpgradePriceColors() {
+        // Atualizar cores dos preços dos upgrades baseado no dinheiro atual
+        const upgradeCards = document.querySelectorAll('.upgrade-card');
+        upgradeCards.forEach(card => {
+            const priceElement = card.querySelector('.upgrade-price');
+            if (priceElement) {
+                // Remover classes de cor existentes
+                priceElement.classList.remove('price-affordable', 'price-expensive');
+                
+                // Se o card não está desabilitado (não foi comprado)
+                if (!card.classList.contains('disabled')) {
+                    // Extrair o preço do texto (remover emoji e espaços)
+                    const priceText = priceElement.textContent.replace(/[🪙\s]/g, '');
+                    const price = parseInt(priceText);
+                    
+                    if (!isNaN(price)) {
+                        // Aplicar cor baseada na capacidade de compra
+                        const canAfford = this.money >= price;
+                        const priceColorClass = canAfford ? 'price-affordable' : 'price-expensive';
+                        priceElement.classList.add(priceColorClass);
+                    }
+                }
+            }
+        });
     }
     
     updateBrickCounter() {

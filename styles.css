@@ -845,6 +845,15 @@ body {
     gap: 2px;
 }
 
+/* Cores dos preços baseadas na capacidade de compra */
+.upgrade-price.price-affordable {
+    color: #27ae60; /* Verde para preços acessíveis */
+}
+
+.upgrade-price.price-expensive {
+    color: #e74c3c; /* Vermelho para preços caros */
+}
+
 .original-price {
     font-size: 0.9rem;
     color: #95a5a6;
