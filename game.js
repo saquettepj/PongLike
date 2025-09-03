@@ -542,7 +542,7 @@ class Game {
     
     generateBricks() {
         this.bricks = [];
-        const rows = 6 + Math.floor(this.currentPhase / 3);
+        const rows = Math.min(15, 6 + Math.floor(this.currentPhase / 3));
         const cols = Math.min(15, Math.floor(this.width / (this.config.brickWidth + this.config.brickSpacing)));
         const totalWidth = cols * (this.config.brickWidth + this.config.brickSpacing) - this.config.brickSpacing;
         const startX = (this.width - totalWidth) / 2; // Centralizar a formação
@@ -1492,6 +1492,11 @@ class Game {
             // Bônus de combo: +1 moeda por bloco em combo
             if (this.currentPhaseCombo > 1) {
                 reward += 1;
+                
+                // Bolinha Wombo Combo: +1 moeda extra por bloco em combo
+                if (this.hasUpgrade('wombo_combo_ball')) {
+                    reward += 1;
+                }
             }
             
             // Efeito especial do bloco branco - criar fragmento perigoso
@@ -2052,6 +2057,17 @@ class Game {
                 <text x="16" y="19" text-anchor="middle" font-family="Arial" font-size="6" fill="#2c3e50">$</text>
             </svg>`,
             
+            'wombo_combo_ball': `<svg width="32" height="32" viewBox="0 0 32 32">
+                <circle cx="16" cy="16" r="7" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+                <circle cx="16" cy="16" r="4" fill="#ffffff" stroke="#8e44ad" stroke-width="1"/>
+                <text x="16" y="19" text-anchor="middle" font-family="Arial" font-size="8" font-weight="bold" fill="#8e44ad">W</text>
+                <circle cx="8" cy="8" r="2" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+                <circle cx="24" cy="8" r="2" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+                <circle cx="8" cy="24" r="2" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+                <circle cx="24" cy="24" r="2" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+                <path d="M16 4 L16 12 M16 20 L16 28 M4 16 L12 16 M20 16 L28 16" stroke="#e74c3c" stroke-width="1.5"/>
+            </svg>`,
+            
             // Upgrades de Utilidade
             'extra_life': `<svg width="32" height="32" viewBox="0 0 32 32">
                 <path d="M16 6 C12 6, 8 10, 8 16 C8 22, 16 28, 16 28 C16 28, 24 22, 24 16 C24 10, 20 6, 16 6 Z" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
@@ -2505,26 +2521,42 @@ class Game {
     showComboRewardNotification(comboCount) {
         // Criar notificação visual para recompensa de combo
         const notification = document.createElement('div');
+        
+        // Verificar se a Bolinha Wombo Combo está ativa
+        const isWomboComboActive = this.hasUpgrade('wombo_combo_ball');
+        const baseCombo = isWomboComboActive ? comboCount / 2 : comboCount;
+        
         notification.style.cssText = `
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(0, 0, 0, 0.9);
-            color: #ff6b35;
+            color: ${isWomboComboActive ? '#9b59b6' : '#ff6b35'};
             padding: 20px;
-            border: 3px solid #ff6b35;
+            border: 3px solid ${isWomboComboActive ? '#9b59b6' : '#ff6b35'};
             border-radius: 15px;
             font-size: 1.5rem;
             font-weight: bold;
             text-align: center;
             z-index: 10000;
-            box-shadow: 0 0 30px rgba(255, 107, 53, 0.5);
+            box-shadow: 0 0 30px ${isWomboComboActive ? 'rgba(155, 89, 182, 0.5)' : 'rgba(255, 107, 53, 0.5)'};
         `;
-        notification.innerHTML = `
+        
+        let notificationText = `
             <div>Recompensa de Combo:</div>
             <div style="color: #fdcb6e; margin-top: 10px;">+${comboCount} moedas 🪙 ganhas pelo combo máximo</div>
         `;
+        
+        if (isWomboComboActive) {
+            notificationText = `
+                <div>Recompensa de Combo (Wombo Combo!):</div>
+                <div style="color: #fdcb6e; margin-top: 10px;">+${baseCombo} × 2 = +${comboCount} moedas 🪙</div>
+                <div style="color: #9b59b6; margin-top: 5px; font-size: 1rem;">Bolinha Wombo Combo dobrou a recompensa!</div>
+            `;
+        }
+        
+        notification.innerHTML = notificationText;
         
         document.body.appendChild(notification);
         
@@ -2769,12 +2801,27 @@ class Game {
     }
     
     showUpgradeScreen() {
-        // Recompensa de fase: somar combo atual da fase nas moedas
-        if (this.currentPhaseCombo > 0) {
-            this.money += this.currentPhaseCombo;
+        // Reativar poderes desativados pelo modificador "Sem Efeitos Bons" antes de entrar na loja
+        if (this.disabledPowers.length > 0) {
+            this.disabledPowers = [];
+            this.createPowersInterface();
+            this.updateActivatablePowers();
+            this.updatePowerSelectionUI();
+        }
+        
+        // Recompensa de fase: somar combo máximo da fase nas moedas
+        if (this.maxPhaseCombo > 0) {
+            let comboReward = this.maxPhaseCombo;
+            
+            // Bolinha Wombo Combo: dobra a recompensa do combo máximo
+            if (this.hasUpgrade('wombo_combo_ball')) {
+                comboReward *= 2;
+            }
+            
+            this.money += comboReward;
             
             // Feedback visual da recompensa
-            this.showComboRewardNotification(this.currentPhaseCombo);
+            this.showComboRewardNotification(comboReward);
         }
         
         // Armazenar dinheiro antes de entrar na loja
@@ -2982,6 +3029,14 @@ class Game {
                 price: 150,
                 type: 'ball',
                 icon: this.getUpgradeIcon('lucky_ball')
+            },
+            {
+                id: 'wombo_combo_ball',
+                name: 'Bolinha Wombo Combo',
+                description: 'Adiciona +1 moeda por bloco quebrado em combos e dobra a recompensa do combo máximo na loja',
+                price: 200,
+                type: 'ball',
+                icon: this.getUpgradeIcon('wombo_combo_ball')
             },
             
             // Upgrades de Utilidade e Defesa (15-20)
@@ -3884,6 +3939,11 @@ class Game {
             gradient.addColorStop(0, '#ffffff');
             gradient.addColorStop(0.7, '#f1c40f');
             gradient.addColorStop(1, '#e67e22');
+        } else if (this.hasUpgrade('wombo_combo_ball')) {
+            // Bolinha Wombo Combo - cor roxa
+            gradient.addColorStop(0, '#ffffff');
+            gradient.addColorStop(0.7, '#9b59b6');
+            gradient.addColorStop(1, '#8e44ad');
         } else {
             gradient.addColorStop(0, '#ffffff');
             gradient.addColorStop(0.7, '#fdcb6e');
@@ -3898,6 +3958,8 @@ class Game {
         // Borda
         if (this.hasUpgrade('lucky_ball')) {
             this.ctx.strokeStyle = '#d35400';
+        } else if (this.hasUpgrade('wombo_combo_ball')) {
+            this.ctx.strokeStyle = '#6c3483';
         } else {
             this.ctx.strokeStyle = '#d63031';
         }
@@ -3909,6 +3971,8 @@ class Game {
             const alpha = index / ball.trail.length;
             if (this.hasUpgrade('lucky_ball')) {
                 this.ctx.fillStyle = `rgba(241, 196, 15, ${alpha * 0.5})`;
+            } else if (this.hasUpgrade('wombo_combo_ball')) {
+                this.ctx.fillStyle = `rgba(155, 89, 182, ${alpha * 0.5})`;
             } else {
                 this.ctx.fillStyle = `rgba(255, 107, 53, ${alpha * 0.5})`;
             }
