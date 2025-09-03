@@ -101,7 +101,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 
 #### 🏓 Upgrades de Plataforma (7 total)
 1. **Plataforma Larga** - Aumenta tamanho em 50% (150 🪙)
-2. **Canhões Acoplados** - Atira projéteis ao rebater (200 🪙)
+2. **Canhões Acoplados** - Atira projéteis apenas em batidas ímpares (170 🪙)
 3. **Super Ímã** - Campo magnético para puxar bolinha (180 🪙)
 4. **Dash de Plataforma** - Movimento rápido lateral por 3s (cooldown 20s) (140 🪙)
 5. **Plataforma de Aceleração** - Ativa aceleração de 30% na bolinha por 10 segundos. (cooldown 20s) (80 🪙)

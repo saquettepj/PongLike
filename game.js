@@ -508,7 +508,8 @@ class Game {
             y: this.height - 50,
             width: paddleWidth,
             height: this.config.paddleHeight,
-            speed: this.config.paddleSpeed
+            speed: this.config.paddleSpeed,
+            hitCount: 0 // Contador de batidas para Canhões Acoplados
         };
         
         // Criar bolinha inicial (presa à plataforma)
@@ -1262,8 +1263,37 @@ class Game {
         ball.vx = Math.sin(angle) * ballSpeed;
         ball.vy = -Math.abs(Math.cos(angle) * ballSpeed);
         
-        // Efeitos visuais
-        this.createParticles(ball.x, ball.y, '#3498db');
+        // Canhões Acoplados - atirar projéteis apenas em batidas ímpares
+        if (this.hasUpgrade('attached_cannons')) {
+            this.paddle.hitCount++;
+            
+            // Só atira em batidas ímpares (1ª, 3ª, 5ª, etc.)
+            if (this.paddle.hitCount % 2 === 1) {
+                // Criar 2 projéteis
+                this.powerUps.push({
+                    x: this.paddle.x + this.paddle.width * 0.25, // Canhão esquerdo
+                    y: this.paddle.y,
+                    vx: 0,
+                    vy: -1.5,
+                    radius: 3,
+                    type: 'cannon_shot',
+                    life: 250
+                });
+                
+                this.powerUps.push({
+                    x: this.paddle.x + this.paddle.width * 0.75, // Canhão direito
+                    y: this.paddle.y,
+                    vx: 0,
+                    vy: -1.5,
+                    radius: 3,
+                    type: 'cannon_shot',
+                    life: 250
+                });
+                
+                this.playSound('laserShot');
+            }
+        }
+        
         this.playSound('paddleHit');
     }
     
@@ -2715,8 +2745,8 @@ class Game {
             {
                 id: 'attached_cannons',
                 name: 'Canhões Acoplados',
-                description: 'A plataforma atira 2 projéteis para frente quando a bolinha bate nela',
-                price: 200,
+                description: 'A plataforma atira 2 projéteis apenas em batidas ímpares',
+                price: 170,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('attached_cannons')
             },
@@ -3048,6 +3078,7 @@ class Game {
         this.currentPhase++;
         this.resetBallEffects(); // Resetar todos os efeitos para nova fase
         this.ballHitCount = 0; // Resetar contador da Bolinha Prima
+        this.paddle.hitCount = 0; // Resetar contador de batidas da plataforma para Canhões Acoplados
         
         // Resetar cooldowns de todos os poderes ativos
         Object.keys(this.activeUpgradeEffects).forEach(key => {
