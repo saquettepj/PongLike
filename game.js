@@ -81,7 +81,7 @@ class Game {
         // - Botões para pular fase e adicionar dinheiro
         // - Ferramentas de debug
         // ========================================
-        this.developerMode = false;
+        this.developerMode = true;
         this.gameRunning = false;
         this.gamePaused = false;
         this.ballHitCount = 0; // Contador de batidas da bolinha para Bolinha Prima
@@ -132,7 +132,7 @@ class Game {
             effectActivator: { active: false, timer: 0, duration: 0, cooldown: 1200 },
             cushionPaddle: { active: false, timer: 0, duration: 600, cooldown: 1200 },
             multiBall: { active: false, timer: 0, duration: 0, cooldown: 3600 },
-            timeBall: { active: false, timer: 0, duration: 180, cooldown: 2400 }
+            timeBall: { active: false, timer: 0, duration: 0, cooldown: 2400 }
         };
         
         // Configurações
@@ -534,7 +534,7 @@ class Game {
     generateBricks() {
         this.bricks = [];
         const rows = 6 + Math.floor(this.currentPhase / 3);
-        const cols = Math.floor(this.width / (this.config.brickWidth + this.config.brickSpacing));
+        const cols = Math.min(15, Math.floor(this.width / (this.config.brickWidth + this.config.brickSpacing)));
         const totalWidth = cols * (this.config.brickWidth + this.config.brickSpacing) - this.config.brickSpacing;
         const startX = (this.width - totalWidth) / 2; // Centralizar a formação
         const startY = 80;
@@ -717,8 +717,8 @@ class Game {
             // Desativar efeitos quando o timer chegar a zero
             if (effect.timer <= 0 && effect.active) {
                 effect.active = false;
-                // Se for Super Ímã, Dash de Plataforma, Rede de Segurança, Plataforma de Aceleração ou Bolinha do Tempo, iniciar cooldown
-                if ((key === 'superMagnet' || key === 'paddleDash' || key === 'safetyNet' || key === 'cushionPaddle' || key === 'timeBall') && effect.cooldown) {
+                // Se for Super Ímã, Dash de Plataforma, Rede de Segurança, Plataforma de Aceleração, iniciar cooldown
+                if ((key === 'superMagnet' || key === 'paddleDash' || key === 'safetyNet' || key === 'cushionPaddle') && effect.cooldown) {
                     effect.timer = effect.cooldown;
                 }
             }
@@ -775,12 +775,19 @@ class Game {
         }
         
         // Aplicar efeito da Bolinha do Tempo
-        if (this.activeUpgradeEffects.timeBall.active) {
-            this.balls.forEach(ball => {
-                ball.vx = 0;
-                ball.vy = 0;
-            });
-        }
+        this.balls.forEach(ball => {
+            if (ball.timePaused && ball.timePauseCountdown > 0) {
+                ball.timePauseCountdown--;
+                if (ball.timePauseCountdown <= 0) {
+                    // Restaurar velocidades salvas
+                    ball.vx = ball.savedVx;
+                    ball.vy = ball.savedVy;
+                    ball.timePaused = false;
+                    delete ball.savedVx;
+                    delete ball.savedVy;
+                }
+            }
+        });
         
         // Atualizar timer da Bolinha Explosiva
         if (this.hasUpgrade('explosive_ball')) {
@@ -1602,7 +1609,7 @@ class Game {
         this.activatablePowers = [];
         
         // Lista de poderes que podem ser ativados
-        const powerIds = ['super_magnet', 'paddle_dash', 'charged_shot', 'safety_net', 'effect_activator', 'cushion_paddle', 'multi_ball'];
+        const powerIds = ['super_magnet', 'paddle_dash', 'charged_shot', 'safety_net', 'effect_activator', 'cushion_paddle', 'multi_ball', 'time_ball'];
         
         powerIds.forEach(powerId => {
             if (this.hasUpgrade(powerId)) {
@@ -1723,10 +1730,21 @@ class Game {
                 break;
                 
             case 'time_ball':
-                if (!this.activeUpgradeEffects.timeBall.active && this.activeUpgradeEffects.timeBall.timer <= 0) {
-                    this.activeUpgradeEffects.timeBall.active = true;
-                    this.activeUpgradeEffects.timeBall.timer = this.activeUpgradeEffects.timeBall.duration;
-                    this.activeUpgradeEffects.timeBall.cooldown = 2400; // 40 segundos
+                if (this.activeUpgradeEffects.timeBall.timer <= 0) {
+                    // Salvar velocidades atuais das bolinhas
+                    this.balls.forEach(ball => {
+                        ball.savedVx = ball.vx;
+                        ball.savedVy = ball.vy;
+                        ball.vx = 0;
+                        ball.vy = 0;
+                        ball.timePaused = true;
+                        ball.timePauseCountdown = 180; // 3 segundos (60 FPS * 3)
+                    });
+                    
+                    // Iniciar cooldown de 40 segundos
+                    this.activeUpgradeEffects.timeBall.timer = this.activeUpgradeEffects.timeBall.cooldown;
+                    
+                    // Efeitos visuais e sonoros
                     this.createParticles(this.width / 2, this.height / 2, '#3498db');
                     this.playSound('chaoticMovement'); // Reutilizar som místico
                 }
@@ -2029,12 +2047,15 @@ class Game {
             </svg>`,
             
             'time_ball': `<svg width="32" height="32" viewBox="0 0 32 32">
-                <circle cx="16" cy="16" r="8" fill="#2c3e50" stroke="#34495e" stroke-width="2"/>
-                <circle cx="16" cy="16" r="6" fill="#3498db" stroke="#2980b9" stroke-width="1"/>
-                <circle cx="16" cy="16" r="2" fill="#ecf0f1"/>
-                <path d="M16 8 L16 16 L20 20" stroke="#e74c3c" stroke-width="2" fill="none"/>
-                <path d="M16 8 L16 16 L12 20" stroke="#e74c3c" stroke-width="2" fill="none"/>
-                <circle cx="16" cy="16" r="1" fill="#e74c3c"/>
+                <!-- Bolinha azul (50% menor) -->
+                <circle cx="12" cy="12" r="6" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+                <!-- Ampulheta amarela em pé, na diagonal da bolinha -->
+                <rect x="20" y="4" width="4" height="8" fill="#f1c40f" stroke="#f39c12" stroke-width="0.5"/>
+                <path d="M20 4 L22 8 L24 4 Z" fill="#e67e22"/>
+                <path d="M20 12 L22 8 L24 12 Z" fill="#d35400"/>
+                <!-- Areia caindo -->
+                <circle cx="22" cy="10" r="0.6" fill="#f39c12"/>
+                <circle cx="22" cy="11" r="0.3" fill="#f39c12"/>
             </svg>`
         };
         
@@ -2556,12 +2577,14 @@ class Game {
         
         // Resetar efeitos ativos de upgrades
         this.activeUpgradeEffects = {
-            superMagnet: { active: false, timer: 0, duration: 600 },
-            paddleDash: { active: false, timer: 0, cooldown: 1200 },
-            chargedShot: { charging: false, chargeLevel: 0 },
-            safetyNet: { active: false, timer: 0, duration: 300 },
-            effectActivator: { cooldown: 0 },
-            cushionPaddle: { active: false, timer: 0, duration: 600 }
+            superMagnet: { active: false, timer: 0, duration: 120, cooldown: 3000 }, 
+            paddleDash: { active: false, timer: 0, duration: 180, cooldown: 1200 },
+            chargedShot: { charging: false, chargeLevel: 0, maxCharge: 1200, cooldown: 1800 },
+            safetyNet: { active: false, timer: 0, duration: 900, cooldown: 4800 },
+            effectActivator: { active: false, timer: 0, duration: 0, cooldown: 1200 },
+            cushionPaddle: { active: false, timer: 0, duration: 600, cooldown: 1200 },
+            multiBall: { active: false, timer: 0, duration: 0, cooldown: 3600 },
+            timeBall: { active: false, timer: 0, duration: 0, cooldown: 2400 }
         };
         
         // Resetar timers de upgrades
@@ -2894,7 +2917,7 @@ class Game {
             {
                 id: 'time_ball',
                 name: 'Bolinha do Tempo',
-                description: 'Para a bolinha por 3 segundos.',
+                description: 'Pausa todas as bolinhas por 3 segundos. Cooldown de 40 segundos.',
                 price: 180,
                 type: 'ball',
                 icon: this.getUpgradeIcon('time_ball')
@@ -3012,6 +3035,12 @@ class Game {
         this.currentPhase++;
         this.resetBallEffects(); // Resetar todos os efeitos para nova fase
         this.ballHitCount = 0; // Resetar contador da Bolinha Prima
+        
+        // Resetar cooldowns de todos os poderes ativos
+        Object.keys(this.activeUpgradeEffects).forEach(key => {
+            this.activeUpgradeEffects[key].timer = 0;
+            this.activeUpgradeEffects[key].active = false;
+        });
         
         // Resetar modificadores de fase
         this.resetPhaseModifiers();
@@ -3178,7 +3207,8 @@ class Game {
             'safety_net',
             'effect_activator',
             'cushion_paddle',
-            'multi_ball'
+            'multi_ball',
+            'time_ball'
         ];
         return upgradesWithCooldown.includes(upgradeId);
     }
@@ -3192,7 +3222,8 @@ class Game {
             'safety_net',
             'effect_activator',
             'cushion_paddle',
-            'multi_ball'
+            'multi_ball',
+            'time_ball'
         ];
         
         upgradesWithCooldown.forEach(upgradeId => {
@@ -3328,9 +3359,9 @@ class Game {
                 
             case 'time_ball':
                 const timeBallEffect = this.activeUpgradeEffects.timeBall;
-                if (timeBallEffect.timer > 0 || timeBallEffect.cooldown > 0) {
+                if (timeBallEffect.timer > 0) {
                     powerItem.className = 'power-item on-cooldown';
-                    const seconds = Math.ceil(Math.max(timeBallEffect.timer, timeBallEffect.cooldown) / 60);
+                    const seconds = Math.ceil(timeBallEffect.timer / 60);
                     cooldownElement.textContent = `${seconds}s`;
                     cooldownElement.className = 'power-cooldown';
                 } else {
@@ -3392,7 +3423,8 @@ class Game {
             'safety_net': 'Rede de Segurança',
             'effect_activator': 'Ativador',
             'cushion_paddle': 'Aceleração',
-            'multi_ball': 'Multi-bola'
+            'multi_ball': 'Multi-bola',
+            'time_ball': 'Bolinha do Tempo'
         };
         return names[upgradeId] || upgradeId;
     }
@@ -3701,8 +3733,8 @@ class Game {
         });
         
         // Desenhar contador da Bolinha do Tempo
-        if (this.hasUpgrade('time_ball') && this.activeUpgradeEffects.timeBall.active) {
-            const timeLeft = Math.ceil(this.activeUpgradeEffects.timeBall.timer / 60);
+        if (ball.timePaused && ball.timePauseCountdown > 0) {
+            const timeLeft = Math.ceil(ball.timePauseCountdown / 60);
             this.ctx.fillStyle = '#ffffff';
             this.ctx.font = 'bold 12px Arial';
             this.ctx.textAlign = 'center';
