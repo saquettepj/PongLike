@@ -814,9 +814,9 @@ class Game {
             let vx = ball.vx * speedMultiplier;
             let vy = ball.vy * speedMultiplier;
             
-            // Modificador "Ventos de Oeste" - força sutil empurrando a bolinha
+            // Modificador "Ventos de Oeste" - força empurrando a bolinha
             if (this.phaseModifiers.westWinds) {
-                vx += 0.2; // Força sutil para a direita
+                vx += 0.4;
             }
             
             // Efeito de inversão
