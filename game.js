@@ -3218,7 +3218,8 @@ class Game {
         let priceToPay = discountedPrice !== null ? discountedPrice : upgrade.price;
 
         // Modificador "Mercado Inflacionado" - upgrades custam 50% a mais
-        if (this.phaseModifiers.inflatedMarket) {
+        // Só aplicar se o discountedPrice não foi passado (já inclui o aumento)
+        if (this.phaseModifiers.inflatedMarket && discountedPrice === null) {
             priceToPay = Math.floor(priceToPay * 1.5);
         }
 
