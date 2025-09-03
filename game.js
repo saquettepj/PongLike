@@ -2394,6 +2394,9 @@ class Game {
     gameOver() {
         this.gameRunning = false;
         
+        // Salvar a fase atual antes de resetar
+        const finalPhase = this.currentPhase;
+        
         // Atualizar recorde
         if (this.currentPhase > this.highScore) {
             this.highScore = this.currentPhase;
@@ -2403,7 +2406,8 @@ class Game {
         // Resetar completamente o estado do jogo
         this.resetGameState();
         
-        document.getElementById('finalPhase').textContent = this.currentPhase;
+        // Usar a fase salva para exibir na tela de game over
+        document.getElementById('finalPhase').textContent = finalPhase;
         document.getElementById('finalRecord').textContent = this.highScore;
         this.showScreen('gameOverScreen');
     }
