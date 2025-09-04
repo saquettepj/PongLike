@@ -2343,7 +2343,7 @@ class Game {
         }
         
         // Reforço - destruir bloco de trás (linha de cima)
-        if (this.hasUpgrade('repulsor_shield')) {
+        if (this.hasUpgrade('reinforced_paddle') || this.hasUpgrade('repulsor_shield')) {
             // Verificar se o bloco atingido está se movendo
             const hitBrickIsMoving = brick.isMoving;
             
@@ -4240,6 +4240,10 @@ class Game {
             switch (upgrade.id) {
                 case 'wide_paddle':
                     this.paddle.width = this.config.paddleWidth * 1.5;
+                    break;
+                case 'reinforced_paddle':
+                    // Reforço - plataforma 2x mais alta
+                    this.paddle.height = this.config.paddleHeight * 2;
                     break;
                 case 'repulsor_shield':
                     // Reforço - plataforma 2x mais alta
