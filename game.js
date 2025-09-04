@@ -216,8 +216,8 @@ class Game {
         this.sounds.safetyNet = this.createTone(300, 0.3, 'triangle');
         this.sounds.effectActivator = this.createTone(700, 0.25, 'square');
         
-        // Som explosivo para bolinha explosiva
-        this.sounds.explosiveHit = this.createTone(200, 0.5, 'sawtooth');
+        // Som explosivo para bolinha explosiva - som mais realista de explosão
+        this.sounds.explosiveHit = this.createExplosionSound();
         
         // Som para plataforma de desaceleração
         this.sounds.cushionPaddle = this.createTone(250, 0.4, 'triangle');
@@ -250,6 +250,73 @@ class Game {
             
             oscillator.start(this.audioContext.currentTime);
             oscillator.stop(this.audioContext.currentTime + duration);
+        };
+    }
+    
+    createExplosionSound() {
+        return () => {
+            if (!this.audioContext) return;
+            
+            // Simular uma explosão real com múltiplas camadas de som
+            const startTime = this.audioContext.currentTime;
+            
+            // 1. Som inicial agudo (crack/boom inicial) - mais grave
+            const crackOsc = this.audioContext.createOscillator();
+            const crackGain = this.audioContext.createGain();
+            crackOsc.connect(crackGain);
+            crackGain.connect(this.audioContext.destination);
+            
+            crackOsc.type = 'square';
+            crackOsc.frequency.setValueAtTime(400, startTime);
+            crackOsc.frequency.exponentialRampToValueAtTime(100, startTime + 0.1);
+            
+            crackGain.gain.setValueAtTime(0.15, startTime);
+            crackGain.gain.exponentialRampToValueAtTime(0.005, startTime + 0.15);
+            
+            crackOsc.start(startTime);
+            crackOsc.stop(startTime + 0.15);
+            
+            // 2. Som grave de explosão (boom profundo) - mais grave e volume menor
+            const boomOsc = this.audioContext.createOscillator();
+            const boomGain = this.audioContext.createGain();
+            boomOsc.connect(boomGain);
+            boomGain.connect(this.audioContext.destination);
+            
+            boomOsc.type = 'sawtooth';
+            boomOsc.frequency.setValueAtTime(40, startTime + 0.05);
+            boomOsc.frequency.exponentialRampToValueAtTime(20, startTime + 0.6);
+            
+            boomGain.gain.setValueAtTime(0.1, startTime + 0.05);
+            boomGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.8);
+            
+            boomOsc.start(startTime + 0.05);
+            boomOsc.stop(startTime + 0.8);
+            
+            // 3. Ruído branco para simular o "whoosh" da explosão
+            const noiseBuffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.3, this.audioContext.sampleRate);
+            const noiseData = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < noiseData.length; i++) {
+                noiseData[i] = (Math.random() * 2 - 1) * 0.1;
+            }
+            
+            const noiseSource = this.audioContext.createBufferSource();
+            const noiseGain = this.audioContext.createGain();
+            const noiseFilter = this.audioContext.createBiquadFilter();
+            
+            noiseSource.buffer = noiseBuffer;
+            noiseSource.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(this.audioContext.destination);
+            
+            noiseFilter.type = 'lowpass';
+            noiseFilter.frequency.setValueAtTime(100, startTime + 0.1);
+            noiseFilter.frequency.exponentialRampToValueAtTime(30, startTime + 0.3);
+            
+            noiseGain.gain.setValueAtTime(0.08, startTime + 0.1);
+            noiseGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.3);
+            
+            noiseSource.start(startTime + 0.1);
+            noiseSource.stop(startTime + 0.3);
         };
     }
     
@@ -2256,11 +2323,7 @@ class Game {
         }
         
         // Tocar som de batida no tijolo
-        if (this.hasUpgrade('explosive_ball') && ball.explosive && (brick.color === 'red' || brick.color === 'yellow')) {
-            this.playSound('explosiveHit');
-        } else {
-            this.playSound('brickHit');
-        }
+        this.playSound('brickHit');
     }
     
     hasUpgrade(upgradeId) {
@@ -2292,6 +2355,9 @@ class Game {
     }
     
     explodeBall(ball) {
+        // Tocar som de explosão
+        this.playSound('explosiveHit');
+        
         const explosionRadius = 80;
         
         // Quebrar tijolos próximos (exceto o bloco vermelho)
