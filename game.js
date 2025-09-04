@@ -60,6 +60,9 @@ class Game {
         // Timer para contagem regressiva
         this.countdownTimer = 0;
         this.countdownActive = false;
+        
+        // Timer para mudança de direção do Pânico Vermelho
+        this.redPanicDirectionTimer = 0;
         // Contagem de retomada (overlay 3-2-1)
         this.resumeCountdownActive = false;
         
@@ -81,7 +84,7 @@ class Game {
         // - Botões para pular fase e adicionar dinheiro
         // - Ferramentas de debug
         // ========================================
-        this.developerMode = false;
+        this.developerMode = true;
         this.gameRunning = false;
         this.gamePaused = false;
         this.ballHitCount = 0; // Contador de batidas da bolinha para Bolinha Prima
@@ -498,11 +501,10 @@ class Game {
             name.textContent = upgrade.name;
             powerItem.appendChild(name);
             
-            // Tooltip
-            const tooltip = document.createElement('div');
-            tooltip.className = 'power-tooltip';
-            tooltip.textContent = upgrade.description;
-            powerItem.appendChild(tooltip);
+            // Adicionar evento de clique para mostrar modal
+            powerItem.addEventListener('click', () => {
+                this.showPowerModal(upgrade);
+            });
             
             container.appendChild(powerItem);
         });
@@ -530,6 +532,7 @@ class Game {
             visible: true,
             trail: [],
             attached: true, // Bolinha presa à plataforma
+            attachedTimer: 0, // Timer para liberação automática (2 segundos)
             explosive: false,
 
         }];
@@ -841,7 +844,16 @@ class Game {
                 if (brick.color === 'red' && this.phaseModifiers.redPanic) {
                     // Inicializar direção de movimento se não existir
                     if (brick.redPanicDirection === undefined) {
-                        brick.redPanicDirection = 1; // 1 = direita, -1 = esquerda
+                        brick.redPanicDirection = Math.random() < 0.5 ? 1 : -1; // Direção aleatória inicial
+                    }
+                    
+                    // Incrementar timer de mudança de direção
+                    this.redPanicDirectionTimer += 1/60; // 60 FPS
+                    
+                    // Mudar direção aleatoriamente a cada 3 segundos
+                    if (this.redPanicDirectionTimer >= 3) {
+                        brick.redPanicDirection = Math.random() < 0.5 ? 1 : -1; // Nova direção aleatória
+                        this.redPanicDirectionTimer = 0; // Resetar timer
                     }
                     
                     brick.x += brick.redPanicDirection * 0.3; // Movimento lento
@@ -987,8 +999,8 @@ class Game {
     
     restoreBricksOnRedPanic() {
         try {
-            // Restaurar 3 a 7 blocos destruídos quando o bloco vermelho troca de posição
-            const numToRestore = Math.floor(Math.random() * 5) + 3; // 3-7 blocos
+            // Restaurar sempre 25 blocos destruídos quando o bloco vermelho troca de posição
+            const numToRestore = 25;
             
             // Encontrar blocos destruídos para restaurar
             const destroyedBricks = this.bricks.filter(brick => brick && brick.destroyed);
@@ -1028,6 +1040,25 @@ class Game {
             if (ball.attached) {
                 ball.x = this.paddle.x + this.paddle.width / 2;
                 ball.y = this.paddle.y - ball.radius - 5;
+                
+                // Só aplicar timer de liberação automática se o Multi-bola estiver ativo
+                if (this.hasUpgrade('multi_ball')) {
+                    // Incrementar timer de liberação automática
+                    ball.attachedTimer += 1/60; // 60 FPS
+                    
+                    // Liberar automaticamente após 2 segundos
+                    if (ball.attachedTimer >= 2) {
+                        ball.attached = false;
+                        ball.attachedTimer = 0;
+                        
+                        // Escolher um ângulo inicial suave
+                        const angle = (Math.random() - 0.5) * Math.PI / 2; // -45° a 45°
+                        const baseSpeed = this.config.ballSpeed;
+                        ball.vx = Math.sin(angle) * baseSpeed;
+                        ball.vy = -Math.abs(Math.cos(angle) * baseSpeed);
+                    }
+                }
+                
                 return; // Não aplicar física se estiver presa
             }
             
@@ -1867,6 +1898,7 @@ class Game {
                         radius: this.config.ballRadius,
                         explosive: false,
                         attached: true,
+                        attachedTimer: 0, // Timer para liberação automática (2 segundos)
                         visible: true,
                         trail: []
                     });
@@ -2389,6 +2421,7 @@ class Game {
                 visible: true,
                 trail: [],
                 attached: true, // Nova bolinha presa à plataforma
+                attachedTimer: 0, // Timer para liberação automática (2 segundos)
                 explosive: false,
     
             }];
@@ -2663,6 +2696,7 @@ class Game {
         // Desativar estados relacionados a modificadores
         this.countdownActive = false;
         this.countdownTimer = 0;
+        this.redPanicDirectionTimer = 0;
         
         // Resetar estado do movimento caótico
         this.chaoticMovementTimer = 0;
@@ -2781,6 +2815,7 @@ class Game {
         // Resetar configurações específicas
         this.countdownActive = false;
         this.countdownTimer = 0;
+        this.redPanicDirectionTimer = 0;
         this.disabledPowers = [];
         
         // Resetar efeitos da bolinha
@@ -3039,7 +3074,7 @@ class Game {
             {
                 id: 'multi_ball',
                 name: 'Multi-bola',
-                description: 'Cria uma nova bolinha grudada na plataforma. Cooldown de 1 minuto.',
+                description: 'Cria uma nova bolinha grudada na plataforma. Liberada automaticamente em 2 segundos.',
                 price: 200,
                 type: 'ball',
                 icon: this.getUpgradeIcon('multi_ball')
@@ -3063,7 +3098,7 @@ class Game {
             {
                 id: 'effect_activator',
                 name: 'Ativador de Efeito',
-                description: 'Ativa efeito aleatório dos blocos na bolinha e ganha moedas baseadas na cor do efeito ativado (cooldown 20s)',
+                description: 'Ativa efeito aleatório dos blocos na bolinha e ganha moedas baseadas na cor do efeito ativado',
                 price: 60,
                 type: 'ball',
                 icon: this.getUpgradeIcon('effect_activator')
@@ -3487,8 +3522,30 @@ class Game {
         // Limpar container
         powersContainer.innerHTML = '';
         
-        // Mostrar TODOS os upgrades comprados
+        // Separar upgrades em ativos e inativos
+        const activeUpgrades = [];
+        const inactiveUpgrades = [];
+        
         this.activeUpgrades.forEach(upgrade => {
+            // Verificar se o upgrade está desativado pelo modificador "Sem Efeitos Bons"
+            const isDisabled = this.disabledPowers.includes(upgrade.id);
+            
+            if (isDisabled) {
+                inactiveUpgrades.push(upgrade);
+            } else {
+                activeUpgrades.push(upgrade);
+            }
+        });
+        
+        // Combinar: ativos primeiro, depois inativos
+        const sortedUpgrades = [...activeUpgrades, ...inactiveUpgrades];
+        
+        // Mostrar apenas os primeiros 10 upgrades
+        const visibleUpgrades = sortedUpgrades.slice(0, 10);
+        const hiddenUpgrades = sortedUpgrades.slice(10);
+        
+        // Criar upgrades visíveis
+        visibleUpgrades.forEach(upgrade => {
             const powerItem = document.createElement('div');
             powerItem.className = 'power-item';
             powerItem.id = `power-${upgrade.id}`;
@@ -3515,6 +3572,139 @@ class Game {
             
             powersContainer.appendChild(powerItem);
         });
+        
+        // Criar upgrades ocultos com efeito de fade
+        if (hiddenUpgrades.length > 0) {
+            const hiddenContainer = document.createElement('div');
+            hiddenContainer.className = 'power-item hidden-powers';
+            hiddenContainer.style.cssText = `
+                opacity: 0.3;
+                filter: blur(1px);
+                pointer-events: none;
+                position: relative;
+            `;
+            
+            // Mostrar contador de upgrades ocultos
+            const hiddenCount = document.createElement('div');
+            hiddenCount.className = 'hidden-count';
+            hiddenCount.textContent = `+${hiddenUpgrades.length}`;
+            hiddenCount.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(255, 107, 53, 0.8);
+                color: white;
+                padding: 4px 8px;
+                border-radius: 12px;
+                font-size: 12px;
+                font-weight: bold;
+                z-index: 10;
+            `;
+            hiddenContainer.appendChild(hiddenCount);
+            
+            // Adicionar ícone genérico para upgrades ocultos
+            const icon = document.createElement('div');
+            icon.className = 'power-icon';
+            icon.innerHTML = `<svg width="32" height="32" viewBox="0 0 32 32">
+                <rect x="4" y="4" width="24" height="24" fill="#95a5a6" stroke="#7f8c8d" stroke-width="2" rx="4"/>
+                <text x="16" y="20" text-anchor="middle" font-family="Arial" font-size="12" fill="#2c3e50">...</text>
+            </svg>`;
+            hiddenContainer.appendChild(icon);
+            
+            powersContainer.appendChild(hiddenContainer);
+        }
+    }
+    
+    showPowerModal(upgrade) {
+        // Criar overlay do modal se não existir
+        let overlay = document.getElementById('powerModalOverlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'powerModalOverlay';
+            overlay.className = 'power-modal-overlay';
+            document.body.appendChild(overlay);
+            
+            // Fechar modal ao clicar no overlay
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    this.hidePowerModal();
+                }
+            });
+        }
+        
+        // Criar modal se não existir
+        let modal = document.getElementById('powerModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'powerModal';
+            modal.className = 'power-modal';
+            overlay.appendChild(modal);
+        }
+        
+        // Preencher conteúdo do modal
+        const hasCooldown = this.hasCooldown(upgrade.id);
+        const cooldownTime = hasCooldown ? this.getUpgradeCooldown(upgrade.id) : 0;
+        
+        modal.innerHTML = `
+            <div class="power-modal-header">
+                <div class="power-modal-icon">${this.getUpgradeIcon(upgrade.id)}</div>
+                <h3 class="power-modal-title">${upgrade.name}</h3>
+            </div>
+            <div class="power-modal-description">${upgrade.description}</div>
+            <div class="power-modal-stats">
+                <div class="power-stat">
+                    <div class="power-stat-label">Tipo</div>
+                    <div class="power-stat-value">${upgrade.type || 'Poder'}</div>
+                </div>
+                <div class="power-stat">
+                    <div class="power-stat-label">Cooldown</div>
+                    <div class="power-stat-value">${hasCooldown ? cooldownTime + 's' : 'Nenhum'}</div>
+                </div>
+            </div>
+        `;
+        
+        // Mostrar modal
+        overlay.classList.add('active');
+        
+        // Adicionar listener para ESC
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                this.hidePowerModal();
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+    }
+    
+    hidePowerModal() {
+        const overlay = document.getElementById('powerModalOverlay');
+        if (overlay) {
+            overlay.classList.remove('active');
+        }
+    }
+    
+    getUpgradeCooldown(upgradeId) {
+        // Tempos de cooldown para cada upgrade
+        const cooldownTimes = {
+            'super_magnet': 10,
+            'paddle_dash': 8,
+            'charged_shot': 5,
+            'safety_net': 15,
+            'effect_activator': 12,
+            'cushion_paddle': 6,
+            'multi_ball': 20,
+            'explosive_ball': 8,
+            'laser_paddle': 10,
+            'shield_paddle': 15,
+            'gravity_well': 25,
+            'time_slow': 30,
+            'power_boost': 18,
+            'brick_breaker': 12,
+            'mega_paddle': 22
+        };
+        
+        return cooldownTimes[upgradeId] || 0;
     }
     
     hasCooldown(upgradeId) {

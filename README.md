@@ -54,10 +54,11 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 - **Dificuldade**: Alta - reduz significativamente o poder de compra
 
 #### 🔴 Pânico Vermelho
-- **Efeito**: O Tijolo Núcleo se move lentamente pela formação e restaura blocos destruídos
+- **Efeito**: O Tijolo Núcleo se move horizontalmente pela formação e restaura blocos destruídos
 - **Impacto**: Alvo móvel torna o objetivo mais difícil de atingir + blocos restaurados aumentam a dificuldade
 - **Dificuldade**: Muito Alta - muda completamente a estratégia e adiciona blocos de volta
-- **Restauração**: Quando o bloco vermelho troca de posição, restaura 3-7 blocos destruídos aleatoriamente
+- **Movimento**: Muda de direção aleatoriamente a cada 3 segundos (esquerda/direita)
+- **Restauração**: Quando o bloco vermelho troca de posição, restaura sempre 25 blocos destruídos aleatoriamente
 
 #### 🔋 Bateria Fraca
 - **Efeito**: A plataforma do jogador se move 20% mais devagar
@@ -116,16 +117,15 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 #### ⚽ Upgrades de Bolinha (12 total)
 8. **Bolinha Perfurante** - Quebra tijolos azuis sem mudar direção (220 🪙)
 9. **Campo de Fricção** - Reduz velocidade em 10% (160 🪙)
-10. **Multi-bola** - Cria uma nova bolinha grudada na plataforma. (cooldown 60s) (200 🪙)
+10. **Multi-bola** - Cria uma nova bolinha grudada na plataforma. Liberada automaticamente em 2 segundos. (cooldown 60s) (200 🪙)
 11. **Bolinha Explosiva** - Explode ao atingir tijolos (não afeta o núcleo vermelho) (350 🪙)
 12. **Eco da Bolinha** - Destrói um bloco aleatório adicional a cada batida (250 🪙)
 13. **Ativador de Efeito** - Ativa efeito aleatório dos blocos na bolinha e ganha moedas baseadas na cor do bloco do efeito ativado (cooldown 20s) (60 🪙)
 14. **Bolinha Espelhada** - Destrói bloco simétrico ao quebrar um (250 🪙)
 15. **Bolinha da Fortuna** - Bolinha dourada que dá +1 moeda por bloco (150 🪙)
-16. **Bolinha Wombo Combo** - Adiciona +1 moeda por bloco quebrado em combos e dobra a recompensa do combo máximo na loja (120 🪙)
-17. **Bolinha do Tempo** - Para a bolinha por 3 segundos. (cooldown 40s) (180 🪙)
-18. **Bolinha Prima** - Destrói bloco aleatório a cada número primo de batidas (120 🪙)
-19. **Bolinha Wombo Combo**: Com esta upgrade, cada bloco em combo dá +2 moedas (ao invés de +1) e a recompensa do combo máximo na loja é dobrada (120 🪙)
+16. **Bolinha do Tempo** - Para a bolinha por 3 segundos. (cooldown 40s) (180 🪙)
+15. **Bolinha Prima** - Destrói bloco aleatório a cada número primo de batidas (120 🪙)
+16. **Bolinha Wombo Combo**: Com esta upgrade, cada bloco em combo dá +2 moedas (ao invés de +1) e a recompensa do combo máximo na loja é dobrada (120 🪙)
 
 #### 🛡️ Upgrades de Utilidade (6 total)
 19. **Coração Extra** - Ganha uma vida a cada fase (180 🪙)

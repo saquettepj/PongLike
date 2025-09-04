@@ -100,7 +100,7 @@ body {
 .pause-column {
     flex: 1;
     min-width: 0; /* Permite que as colunas encolham */
-    overflow: visible; /* Permite que tooltips sejam visíveis */
+    overflow: visible;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -487,9 +487,11 @@ body {
     border: 2px solid #ff6b35;
     margin-bottom: 0.5rem;
     width: 100%;
-    height: 100%; /* Ocupa toda a altura da coluna */
+    max-height: 600px;
+    min-height: 600px;
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
 .purchased-powers-section h3 {
@@ -507,7 +509,17 @@ body {
     margin-top: 1rem;
     flex: 1; /* Ocupa o espaço restante da seção */
     align-content: flex-start; /* Alinha os itens no topo */
-    overflow: visible; /* Permite que tooltips sejam visíveis */
+    overflow-y: auto; /* Scroll vertical quando necessário */
+    overflow-x: hidden; /* Ocultar scroll horizontal */
+    /* Ocultar barra de rolagem */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+    position: relative;
+}
+
+/* Ocultar barra de rolagem no WebKit (Chrome, Safari, Edge) */
+.purchased-powers-grid::-webkit-scrollbar {
+    display: none;
 }
 
 .purchased-power-item {
@@ -528,7 +540,6 @@ body {
 .purchased-power-item:hover {
     background: rgba(255, 107, 53, 0.2);
     border-color: #ff8c42;
-    transform: scale(1.05);
 }
 
 .purchased-power-icon {
@@ -538,52 +549,110 @@ body {
 }
 
 .purchased-power-name {
-    font-size: 8px;
+    font-size: 10px;
     text-align: center;
     color: #ffffff;
     font-weight: bold;
     line-height: 1.1;
 }
 
-/* Tooltip */
-.power-tooltip {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.95);
-    color: #ffffff;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    white-space: nowrap;
-    z-index: 9999; /* Z-index muito alto para ficar acima de tudo */
+/* Modal de Poder */
+.power-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
-    pointer-events: none;
-    border: 1px solid #ff6b35;
-    max-width: 200px;
-    white-space: normal;
-    text-align: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); /* Sombra para melhor visibilidade */
 }
 
-.purchased-power-item:hover .power-tooltip {
+.power-modal-overlay.active {
     opacity: 1;
     visibility: visible;
 }
 
-.power-tooltip::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 5px solid transparent;
-    border-top-color: rgba(0, 0, 0, 0.95);
-    z-index: 9999; /* Mesmo z-index do tooltip */
+.power-modal {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 3px solid #ff6b35;
+    border-radius: 15px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    transform: scale(0.8);
+    transition: transform 0.3s ease;
 }
+
+.power-modal-overlay.active .power-modal {
+    transform: scale(1);
+}
+
+.power-modal-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+}
+
+.power-modal-icon {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+}
+
+.power-modal-title {
+    font-size: 1.5rem;
+    color: #fdcb6e;
+    font-weight: bold;
+    text-shadow: 1px 1px 0px #e17055;
+    margin: 0;
+}
+
+.power-modal-description {
+    color: #ffffff;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.power-modal-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.power-stat {
+    background: rgba(255, 107, 53, 0.1);
+    border: 1px solid #ff6b35;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.power-stat-label {
+    color: #fdcb6e;
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.power-stat-value {
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+
 
 #powersContainer {
     display: flex;
