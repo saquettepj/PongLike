@@ -370,6 +370,11 @@ class Game {
         document.getElementById('resumeButton').addEventListener('click', () => {
             this.resumeGame();
         });
+        
+        // Event listeners para seleção de poderes inicial
+        document.getElementById('confirmPowerButton').addEventListener('click', () => {
+            this.confirmInitialPower();
+        });
     }
     
     showScreen(screenName) {
@@ -381,6 +386,385 @@ class Game {
         // Mostrar tela selecionada
         document.getElementById(screenName).classList.add('active');
         this.currentScreen = screenName;
+    }
+    
+    showInitialPowerSelection() {
+        this.generateInitialPowerOptions();
+        this.showScreen('powerSelectionScreen');
+    }
+    
+    generateInitialPowerOptions() {
+        const powerSelectionGrid = document.getElementById('powerSelectionGrid');
+        powerSelectionGrid.innerHTML = '';
+        
+        // Selecionar 2 poderes aleatórios da lista de upgrades
+        const allUpgrades = this.getAllUpgrades();
+        const shuffledUpgrades = [...allUpgrades].sort(() => Math.random() - 0.5);
+        const selectedPowers = shuffledUpgrades.slice(0, 2);
+        
+        selectedPowers.forEach((power, index) => {
+            const powerCard = document.createElement('div');
+            powerCard.className = 'power-selection-card';
+            powerCard.dataset.powerId = power.id;
+            
+            powerCard.innerHTML = `
+                <div class="power-selection-icon">
+                    ${power.icon}
+                </div>
+                <div class="power-selection-name">${power.name}</div>
+                <div class="power-selection-description">${power.description}</div>
+            `;
+            
+            powerCard.addEventListener('click', () => {
+                this.selectInitialPower(power.id, powerCard);
+            });
+            
+            powerSelectionGrid.appendChild(powerCard);
+        });
+    }
+    
+    selectInitialPower(powerId, powerCard) {
+        // Remover seleção anterior
+        document.querySelectorAll('.power-selection-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        
+        // Selecionar novo poder
+        powerCard.classList.add('selected');
+        this.selectedInitialPower = powerId;
+        
+        // Habilitar botão de confirmação
+        document.getElementById('confirmPowerButton').disabled = false;
+    }
+    
+    confirmInitialPower() {
+        if (!this.selectedInitialPower) return;
+        
+        // Adicionar o poder inicial aos upgrades ativos
+        const allUpgrades = this.getAllUpgrades();
+        const selectedUpgrade = allUpgrades.find(upgrade => upgrade.id === this.selectedInitialPower);
+        
+        if (selectedUpgrade) {
+            this.activeUpgrades.push(selectedUpgrade);
+            this.initialPower = selectedUpgrade;
+            this.initialPowerSelected = true;
+        }
+        
+        // Iniciar o jogo
+        this.initGameObjects();
+        this.generateBricks();
+        this.gameRunning = true;
+        this.showScreen('gameScreen');
+        this.updateUI();
+        this.gameLoop();
+    }
+    
+    getAllUpgrades() {
+        // Lista completa de todos os upgrades (copiada do método getAvailableUpgrades)
+        return [
+            // Upgrades de Plataforma (1-7)
+            {
+                id: 'wide_paddle',
+                name: 'Plataforma Larga',
+                description: 'Aumenta o tamanho da plataforma em 50%',
+                price: 150,
+                type: 'paddle',
+                icon: this.getUpgradeIcon('wide_paddle')
+            },
+            {
+                id: 'attached_cannons',
+                name: 'Canhões Acoplados',
+                description: 'Atira projéteis apenas em batidas ímpares',
+                price: 170,
+                type: 'paddle',
+                icon: this.getUpgradeIcon('attached_cannons')
+            },
+            {
+                id: 'super_magnet',
+                name: 'Super Ímã',
+                description: 'Campo magnético para puxar bolinha',
+                price: 180,
+                type: 'paddle',
+                icon: this.getUpgradeIcon('super_magnet')
+            },
+            {
+                id: 'paddle_dash',
+                name: 'Dash de Plataforma',
+                description: 'Movimento rápido lateral por 3s (cooldown 60s)',
+                price: 140,
+                type: 'paddle',
+                icon: this.getUpgradeIcon('paddle_dash')
+            },
+            {
+                id: 'cushion_paddle',
+                name: 'Plataforma de Desaceleração',
+                description: 'Diminui em 50% a velocidade de todas as bolinhas por 10 segundos (cooldown 60s)',
+                price: 80,
+                type: 'paddle',
+                icon: this.getUpgradeIcon('cushion_paddle')
+            },
+            {
+                id: 'reinforced_paddle',
+                name: 'Reforço',
+                description: 'Plataforma 2x mais alta e destrói bloco da linha de cima',
+                price: 220,
+                type: 'paddle',
+                icon: this.getUpgradeIcon('reinforced_paddle')
+            },
+            {
+                id: 'charged_shot',
+                name: 'Tiro Carregado',
+                description: 'Atira projétil perfurante imediatamente',
+                price: 190,
+                type: 'paddle',
+                icon: this.getUpgradeIcon('charged_shot')
+            },
+            // Upgrades de Bolinha (8-20)
+            {
+                id: 'piercing_ball',
+                name: 'Bolinha Perfurante',
+                description: 'Quebra tijolos azuis sem mudar direção',
+                price: 220,
+                type: 'ball',
+                icon: this.getUpgradeIcon('piercing_ball')
+            },
+            {
+                id: 'friction_field',
+                name: 'Campo de Fricção',
+                description: 'Reduz velocidade em 10%',
+                price: 160,
+                type: 'ball',
+                icon: this.getUpgradeIcon('friction_field')
+            },
+            {
+                id: 'multi_ball',
+                name: 'Multi-bola',
+                description: 'Cria uma nova bolinha grudada na plataforma. Liberada automaticamente em 2 segundos (cooldown 120s)',
+                price: 200,
+                type: 'ball',
+                icon: this.getUpgradeIcon('multi_ball')
+            },
+            {
+                id: 'explosive_ball',
+                name: 'Bolinha Explosiva',
+                description: 'Explode ao atingir tijolos (não afeta o núcleo vermelho)',
+                price: 350,
+                type: 'ball',
+                icon: this.getUpgradeIcon('explosive_ball')
+            },
+            {
+                id: 'ball_echo',
+                name: 'Eco da Bolinha',
+                description: 'Destrói um bloco aleatório adicional a cada batida',
+                price: 250,
+                type: 'ball',
+                icon: this.getUpgradeIcon('ball_echo')
+            },
+            {
+                id: 'effect_activator',
+                name: 'Ativador de Efeito',
+                description: 'Ativa efeito aleatório dos blocos na bolinha e ganha moedas baseadas na cor do bloco do efeito ativado (cooldown 20s)',
+                price: 60,
+                type: 'ball',
+                icon: this.getUpgradeIcon('effect_activator')
+            },
+            {
+                id: 'mirror_ball',
+                name: 'Bolinha Espelhada',
+                description: 'Destrói bloco simétrico ao quebrar um',
+                price: 250,
+                type: 'ball',
+                icon: this.getUpgradeIcon('mirror_ball')
+            },
+            {
+                id: 'lucky_ball',
+                name: 'Bolinha da Fortuna',
+                description: 'Bolinha dourada que dá +1 moeda por bloco',
+                price: 150,
+                type: 'ball',
+                icon: this.getUpgradeIcon('lucky_ball')
+            },
+            {
+                id: 'time_ball',
+                name: 'Bolinha do Tempo',
+                description: 'Para a bolinha por 3 segundos (cooldown 40s)',
+                price: 180,
+                type: 'ball',
+                icon: this.getUpgradeIcon('time_ball')
+            },
+            {
+                id: 'prime_ball',
+                name: 'Bolinha Prima',
+                description: 'Destrói bloco aleatório a cada número primo de batidas',
+                price: 120,
+                type: 'ball',
+                icon: this.getUpgradeIcon('prime_ball')
+            },
+            {
+                id: 'wombo_combo_ball',
+                name: 'Bolinha Wombo Combo',
+                description: 'Cada bloco em combo dá +2 moedas (ao invés de +1) e a recompensa do combo máximo na loja é dobrada',
+                price: 120,
+                type: 'ball',
+                icon: this.getUpgradeIcon('wombo_combo_ball')
+            },
+            {
+                id: 'ghost_ball',
+                name: 'Bolinha Fantasma',
+                description: 'Quando a bolinha cai pela primeira vez em cada fase, ela reaparece no topo do campo',
+                price: 250,
+                type: 'ball',
+                icon: this.getUpgradeIcon('ghost_ball')
+            },
+            // Upgrades de Utilidade (21-26)
+            {
+                id: 'extra_life',
+                name: 'Coração Extra',
+                description: 'Ganha uma vida a cada fase',
+                price: 180,
+                type: 'utility',
+                icon: this.getUpgradeIcon('extra_life')
+            },
+            {
+                id: 'safety_net',
+                name: 'Rede de Segurança',
+                description: 'Barreira temporária por 15s (cooldown 80s)',
+                price: 300,
+                type: 'utility',
+                icon: this.getUpgradeIcon('safety_net')
+            },
+            {
+                id: 'lucky_amulet',
+                name: 'Amuleto da Sorte',
+                description: '+25% dinheiro',
+                price: 30,
+                type: 'utility',
+                icon: this.getUpgradeIcon('lucky_amulet')
+            },
+            {
+                id: 'life_insurance',
+                name: 'Seguro de Vida',
+                description: 'Ganha 100 moedas ao perder vida',
+                price: 150,
+                type: 'utility',
+                icon: this.getUpgradeIcon('life_insurance')
+            },
+            {
+                id: 'recycling',
+                name: 'Reciclagem',
+                description: 'Tijolos azuis podem reaparecer',
+                price: 30,
+                type: 'utility',
+                icon: this.getUpgradeIcon('recycling')
+            },
+            {
+                id: 'risk_converter',
+                name: 'Conversor de Risco',
+                description: 'Diminui vida do bloco vermelho para 3, muda velocidade da bolinha entre 80%-140% a cada 5s e desativa a troca de posição do bloco vermelho',
+                price: 100,
+                type: 'utility',
+                icon: this.getUpgradeIcon('risk_converter')
+            },
+            // Upgrades "Quebra-Regras" (27-31)
+            {
+                id: 'structural_damage',
+                name: 'Dano Estrutural',
+                description: 'Primeira batida no núcleo conta como duas',
+                price: 400,
+                type: 'game_breaking',
+                icon: this.getUpgradeIcon('structural_damage')
+            },
+            {
+                id: 'heat_vision',
+                name: 'Dilatação Temporal',
+                description: 'Reduz velocidade do jogo em 30%',
+                price: 500,
+                type: 'game_breaking',
+                icon: this.getUpgradeIcon('heat_vision')
+            },
+            {
+                id: 'controlled_reversal',
+                name: 'Poço Gravitacional',
+                description: 'Bolinha é atraída para o centro da tela',
+                price: 600,
+                type: 'game_breaking',
+                icon: this.getUpgradeIcon('controlled_reversal')
+            },
+            {
+                id: 'investor',
+                name: 'Mudança de Fase',
+                description: 'Bolinha pode atravessar tijolos por 5 segundos (cooldown 90s)',
+                price: 700,
+                type: 'game_breaking',
+                icon: this.getUpgradeIcon('investor')
+            },
+            {
+                id: 'money_saver',
+                name: 'Âncora da Realidade',
+                description: 'Desativa todos os efeitos de tijolos por 10 segundos (cooldown 120s)',
+                price: 800,
+                type: 'game_breaking',
+                icon: this.getUpgradeIcon('money_saver')
+            }
+        ];
+    }
+    
+    removeInitialPower() {
+        if (!this.initialPower) return;
+        
+        // Remover o poder inicial dos upgrades ativos
+        this.activeUpgrades = this.activeUpgrades.filter(upgrade => upgrade.id !== this.initialPower.id);
+        
+        // Armazenar o poder removido para disponibilizar na loja
+        this.removedInitialPower = this.initialPower;
+        
+        // Limpar referência do poder inicial
+        this.initialPower = null;
+        
+        // Atualizar interface de poderes
+        this.createPowersInterface();
+        this.updateActivatablePowers();
+        
+        // Mostrar notificação
+        this.showPowerRemovalNotification();
+    }
+    
+    showPowerRemovalNotification() {
+        if (!this.removedInitialPower) return;
+        
+        // Criar notificação visual
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: #ff6b35;
+            padding: 1rem 2rem;
+            border: 2px solid #ff6b35;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+            z-index: 10000;
+            box-shadow: 0 0 20px rgba(255, 107, 53, 0.5);
+        `;
+        notification.innerHTML = `
+            <div>Poder "${this.removedInitialPower.name}" removido!</div>
+            <div style="font-size: 0.9rem; color: #fdcb6e; margin-top: 0.5rem;">
+                Você pode comprá-lo novamente na loja
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Remover notificação após 3 segundos
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 3000);
     }
     
     startGame() {
@@ -395,16 +779,14 @@ class Game {
         this.activeUpgrades = [];
         this.ghostBallUsedThisPhase = false; // Resetar uso da Bolinha Fantasma
         this.resetBallEffects();
+        this.initialPowerSelected = false; // Flag para controlar se o poder inicial foi selecionado
+        this.initialPower = null; // Armazenar o poder inicial selecionado
         
         // Atualizar configurações de dificuldade para a fase 1
         this.updateDifficultySettings();
         
-        this.initGameObjects();
-        this.generateBricks();
-        this.gameRunning = true;
-        this.showScreen('gameScreen');
-        this.updateUI();
-        this.gameLoop();
+        // Mostrar tela de seleção de poderes inicial
+        this.showInitialPowerSelection();
     }
     
     restartGame() {
@@ -3349,6 +3731,11 @@ class Game {
             }
         ];
         
+        // Adicionar poder removido se existir
+        if (this.removedInitialPower) {
+            allUpgrades.push(this.removedInitialPower);
+        }
+        
         // Filtrar upgrades já comprados
         return allUpgrades.filter(upgrade => !this.hasUpgrade(upgrade.id));
     }
@@ -3360,6 +3747,11 @@ class Game {
                 cardElement.classList.add('disabled');
             }
             return;
+        }
+        
+        // Se este é o poder removido sendo comprado novamente, limpar a referência
+        if (this.removedInitialPower && upgrade.id === this.removedInitialPower.id) {
+            this.removedInitialPower = null;
         }
 
         let priceToPay = discountedPrice !== null ? discountedPrice : upgrade.price;
@@ -3470,6 +3862,11 @@ class Game {
         // Resetar combo da fase para nova fase
         this.currentPhaseCombo = 0;
         this.maxPhaseCombo = 0;
+        
+        // Remover poder inicial na fase 2
+        if (this.currentPhase === 2 && this.initialPower) {
+            this.removeInitialPower();
+        }
         
         // Resetar cooldowns de todos os poderes ativos
         Object.keys(this.activeUpgradeEffects).forEach(key => {

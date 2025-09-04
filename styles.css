@@ -781,6 +781,145 @@ body {
     padding: 1rem;
 }
 
+/* Tela de Seleção de Poderes Inicial */
+#powerSelectionScreen {
+    background: linear-gradient(135deg, #2c1810, #3d2317);
+}
+
+.power-selection-container {
+    background: rgba(0, 0, 0, 0.8);
+    border: 3px solid #ff6b35;
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 800px;
+    width: 90%;
+    box-shadow: 0 0 30px rgba(255, 107, 53, 0.4);
+    text-align: center;
+}
+
+.power-selection-container h2 {
+    font-size: 2.5rem;
+    color: #ff6b35;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 0px #d63031;
+}
+
+.power-selection-subtitle {
+    text-align: center;
+    color: #fdcb6e;
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+.power-duration-warning {
+    background: rgba(231, 76, 60, 0.1);
+    border: 2px solid #e74c3c;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.warning-text {
+    color: #e74c3c;
+    font-size: 1rem;
+    font-weight: bold;
+    text-shadow: 1px 1px 0px #c0392b;
+}
+
+.power-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.power-selection-card {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 2px solid #a29bfe;
+    border-radius: 15px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.power-selection-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(162, 155, 254, 0.4);
+    border-color: #ff6b35;
+}
+
+.power-selection-card.selected {
+    border-color: #fdcb6e;
+    background: linear-gradient(135deg, #2c1810, #3d2317);
+    box-shadow: 0 0 20px rgba(253, 203, 110, 0.5);
+}
+
+.power-selection-icon {
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.power-selection-icon svg {
+    width: 48px;
+    height: 48px;
+}
+
+.power-selection-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #fdcb6e;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    text-shadow: 1px 1px 0px #e17055;
+}
+
+.power-selection-description {
+    color: #ffffff;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+}
+
+.power-selection-actions {
+    text-align: center;
+}
+
+.confirm-power-button {
+    font-size: 1.5rem;
+    font-weight: bold;
+    padding: 1rem 2rem;
+    background: linear-gradient(45deg, #00b894, #00cec9);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    text-shadow: 1px 1px 0px #00695c;
+    box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
+    transition: all 0.3s ease;
+}
+
+.confirm-power-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 184, 148, 0.6);
+}
+
+.confirm-power-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
 /* Tela de Upgrades */
 #upgradeScreen {
     background: linear-gradient(135deg, #2c1810, #3d2317);
@@ -1349,6 +1488,14 @@ body {
     }
     
     .power-selection-name {
+        font-size: 0.9rem;
+    }
+    
+    .power-duration-warning {
+        padding: 0.8rem;
+    }
+    
+    .warning-text {
         font-size: 0.9rem;
     }
 }
