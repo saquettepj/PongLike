@@ -589,15 +589,15 @@ class Game {
             {
                 id: 'explosive_ball',
                 name: 'Bolinha Explosiva',
-                description: 'Explode ao atingir tijolos (não afeta o núcleo vermelho)',
-                price: 350,
+                description: 'Explode se atingir bloco vermelho ou amarelo',
+                price: 250,
                 type: 'ball',
                 icon: this.getUpgradeIcon('explosive_ball')
             },
             {
                 id: 'ball_echo',
                 name: 'Eco da Bolinha',
-                description: 'Destrói um bloco aleatório adicional a cada batida',
+                description: 'Destrói um bloco aleatório adicional a cada batida (apenas em fases ímpares)',
                 price: 250,
                 type: 'ball',
                 icon: this.getUpgradeIcon('ball_echo')
@@ -613,7 +613,7 @@ class Game {
             {
                 id: 'mirror_ball',
                 name: 'Bolinha Espelhada',
-                description: 'Destrói bloco simétrico ao quebrar um',
+                description: 'Destrói bloco simétrico ao quebrar um (apenas nos primeiros 2 minutos)',
                 price: 250,
                 type: 'ball',
                 icon: this.getUpgradeIcon('mirror_ball')
@@ -2169,8 +2169,8 @@ class Game {
             ball.vy = -ball.vy; // Inverter direção vertical
         }
         
-        // Bolinha Explosiva - explodir ao atingir tijolo
-        if (ball.explosive) {
+        // Bolinha Explosiva - explodir apenas ao atingir bloco vermelho ou amarelo
+        if (ball.explosive && (brick.color === 'red' || brick.color === 'yellow')) {
             this.explodeBall(ball);
             ball.explosive = false;
         }
@@ -2178,8 +2178,8 @@ class Game {
         // Criar partículas
         this.createParticles(ball.x, ball.y, this.getBrickColorValue(brick.color));
         
-        // Eco da Bolinha - destruir bloco aleatório adicional
-        if (this.hasUpgrade('ball_echo')) {
+        // Eco da Bolinha - destruir bloco aleatório adicional (apenas em fases ímpares)
+        if (this.hasUpgrade('ball_echo') && this.currentPhase % 2 === 1) {
             const availableBricks = this.bricks.filter(b => !b.destroyed && b.color !== 'red');
             if (availableBricks.length > 0) {
                 const randomBrick = availableBricks[Math.floor(Math.random() * availableBricks.length)];
@@ -2193,8 +2193,8 @@ class Game {
             }
         }
         
-        // Bolinha Espelhada - destruir bloco simétrico
-        if (this.hasUpgrade('mirror_ball')) {
+        // Bolinha Espelhada - destruir bloco simétrico (apenas nos primeiros 2 minutos)
+        if (this.hasUpgrade('mirror_ball') && this.gameTime <= 120) {
             const centerX = this.width / 2;
             const mirrorX = centerX - (brick.x + brick.width / 2 - centerX);
             
@@ -3852,14 +3852,14 @@ class Game {
                 id: 'explosive_ball',
                 name: 'Bolinha Explosiva',
                 description: 'A bolinha explode ao atingir um tijolo, destruindo tijolos adjacentes em uma pequena área',
-                price: 350,
+                price: 250,
                 type: 'ball',
                 icon: this.getUpgradeIcon('explosive_ball')
             },
             {
                 id: 'ball_echo',
                 name: 'Eco da Bolinha',
-                description: 'Destrói um bloco aleatório adicional a cada batida',
+                description: 'Destrói um bloco aleatório adicional a cada batida (apenas em fases ímpares)',
                 price: 250,
                 type: 'ball',
                 icon: this.getUpgradeIcon('ball_echo')

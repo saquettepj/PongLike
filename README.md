@@ -119,10 +119,10 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 9. **Campo de Fricção** - Reduz velocidade em 10% (160 🪙)
 10. **Multi-bola** - Cria uma nova bolinha grudada na plataforma. Liberada automaticamente em 2 segundos. (cooldown 120s) (200 🪙)
 11. **Bolinha Combo** - A cada 5 combos consecutivos, duplica a bolinha atual uma vez (150 🪙)
-12. **Bolinha Explosiva** - Explode ao atingir tijolos (não afeta o núcleo vermelho) (350 🪙)
-13. **Eco da Bolinha** - Destrói um bloco aleatório adicional a cada batida (250 🪙)
+12. **Bolinha Explosiva** - Explode se atingir tijolos amarelos ou vermelho (não afeta o núcleo vermelho) (250 🪙)
+13. **Eco da Bolinha** - Destrói um bloco aleatório adicional a cada batida (apenas em fases ímpares) (250 🪙)
 14. **Ativador de Efeito** - Ativa efeito aleatório dos blocos na bolinha e ganha moedas baseadas na cor do bloco do efeito ativado (cooldown 20s) (60 🪙)
-15. **Bolinha Espelhada** - Destrói bloco simétrico ao quebrar um (250 🪙)
+15. **Bolinha Espelhada** - Destrói bloco simétrico ao quebrar um (apenas nos primeiros 2 minutos) (250 🪙)
 16. **Bolinha da Fortuna** - Bolinha dourada que dá +1 moeda por bloco (150 🪙)
 17. **Bolinha do Tempo** - Para a bolinha por 3 segundos. (cooldown 40s) (180 🪙)
 18. **Bolinha Prima** - Destrói bloco aleatório a cada número primo de batidas (120 🪙)
@@ -178,7 +178,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 ### 🛡️ Proteção do Núcleo Vermelho
 - **Apenas Toque Direto**: O bloco vermelho só pode ser destruído pelo toque direto da bolinha
 - **Proteção Contra Poderes**: Nenhum poder pode destruir o núcleo indiretamente:
-  - ❌ Bolinha Explosiva não afeta o núcleo
+  - ❌ Bolinha Explosiva não afeta o núcleo (explode apenas ao acertar bloco vermelho ou amarelo)
   - ❌ Eco da Bolinha não pode destruir o núcleo
   - ❌ Bolinha Espelhada não afeta o núcleo
   - ❌ Bolinha Prima não pode destruir o núcleo
