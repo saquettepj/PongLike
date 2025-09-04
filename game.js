@@ -753,7 +753,7 @@ class Game {
             {
                 id: 'lucky_amulet',
                 name: 'Amuleto da Sorte',
-                description: '+25% dinheiro',
+                description: '25% de chance de dobrar dinheiro ao destruir blocos',
                 price: 30,
                 type: 'utility',
                 icon: this.getUpgradeIcon('lucky_amulet')
@@ -2188,7 +2188,7 @@ class Game {
             
             // Aplicar modificadores de dinheiro
             if (this.hasUpgrade('lucky_amulet') && Math.random() < 0.25) {
-                reward = Math.floor(reward * 1.25);
+                reward = reward * 2; // Dobrar o dinheiro
             }
             
 
@@ -3983,8 +3983,8 @@ class Game {
             {
                 id: 'lucky_amulet',
                 name: 'Amuleto da Sorte',
-                description: 'Aumenta a chance de obter mais dinheiro por tijolo quebrado (+25%)',
-                price: 30,
+                description: '25% de chance de dobrar dinheiro ao destruir blocos',
+                price: 80,
                 type: 'utility',
                 icon: this.getUpgradeIcon('lucky_amulet')
             },
