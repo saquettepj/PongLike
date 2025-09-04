@@ -1341,6 +1341,11 @@ class Game {
                 // Tempo esgotado - perder vida
                 this.loseLife();
                 this.countdownTimer = 120; // Resetar timer para 120 segundos
+                
+                // Se Pânico Vermelho estiver ativo, resetar também seu timer
+                if (this.phaseModifiers.redPanic) {
+                    this.redPanicDirectionTimer = 0;
+                }
             }
         }
     }
@@ -1472,6 +1477,23 @@ class Game {
                     
                     // Criar efeito visual de restauração
                     this.createParticles(brickToRestore.x + brickToRestore.width / 2, brickToRestore.y + brickToRestore.height / 2, this.getBrickColorValue(brickToRestore.color));
+                    
+                    // Se Pânico Vermelho estiver ativo SOZINHO e o bloco restaurado for azul, 
+                    // 1/2 de chance de atirar fragmento
+                    if (this.phaseModifiers.redPanic && !this.phaseModifiers.countdown && 
+                        brickToRestore.color === 'blue' && Math.random() < 0.5) {
+                        this.createFragment(
+                            brickToRestore.x + brickToRestore.width / 2, 
+                            brickToRestore.y + brickToRestore.height
+                        );
+                        
+                        // Criar efeito visual para indicar que o bloco azul atirou um fragmento
+                        this.createParticles(
+                            brickToRestore.x + brickToRestore.width / 2, 
+                            brickToRestore.y + brickToRestore.height / 2, 
+                            '#ffffff'
+                        );
+                    }
                 }
             }
             
@@ -1481,6 +1503,7 @@ class Game {
             // silencioso
         }
     }
+    
     
     updateBalls() {
         this.balls.forEach((ball, index) => {
@@ -1984,6 +2007,21 @@ class Game {
                     // Pânico Vermelho - restaurar blocos quando troca de posição
                     if (this.phaseModifiers.redPanic && this.phaseModifiers.redPanic === true) {
                         this.restoreBricksOnRedPanic();
+                        
+                        // Se Pânico Vermelho estiver ativo SOZINHO, bloco vermelho também atira fragmento
+                        if (!this.phaseModifiers.countdown) {
+                            this.createFragment(
+                                brick.x + brick.width / 2, 
+                                brick.y + brick.height
+                            );
+                            
+                            // Criar efeito visual para indicar que o bloco vermelho atirou um fragmento
+                            this.createParticles(
+                                brick.x + brick.width / 2, 
+                                brick.y + brick.height / 2, 
+                                '#ffffff'
+                            );
+                        }
                     }
                 }
             }
@@ -3237,15 +3275,20 @@ class Game {
             this.disableRandomPowers();
         }
         
-        // Mostrar notificação do modificador
-        this.showModifierNotification(randomModifier);
+        // Se Contagem Regressiva foi selecionada, sempre ativar Pânico Vermelho também
+        if (randomModifier === 'countdown') {
+            this.phaseModifiers.redPanic = true;
+            this.showModifierNotification('countdown'); // Mostrar apenas "Contagem Regressiva"
+        } else {
+            // Mostrar notificação do modificador normal
+            this.showModifierNotification(randomModifier);
+        }
     }
     
     showModifierNotification(modifier) {
         const modifierNames = {
             'chaoticMovement': 'Movimento Caótico',
             'inflatedMarket': 'Mercado Inflacionado',
-
             'redPanic': 'Pânico Vermelho',
             'weakBattery': 'Bateria Fraca',
             'noGoodEffects': 'Sem Efeitos Bons',
@@ -4803,6 +4846,7 @@ class Game {
         if (this.phaseModifiers.chaoticMovement) {
             this.drawChaoticMovementIndicator();
         }
+        
     }
     
     drawCountdownTimer() {
@@ -4870,6 +4914,7 @@ class Game {
         // Resetar alinhamento
         this.ctx.textAlign = 'left';
     }
+    
     
     drawBrick(brick) {
         let color = this.getBrickColorValue(brick.color);

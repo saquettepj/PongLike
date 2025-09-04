@@ -59,6 +59,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 - **Dificuldade**: Muito Alta - muda completamente a estratégia e adiciona blocos de volta
 - **Movimento**: Muda de direção aleatoriamente a cada 3 segundos (esquerda/direita)
 - **Restauração**: Quando o bloco vermelho troca de posição, restaura sempre 25 blocos destruídos aleatoriamente
+- **Fragmentos Brancos**: Metade dos blocos azuis restaurados + bloco vermelho atiram fragmentos brancos perigosos
 
 #### 🔋 Bateria Fraca
 - **Efeito**: A plataforma do jogador se move 20% mais devagar
@@ -71,10 +72,9 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 - **Dificuldade**: Muito Alta - força o jogador a jogar sem suas vantagens
 
 #### ⏰ Contagem Regressiva
-- **Efeito**: Timer de 120 segundos aparece na tela
+- **Efeito**: Timer de 120 segundos + bloco vermelho móvel + restauração de blocos
 - **Impacto**: Se o Tijolo Vermelho não for acertado antes do tempo acabar, o jogador perde uma vida
-- **Dificuldade**: Muito Alta - pressão de tempo constante
-- **Reset**: O contador reseta para 120 segundos se acertar o tijolo vermelho ou quando ele troca de posição
+- **Dificuldade**: **EXTREMA** - pressão de tempo + alvo móvel + restauração de blocos
 
 ## 🧱 Sistema de Tijolos
 
@@ -162,6 +162,11 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 
 - **Vermelho (Núcleo)**: Cooldown de 1 segundo entre danos + acelera bolinha 4% por hit + troca posição com bloco aleatório
 
+### 💥 Sistema de Fragmentos Brancos
+- **Origem**: Criados por blocos brancos quando destruídos
+- **Pânico Vermelho**: Quando ativo sozinho, metade dos blocos azuis restaurados + bloco vermelho atiram fragmentos
+- **Perigo**: Fragmentos causam perda de vida se atingirem a plataforma
+
 ### 🆕 Novas Mecânicas por Fase
 - **Fase 2+**: Ao acertar o bloco vermelho, gera 2-5 novos tijolos aleatórios
 
@@ -213,7 +218,7 @@ brick-rogue/
 
 - ✅ Sistema completo de física da bolinha
 - ✅ 6 tipos de tijolos com efeitos únicos
-- ✅ Sistema de upgrades roguelike (30 upgrades)
+- ✅ Sistema de upgrades roguelike (33 upgrades)
 - ✅ Interface de usuário responsiva
 - ✅ Sistema de partículas e efeitos visuais
 - ✅ Persistência de recordes
