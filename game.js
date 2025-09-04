@@ -2806,10 +2806,10 @@ class Game {
             </svg>`,
             
             'lucky_ball': `<svg width="32" height="32" viewBox="0 0 32 32">
+                <!-- Bolinha amarela -->
                 <circle cx="16" cy="16" r="6" fill="#f1c40f" stroke="#f39c12" stroke-width="2"/>
-                <path d="M16 6 C12 6, 8 10, 8 16 C8 22, 16 28, 16 28 C16 28, 24 22, 24 16 C24 10, 20 6, 16 6 Z" fill="#e67e22" stroke="#d35400" stroke-width="1"/>
-                <circle cx="16" cy="16" r="2" fill="#ffffff"/>
-                <text x="16" y="19" text-anchor="middle" font-family="Arial" font-size="6" fill="#2c3e50">$</text>
+                <!-- Símbolo $ verde escuro no centro -->
+                <text x="16" y="19" text-anchor="middle" font-family="Arial" font-size="8" font-weight="bold" fill="#1e7e34">$</text>
             </svg>`,
             
             'wombo_combo_ball': `<svg width="32" height="32" viewBox="0 0 32 32">
