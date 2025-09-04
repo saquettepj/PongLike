@@ -14,6 +14,22 @@ class Game {
         this.highScore = parseInt(localStorage.getItem('brickRogueHighScore')) || 1;
         this.money = 0;
         this.lives = 3;
+        this.maxLives = 4;
+
+        // Funções auxiliares para limite de vidas
+        this.getMaxLivesCap = () => {
+            // Regra: sem Investidor => 4; com Investidor => 2; com Investidor + Coração Extra => 3
+            if (this.hasUpgrade && this.hasUpgrade('investor')) {
+                return this.hasUpgrade('extra_life') ? 3 : 2;
+            }
+            return 4;
+        };
+        this.updateMaxLivesAndClamp = () => {
+            this.maxLives = this.getMaxLivesCap();
+            if (this.lives > this.maxLives) {
+                this.lives = this.maxLives;
+            }
+        };
         
         // Controle da Bolinha Fantasma
         this.ghostBallUsedThisPhase = false;
@@ -692,14 +708,6 @@ class Game {
                 icon: this.getUpgradeIcon('controlled_reversal')
             },
             {
-                id: 'investor',
-                name: 'Mudança de Fase',
-                description: 'Bolinha pode atravessar tijolos por 5 segundos (cooldown 90s)',
-                price: 700,
-                type: 'game_breaking',
-                icon: this.getUpgradeIcon('investor')
-            },
-            {
                 id: 'money_saver',
                 name: 'Âncora da Realidade',
                 description: 'Desativa todos os efeitos de tijolos por 10 segundos (cooldown 120s)',
@@ -783,6 +791,10 @@ class Game {
         this.initialPowerSelected = false; // Flag para controlar se o poder inicial foi selecionado
         this.initialPower = null; // Armazenar o poder inicial selecionado
         
+        // Atualizar teto de vidas e clamp inicial
+        if (typeof this.updateMaxLivesAndClamp === 'function') {
+            this.updateMaxLivesAndClamp();
+        }
         // Atualizar configurações de dificuldade para a fase 1
         this.updateDifficultySettings();
         
@@ -2666,12 +2678,10 @@ class Game {
             </svg>`,
             
             'investor': `<svg width="32" height="32" viewBox="0 0 32 32">
-                <rect x="8" y="12" width="16" height="12" fill="#f1c40f" stroke="#f39c12" stroke-width="2"/>
-                <rect x="10" y="14" width="12" height="8" fill="#ffffff"/>
-                <rect x="12" y="16" width="8" height="2" fill="#f1c40f"/>
-                <rect x="12" y="18" width="8" height="2" fill="#f1c40f"/>
-                <rect x="12" y="20" width="8" height="2" fill="#f1c40f"/>
-                <path d="M16 6 L18 8 L16 10 L14 8 Z" fill="#e74c3c"/>
+                <!-- Coração amarelo -->
+                <path d="M16 26 C 12 22, 6 18, 6 12 C 6 9 8 7 11 7 C 13 7 15 8 16 10 C 17 8 19 7 21 7 C 24 7 26 9 26 12 C 26 18 20 22 16 26 Z" fill="#f1c40f" stroke="#f39c12" stroke-width="2"/>
+                <!-- Símbolo $$ verde no centro -->
+                <text x="16" y="20" text-anchor="middle" font-family="monospace" font-size="10" font-weight="bold" fill="#1e7e34">$$</text>
             </svg>`,
             'money_saver': `<svg width="32" height="32" viewBox="0 0 32 32">
                 <rect x="6" y="8" width="20" height="16" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
@@ -3729,8 +3739,8 @@ class Game {
             {
                 id: 'investor',
                 name: 'Investidor',
-                description: 'Sacrifique uma vida no início da fase para começar com 50 moedas',
-                price: 0,
+                description: 'Menos 1 vida máxima, mas toda fase começa com +100 moedas',
+                price: 50,
                 type: 'special',
                 icon: this.getUpgradeIcon('investor')
             },
@@ -3814,8 +3824,10 @@ class Game {
             
             // Aplicar upgrade imediatamente se for do tipo especial
             if (upgrade.id === 'investor') {
-                this.lives--;
-                this.money += 50;
+                // Investidor altera o teto de vida; recalcular e clamp
+                if (typeof this.updateMaxLivesAndClamp === 'function') {
+                    this.updateMaxLivesAndClamp();
+                }
                 this.updateUI();
             }
             
@@ -3841,8 +3853,11 @@ class Game {
                     // Não precisa de inicialização especial
                     break;
                 case 'extra_life':
-                    // Limitar vida máxima a 4 corações
-                    if (this.lives < 4) {
+                    // Coração Extra ajusta o teto conforme investidor
+                    if (typeof this.updateMaxLivesAndClamp === 'function') {
+                        this.updateMaxLivesAndClamp();
+                    }
+                    if (this.lives < this.maxLives) {
                         this.lives++;
                     }
                     break;
@@ -3883,6 +3898,10 @@ class Game {
     
     continueToNextPhase() {
         this.currentPhase++;
+        // Recalcular teto de vidas no início de cada fase e clamp
+        if (typeof this.updateMaxLivesAndClamp === 'function') {
+            this.updateMaxLivesAndClamp();
+        }
         this.resetBallEffects(); // Resetar todos os efeitos para nova fase
         this.ballHitCount = 0; // Resetar contador da Bolinha Prima
         this.paddle.hitCount = 0; // Resetar contador de batidas da plataforma para Canhões Acoplados
@@ -3925,6 +3944,11 @@ class Game {
                 // Manter apenas 50 moedas se tiver o upgrade
                 this.money = Math.min(this.money, 50);
             }
+        }
+
+        // Investidor: cada fase inicia com +100 moedas
+        if (this.hasUpgrade && this.hasUpgrade('investor')) {
+            this.money += 100;
         }
         
         // Limpar referência do dinheiro antes da loja

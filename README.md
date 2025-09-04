@@ -140,7 +140,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 26. **Dano Estrutural** - Primeira batida no núcleo conta como duas (180 🪙)
 27. **Visão de Calor** - Rastro térmico mais visível (100 🪙)
 28. **Reversão Controlada** - Desativa completamente o efeito de Inversão do tijolo verde (120 🪙)
-29. **Investidor** - Sacrifica vida por 50 moedas (0 🪙)
+29. **Investidor** - Reduz vida máxima em 1 (de 4 para 3, ou de 5 para 4 com Coração Extra), mas toda fase inicia com +100 moedas (50 🪙)
 30. **Poupança** - Mantém até 50 moedas para próxima fase (80 🪙)
 
 ## 🎮 Regras do Jogo
