@@ -103,7 +103,7 @@ class Game {
         // - Botões para pular fase e adicionar dinheiro
         // - Ferramentas de debug
         // ========================================
-        this.developerMode = false;
+        this.developerMode = true;
         this.gameRunning = false;
         this.gamePaused = false;
         this.ballHitCount = 0; // Contador de batidas da bolinha para Bolinha Prima
@@ -791,39 +791,14 @@ class Game {
                 type: 'utility',
                 icon: this.getUpgradeIcon('accelerated_vision')
             },
-            // Upgrades "Quebra-Regras" (27-31)
             {
-                id: 'structural_damage',
-                name: 'Dano Estrutural',
-                description: 'Primeira batida em bloco vermelho dá 3 de dano',
-                price: 400,
-                type: 'game_breaking',
-                icon: this.getUpgradeIcon('structural_damage')
+                id: 'zigzag_stabilizer',
+                name: 'Estabilizador de Zigue-zague',
+                description: 'Reduz a curva do efeito de zigue-zague em 20%',
+                price: 110,
+                type: 'utility',
+                icon: this.getUpgradeIcon('zigzag_stabilizer')
             },
-            {
-                id: 'heat_vision',
-                name: 'Dilatação Temporal',
-                description: 'Reduz velocidade do jogo em 30%',
-                price: 500,
-                type: 'game_breaking',
-                icon: this.getUpgradeIcon('heat_vision')
-            },
-            {
-                id: 'controlled_reversal',
-                name: 'Poço Gravitacional',
-                description: 'Bolinha é atraída para o centro da tela',
-                price: 600,
-                type: 'game_breaking',
-                icon: this.getUpgradeIcon('controlled_reversal')
-            },
-            {
-                id: 'money_saver',
-                name: 'Âncora da Realidade',
-                description: 'Desativa todos os efeitos de tijolos por 10 segundos',
-                price: 800,
-                type: 'game_breaking',
-                icon: this.getUpgradeIcon('money_saver')
-            }
         ];
     }
     
@@ -1659,10 +1634,14 @@ class Game {
             // Efeito de zigue-zague (amplitude ainda menor)
             if (this.ballEffects.zigzag) {
                 this.ballEffects.zigzagTimer += 0.0404;
+                
+                // Aplicar redução de 20% se tiver o upgrade Estabilizador de Zigue-zague
+                const zigzagReduction = this.hasUpgrade('zigzag_stabilizer') ? 0.8 : 1.0;
+                
                 // Movimento horizontal com amplitude muito menor
-                vx += Math.sin(this.ballEffects.zigzagTimer * 0.323) * 1.617;
+                vx += Math.sin(this.ballEffects.zigzagTimer * 0.323) * 1.617 * zigzagReduction;
                 // Movimento vertical mais sutil
-                vy += Math.cos(this.ballEffects.zigzagTimer * 0.243) * 0.243;
+                vy += Math.cos(this.ballEffects.zigzagTimer * 0.243) * 0.243 * zigzagReduction;
             }
             
 
@@ -2988,6 +2967,21 @@ class Game {
                 <!-- Símbolo de reaparecimento (seta para cima) -->
                 <path d="M16 6 L14 8 L16 10 L18 8 Z" fill="#9b59b6" opacity="0.8"/>
                 <path d="M16 10 L16 14" stroke="#9b59b6" stroke-width="2" opacity="0.8"/>
+            </svg>`,
+            
+            'zigzag_stabilizer': `<svg width="32" height="32" viewBox="0 0 32 32">
+                <!-- Bolinha central -->
+                <circle cx="16" cy="16" r="4" fill="#fdcb6e" stroke="#ff6b35" stroke-width="1"/>
+                
+                <!-- Ondas de zigue-zague (amplitude reduzida) -->
+                <path d="M4 8 Q8 6 12 8 Q16 10 20 8 Q24 6 28 8" stroke="#9b59b6" stroke-width="1.5" fill="none" opacity="0.8"/>
+                <path d="M4 12 Q8 10 12 12 Q16 14 20 12 Q24 10 28 12" stroke="#9b59b6" stroke-width="1.5" fill="none" opacity="0.6"/>
+                <path d="M4 16 Q8 14 12 16 Q16 18 20 16 Q24 14 28 16" stroke="#9b59b6" stroke-width="1.5" fill="none" opacity="0.4"/>
+                <path d="M4 20 Q8 18 12 20 Q16 22 20 20 Q24 18 28 20" stroke="#9b59b6" stroke-width="1.5" fill="none" opacity="0.6"/>
+                <path d="M4 24 Q8 22 12 24 Q16 26 20 24 Q24 22 28 24" stroke="#9b59b6" stroke-width="1.5" fill="none" opacity="0.8"/>
+                
+                <!-- Símbolo de estabilização (círculo com setas) -->
+                <circle cx="16" cy="16" r="6" fill="none" stroke="#2ecc71" stroke-width="1" opacity="0.7"/>
             </svg>`
         };
         
@@ -4045,7 +4039,7 @@ class Game {
                 icon: this.getUpgradeIcon('accelerated_vision')
             },
             
-            // Upgrades "Quebra-Regras" (21-25)
+            // Upgrades "Especiais" (21-25)
             {
                 id: 'structural_damage',
                 name: 'Dano Estrutural',
@@ -4225,6 +4219,9 @@ class Game {
                     break;
                 case 'prime_ball':
                     // Bolinha Prima - contador é gerenciado em handleBrickCollision
+                    break;
+                case 'zigzag_stabilizer':
+                    // Estabilizador de Zigue-zague - efeito passivo aplicado no updateBalls
                     break;
             }
         });
@@ -4869,47 +4866,43 @@ class Game {
                 powerSelectionContainer.innerHTML = '<div class="no-powers">Nenhum poder ativável</div>';
                 return;
             }
-            
-            // Criar interface de seleção
-            const title = document.createElement('div');
-            title.className = 'power-selection-title';
-            title.textContent = 'Poderes Ativáveis';
-            powerSelectionContainer.appendChild(title);
-            
-            this.activatablePowers.forEach((powerId, index) => {
-                const powerItem = document.createElement('div');
-                powerItem.className = `power-selection-item ${index === this.selectedPowerIndex ? 'selected' : ''}`;
-                powerItem.dataset.powerIndex = index;
-                
-                const icon = document.createElement('div');
-                icon.className = 'power-selection-icon';
-                icon.innerHTML = this.getUpgradeIcon(powerId);
-                powerItem.appendChild(icon);
-                
-                const name = document.createElement('div');
-                name.className = 'power-selection-name';
-                name.textContent = this.getUpgradeName(powerId);
-                powerItem.appendChild(name);
-                
-                powerSelectionContainer.appendChild(powerItem);
-            });
-            
-            // Adicionar instruções
-            const instructions = document.createElement('div');
-            instructions.className = 'power-selection-instructions';
-            instructions.innerHTML = 'W/S ou ↑/↓ para selecionar<br>ESPAÇO para ativar';
-            powerSelectionContainer.appendChild(instructions);
-        } else {
-            // Apenas atualizar a seleção visual sem recriar toda a interface
-            const powerItems = powerSelectionContainer.querySelectorAll('.power-selection-item');
-            powerItems.forEach((item, index) => {
-                if (index === this.selectedPowerIndex) {
-                    item.classList.add('selected');
-                } else {
-                    item.classList.remove('selected');
-                }
-            });
+        } else if (this.activatablePowers.length === 0) {
+            // Garantir que a mensagem apareça mesmo se a contagem não mudou
+            if (powerSelectionContainer.innerHTML.trim() === '') {
+                powerSelectionContainer.innerHTML = '<div class="no-powers">Nenhum poder ativável</div>';
+            }
+            return;
         }
+        
+        // Criar interface de seleção
+        const title = document.createElement('div');
+        title.className = 'power-selection-title';
+        title.textContent = 'Poderes Ativáveis';
+        powerSelectionContainer.appendChild(title);
+        
+        this.activatablePowers.forEach((powerId, index) => {
+            const powerItem = document.createElement('div');
+            powerItem.className = `power-selection-item ${index === this.selectedPowerIndex ? 'selected' : ''}`;
+            powerItem.dataset.powerIndex = index;
+            
+            const icon = document.createElement('div');
+            icon.className = 'power-selection-icon';
+            icon.innerHTML = this.getUpgradeIcon(powerId);
+            powerItem.appendChild(icon);
+            
+            const name = document.createElement('div');
+            name.className = 'power-selection-name';
+            name.textContent = this.getUpgradeName(powerId);
+            powerItem.appendChild(name);
+            
+            powerSelectionContainer.appendChild(powerItem);
+        });
+        
+        // Adicionar instruções
+        const instructions = document.createElement('div');
+        instructions.className = 'power-selection-instructions';
+        instructions.innerHTML = 'W/S ou ↑/↓ para selecionar<br>ESPAÇO para ativar';
+        powerSelectionContainer.appendChild(instructions);
     }
     
     getUpgradeName(upgradeId) {

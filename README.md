@@ -103,7 +103,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 - **Seleção Aleatória**: Os upgrades disponíveis mudam a cada fase
 - **Promoções**: A cada 3 fases, a loja entra em promoção com descontos de 20-40%
 
-### Upgrades Disponíveis (33 total)
+### Upgrades Disponíveis (35 total)
 
 #### 🏓 Upgrades de Plataforma (7 total)
 1. **Plataforma Larga** - Aumenta tamanho em 50% (150 🪙)
@@ -130,7 +130,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 20. **Bolinha Fantasma** - Quando a bolinha cai pela primeira vez em cada fase, ela reaparece no topo do campo (250 🪙)
 21. **Bolinha Dimensional** - Pode atravessar tijolos sem quebrá-los (até 5s) (140 🪙)
 
-#### 🛡️ Upgrades de Utilidade (7 total)
+#### 🛡️ Upgrades de Utilidade (8 total)
 22. **Coração Extra** - Ganha uma vida a cada fase (180 🪙)
 23. **Rede de Segurança** - Barreira temporária por 15s (cooldown 80s) (300 🪙)
 24. **Amuleto da Sorte** - 25% de chance de dobrar dinheiro ao destruir blocos (80 🪙)
@@ -138,13 +138,15 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 26. **Reciclagem** - Tijolos azuis podem reaparecer (30 🪙)
 27. **Conversor de Risco** - Diminui vida do bloco vermelho para 3, muda velocidade da bolinha entre 80%-140% a cada 5s e desativa a troca de posição do bloco vermelho (100 🪙)
 28. **Visão Acelerada** - Reduz velocidade dos fragmentos brancos em 40% (120 🪙)
+29. **Estabilizador de Zigue-zague** - Reduz a curva do efeito de zigue-zague em 20% (110 🪙)
 
-#### 🔥 Upgrades "Quebra-Regras" (5 total)
-29. **Dano Estrutural** - Primeira batida no bloco vermelho conta como 3 (180 🪙)
-30. **Visão de Calor** - Rastro térmico mais visível (100 🪙)
-31. **Reversão Controlada** - Desativa completamente o efeito de Inversão do tijolo verde (120 🪙)
-32. **Investidor** - Reduz vida máxima em 1 (de 4 para 3, ou de 5 para 4 com Coração Extra), mas toda fase inicia com +100 moedas (50 🪙)
-33. **Poupança** - Mantém até 50 moedas para próxima fase (80 🪙)
+#### ⭐ Upgrades Especiais (6 total)
+30. **Dano Estrutural** - A primeira batida no bloco vermelho dá 3 de dano (180 🪙)
+31. **Visão de Calor** - A bolinha invisível deixa um rastro térmico muito mais visível (100 🪙)
+32. **Reversão Controlada** - Desativa completamente o efeito de Inversão do tijolo verde (120 🪙)
+33. **Bolinha Prima** - A cada número primo de batidas, destrói um bloco aleatório (não vermelho) (120 🪙)
+34. **Investidor** - Menos 1 vida máxima, mas toda fase começa com +100 moedas (50 🪙)
+35. **Poupança** - Mantém até 50 moedas para a próxima fase (80 🪙)
 
 ## 🎮 Regras do Jogo
 
