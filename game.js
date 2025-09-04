@@ -108,6 +108,7 @@ class Game {
         this.gamePaused = false;
         this.ballHitCount = 0; // Contador de batidas da bolinha para Bolinha Prima
         this.gameTime = 0; // Tempo de jogo em segundos
+        this.phaseTime = 0; // Tempo da fase atual em segundos
         this.lastMultiBallTime = 0; // Último tempo que uma bola foi adicionada
         this.lastUpgradesCount = 0; // Contador para controlar quando recriar interface de poderes
         this.lastActivatablePowersCount = 0; // Contador para controlar quando recriar interface de seleção de poderes
@@ -680,7 +681,7 @@ class Game {
             {
                 id: 'mirror_ball',
                 name: 'Bolinha Espelhada',
-                description: 'Destrói bloco simétrico ao quebrar um (apenas nos primeiros 2 minutos)',
+                description: 'Destrói bloco simétrico ao quebrar um (apenas nos primeiros 2 minutos de cada fase)',
                 price: 250,
                 type: 'ball',
                 icon: this.getUpgradeIcon('mirror_ball')
@@ -1174,6 +1175,7 @@ class Game {
         
         // Atualizar tempo de jogo (60 FPS = 1/60 segundos por frame)
         this.gameTime += 1/60;
+        this.phaseTime += 1/60;
         
         this.updatePaddle();
         this.updateBalls();
@@ -2260,8 +2262,8 @@ class Game {
             }
         }
         
-        // Bolinha Espelhada - destruir bloco simétrico (apenas nos primeiros 2 minutos)
-        if (this.hasUpgrade('mirror_ball') && this.gameTime <= 120) {
+        // Bolinha Espelhada - destruir bloco simétrico (apenas nos primeiros 2 minutos da fase)
+        if (this.hasUpgrade('mirror_ball') && this.phaseTime <= 120) {
             const centerX = this.width / 2;
             const mirrorX = centerX - (brick.x + brick.width / 2 - centerX);
             
@@ -3655,6 +3657,7 @@ class Game {
         
         // Resetar tempo de jogo
         this.gameTime = 0;
+        this.phaseTime = 0;
         
         // Resetar multiplicador do conversor de risco
         this.riskConverterSpeedMultiplier = null;
@@ -3941,7 +3944,7 @@ class Game {
             {
                 id: 'mirror_ball',
                 name: 'Bolinha Espelhada',
-                description: 'Quando a bolinha destrói um bloco, também destrói o bloco simetricamente posicionado do outro lado da tela',
+                description: 'Quando a bolinha destrói um bloco, também destrói o bloco simetricamente posicionado do outro lado da tela (apenas nos primeiros 2 minutos de cada fase)',
                 price: 250,
                 type: 'ball',
                 icon: this.getUpgradeIcon('mirror_ball')
@@ -4239,6 +4242,9 @@ class Game {
         // Resetar combo da fase para nova fase
         this.currentPhaseCombo = 0;
         this.maxPhaseCombo = 0;
+        
+        // Resetar tempo da fase
+        this.phaseTime = 0;
         
         // Remover poder inicial na fase 2
         if (this.currentPhase === 2 && this.initialPower) {
