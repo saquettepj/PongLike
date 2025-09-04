@@ -2469,6 +2469,25 @@ class Game {
                 <path d="M10 16 L12 14 L14 16 L12 18 Z" fill="#ffffff" opacity="0.8"/>
             </svg>`,
             
+            'reinforced_paddle': `<svg width="32" height="32" viewBox="0 0 32 32">
+                <!-- Plataforma reforçada (2x mais alta) -->
+                <rect x="2" y="20" width="28" height="8" fill="#ff6b35" stroke="#d63031" stroke-width="1"/>
+                <rect x="2" y="16" width="28" height="4" fill="#e17055" stroke="#d63031" stroke-width="1"/>
+                <rect x="2" y="12" width="28" height="4" fill="#d63031" stroke="#d63031" stroke-width="1"/>
+                
+                <!-- Dois blocos empilhados representando "linha de cima" -->
+                <rect x="12" y="8" width="8" height="4" fill="#3498db" stroke="#2980b9" stroke-width="1"/>
+                <rect x="12" y="4" width="8" height="4" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+                
+                <!-- Efeito de destruição (rachaduras) -->
+                <path d="M14 6 L16 8" stroke="#ffffff" stroke-width="1" fill="none"/>
+                <path d="M18 6 L20 8" stroke="#ffffff" stroke-width="1" fill="none"/>
+                
+                <!-- Seta indicando poder de destruição -->
+                <path d="M16 10 L16 8" stroke="#f1c40f" stroke-width="2" fill="none"/>
+                <path d="M14 8 L16 6 L18 8" fill="#f1c40f"/>
+            </svg>`,
+            
             'repulsor_shield': `<svg width="32" height="32" viewBox="0 0 32 32">
                 <!-- Plataforma reforçada (2x mais alta) -->
                 <rect x="2" y="20" width="28" height="8" fill="#ff6b35" stroke="#d63031" stroke-width="1"/>
