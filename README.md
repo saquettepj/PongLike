@@ -133,7 +133,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 #### 🛡️ Upgrades de Utilidade (7 total)
 22. **Coração Extra** - Ganha uma vida a cada fase (180 🪙)
 23. **Rede de Segurança** - Barreira temporária por 15s (cooldown 80s) (300 🪙)
-24. **Amuleto da Sorte** - 25% de chance de dobrar dinheiro ao destruir blocos (30 🪙)
+24. **Amuleto da Sorte** - 25% de chance de dobrar dinheiro ao destruir blocos (80 🪙)
 25. **Seguro de Vida** - Ganha 100 moedas ao perder vida (150 🪙)
 26. **Reciclagem** - Tijolos azuis podem reaparecer (30 🪙)
 27. **Conversor de Risco** - Diminui vida do bloco vermelho para 3, muda velocidade da bolinha entre 80%-140% a cada 5s e desativa a troca de posição do bloco vermelho (100 🪙)
