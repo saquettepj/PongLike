@@ -307,6 +307,13 @@ class Game {
     setupEventListeners() {
         // Controles do teclado
         document.addEventListener('keydown', (e) => {
+            // Bloquear Enter quando a notificação de modificador estiver visível (evita atualizar a loja)
+            const modifierNotification = document.getElementById('modifierNotification');
+            if (e.code === 'Enter' && modifierNotification) {
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
             this.keys[e.code] = true;
             
             // Pausar/Despausar com tecla P
@@ -3085,6 +3092,7 @@ class Game {
         
         // Criar notificação visual
         const notification = document.createElement('div');
+        notification.id = 'modifierNotification';
         notification.style.cssText = `
             position: fixed;
             top: 50%;
