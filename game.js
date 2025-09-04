@@ -161,7 +161,8 @@ class Game {
             effectActivator: { active: false, timer: 0, duration: 0, cooldown: 1200 },
             cushionPaddle: { active: false, timer: 0, duration: 600, cooldown: 3600 },
             multiBall: { active: false, timer: 0, duration: 0, cooldown: 7200 },
-            timeBall: { active: false, timer: 0, duration: 0, cooldown: 2400 }
+            timeBall: { active: false, timer: 0, duration: 0, cooldown: 2400 },
+            dimensionalBall: { active: false, timer: 0, duration: 300, cooldown: 3600 }
         };
         
         // Configurações
@@ -369,6 +370,15 @@ class Game {
                     this.activeUpgradeEffects.paddleDash.timer = this.activeUpgradeEffects.paddleDash.cooldown;
                 }
             }
+            
+            // Desativar Bolinha Dimensional quando soltar espaço
+            if (e.code === 'Space' && this.gameRunning && !this.gamePaused) {
+                if (this.hasUpgrade('dimensional_ball') && this.activeUpgradeEffects.dimensionalBall.active) {
+                    this.activeUpgradeEffects.dimensionalBall.active = false;
+                    this.activeUpgradeEffects.dimensionalBall.timer = this.activeUpgradeEffects.dimensionalBall.cooldown;
+                }
+            }
+            
         });
         
         // Event listeners para modo desenvolvedor
@@ -514,7 +524,7 @@ class Game {
             {
                 id: 'paddle_dash',
                 name: 'Dash de Plataforma',
-                description: 'Movimento rápido lateral por 3s (cooldown 60s)',
+                description: 'Movimento rápido lateral por 3s',
                 price: 140,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('paddle_dash')
@@ -522,7 +532,7 @@ class Game {
             {
                 id: 'cushion_paddle',
                 name: 'Plataforma de Desaceleração',
-                description: 'Diminui em 50% a velocidade de todas as bolinhas por 10 segundos (cooldown 60s)',
+                description: 'Diminui em 50% a velocidade de todas as bolinhas por 10 segundos',
                 price: 80,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('cushion_paddle')
@@ -563,7 +573,7 @@ class Game {
             {
                 id: 'multi_ball',
                 name: 'Multi-bola',
-                description: 'Cria uma nova bolinha grudada na plataforma. Liberada automaticamente em 2 segundos (cooldown 120s)',
+                description: 'Cria uma nova bolinha grudada na plataforma. Liberada automaticamente em 2 segundos',
                 price: 200,
                 type: 'ball',
                 icon: this.getUpgradeIcon('multi_ball')
@@ -587,7 +597,7 @@ class Game {
             {
                 id: 'effect_activator',
                 name: 'Ativador de Efeito',
-                description: 'Ativa efeito aleatório dos blocos na bolinha e ganha moedas baseadas na cor do bloco do efeito ativado (cooldown 20s)',
+                description: 'Ativa efeito aleatório dos blocos na bolinha e ganha moedas baseadas na cor do bloco do efeito ativado',
                 price: 60,
                 type: 'ball',
                 icon: this.getUpgradeIcon('effect_activator')
@@ -611,7 +621,7 @@ class Game {
             {
                 id: 'time_ball',
                 name: 'Bolinha do Tempo',
-                description: 'Para a bolinha por 3 segundos (cooldown 40s)',
+                description: 'Para a bolinha por 3 segundos',
                 price: 180,
                 type: 'ball',
                 icon: this.getUpgradeIcon('time_ball')
@@ -640,6 +650,14 @@ class Game {
                 type: 'ball',
                 icon: this.getUpgradeIcon('ghost_ball')
             },
+            {
+                id: 'dimensional_ball',
+                name: 'Bolinha Dimensional',
+                description: 'Pode atravessar tijolos sem quebrá-los (Mantenha espaço pressionado) (até 5s)',
+                price: 140,
+                type: 'ball',
+                icon: this.getUpgradeIcon('dimensional_ball')
+            },
             // Upgrades de Utilidade (21-26)
             {
                 id: 'extra_life',
@@ -652,7 +670,7 @@ class Game {
             {
                 id: 'safety_net',
                 name: 'Rede de Segurança',
-                description: 'Barreira temporária por 15s (cooldown 80s)',
+                description: 'Barreira temporária por 15s',
                 price: 300,
                 type: 'utility',
                 icon: this.getUpgradeIcon('safety_net')
@@ -693,7 +711,7 @@ class Game {
             {
                 id: 'structural_damage',
                 name: 'Dano Estrutural',
-                description: 'Primeira batida no núcleo conta como duas',
+                description: 'Primeira batida em bloco vermelho dá 3 de dano',
                 price: 400,
                 type: 'game_breaking',
                 icon: this.getUpgradeIcon('structural_damage')
@@ -717,7 +735,7 @@ class Game {
             {
                 id: 'money_saver',
                 name: 'Âncora da Realidade',
-                description: 'Desativa todos os efeitos de tijolos por 10 segundos (cooldown 120s)',
+                description: 'Desativa todos os efeitos de tijolos por 10 segundos',
                 price: 800,
                 type: 'game_breaking',
                 icon: this.getUpgradeIcon('money_saver')
@@ -1137,8 +1155,8 @@ class Game {
             // Desativar efeitos quando o timer chegar a zero
             if (effect.timer <= 0 && effect.active) {
                 effect.active = false;
-                // Se for Super Ímã, Dash de Plataforma, Rede de Segurança, Plataforma de Aceleração, iniciar cooldown
-                if ((key === 'superMagnet' || key === 'paddleDash' || key === 'safetyNet' || key === 'cushionPaddle') && effect.cooldown) {
+                // Se for Super Ímã, Dash de Plataforma, Rede de Segurança, Plataforma de Aceleração, Bolinha Dimensional, iniciar cooldown
+                if ((key === 'superMagnet' || key === 'paddleDash' || key === 'safetyNet' || key === 'cushionPaddle' || key === 'dimensionalBall') && effect.cooldown) {
                     effect.timer = effect.cooldown;
                 }
             }
@@ -1154,6 +1172,21 @@ class Game {
         // Decrementar cooldown do ativador de efeito
         if (this.activeUpgradeEffects.effectActivator.cooldown > 0) {
             this.activeUpgradeEffects.effectActivator.cooldown--;
+        }
+        
+        
+        // Efeito sonoro contínuo da Bolinha Dimensional ativa + auto-desativação após 5s
+        if (this.hasUpgrade('dimensional_ball') && this.activeUpgradeEffects.dimensionalBall.active) {
+            // Tocar som a cada 30 frames (0.5 segundos) para efeito contínuo
+            if (this.gameTime % 30 === 0) {
+                this.playSound('cushionPaddle');
+            }
+            
+            // Desativar automaticamente após 5 segundos (300 frames)
+            if (this.activeUpgradeEffects.dimensionalBall.timer <= 0) {
+                this.activeUpgradeEffects.dimensionalBall.active = false;
+                this.activeUpgradeEffects.dimensionalBall.timer = this.activeUpgradeEffects.dimensionalBall.cooldown;
+            }
         }
         
         // Conversor de Risco - mudar velocidade da bolinha aleatoriamente a cada 5 segundos
@@ -1821,6 +1854,11 @@ class Game {
     }
     
     handleBrickCollision(ball, brick) {
+        // Bolinha Dimensional - atravessa tijolos: ignora colisão completamente
+        if (this.hasUpgrade('dimensional_ball') && this.activeUpgradeEffects.dimensionalBall.active) {
+            return; // não interage com o tijolo
+        }
+        
         // Movimento Caótico não precisa de lógica especial na colisão
         
         // Incrementar contador de batidas para Bolinha Prima
@@ -1844,9 +1882,9 @@ class Game {
             brick.lastHitTime = currentTime;
         }
         
-        // Dano Estrutural - primeira batida no núcleo conta como duas
+        // Dano Estrutural - primeira batida em bloco vermelho dá 3 de dano
         if (brick.color === 'red' && this.hasUpgrade('structural_damage') && brick.hits === brick.maxHits) {
-            extraDamage = 1;
+            extraDamage = 2; // +2 para totalizar 3 de dano (1 base + 2 extra)
         }
         
         // Bolinha Perfurante - quebra tijolos azuis sem mudar direção
@@ -2228,7 +2266,7 @@ class Game {
         this.activatablePowers = [];
         
         // Lista de poderes que podem ser ativados
-        const powerIds = ['super_magnet', 'paddle_dash', 'charged_shot', 'safety_net', 'effect_activator', 'cushion_paddle', 'multi_ball', 'time_ball'];
+        const powerIds = ['super_magnet', 'paddle_dash', 'charged_shot', 'safety_net', 'effect_activator', 'cushion_paddle', 'multi_ball', 'time_ball', 'dimensional_ball'];
         
         powerIds.forEach(powerId => {
             if (this.hasUpgrade(powerId)) {
@@ -2381,6 +2419,21 @@ class Game {
                     // Efeitos visuais e sonoros
                     this.createParticles(this.width / 2, this.height / 2, '#3498db');
                     this.playSound('chaoticMovement'); // Reutilizar som místico
+                }
+                break;
+                
+            case 'dimensional_ball':
+                // Toggle: espaço ativa/desativa; cooldown inicia apenas ao desativar
+                if (this.activeUpgradeEffects.dimensionalBall.active) {
+                    // Desativar manualmente e iniciar cooldown
+                    this.activeUpgradeEffects.dimensionalBall.active = false;
+                    this.activeUpgradeEffects.dimensionalBall.timer = this.activeUpgradeEffects.dimensionalBall.cooldown;
+                } else if (this.activeUpgradeEffects.dimensionalBall.timer <= 0) {
+                    // Ativar se não estiver em cooldown
+                    this.activeUpgradeEffects.dimensionalBall.active = true;
+                    this.activeUpgradeEffects.dimensionalBall.timer = this.activeUpgradeEffects.dimensionalBall.duration;
+                    this.createParticles(this.paddle.x + this.paddle.width / 2, this.paddle.y, '#8e44ad');
+                    this.playSound('superMagnet');
                 }
                 break;
         }
@@ -2651,9 +2704,21 @@ class Game {
             
             // Upgrades "Quebra-Regras"
             'structural_damage': `<svg width="32" height="32" viewBox="0 0 32 32">
-                <rect x="8" y="8" width="16" height="16" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
-                <path d="M10 10 L22 22 M22 10 L10 22" stroke="#ffffff" stroke-width="2"/>
-                <rect x="12" y="12" width="8" height="8" fill="#c0392b"/>
+                <!-- Mira externa (círculo grande) -->
+                <circle cx="16" cy="16" r="10" fill="none" stroke="#e74c3c" stroke-width="2" opacity="0.8"/>
+                <!-- Mira interna (círculo médio) -->
+                <circle cx="16" cy="16" r="6" fill="none" stroke="#c0392b" stroke-width="1.5" opacity="0.9"/>
+                <!-- Cruz central -->
+                <path d="M16 6 L16 26" stroke="#e74c3c" stroke-width="1.5"/>
+                <path d="M6 16 L26 16" stroke="#e74c3c" stroke-width="1.5"/>
+                <!-- Cruz diagonal -->
+                <path d="M10 10 L22 22" stroke="#c0392b" stroke-width="1" opacity="0.7"/>
+                <path d="M22 10 L10 22" stroke="#c0392b" stroke-width="1" opacity="0.7"/>
+                <!-- Efeito de foco (linhas convergentes) -->
+                <path d="M4 4 L8 8" stroke="#f39c12" stroke-width="0.8" opacity="0.6"/>
+                <path d="M28 4 L24 8" stroke="#f39c12" stroke-width="0.8" opacity="0.6"/>
+                <path d="M4 28 L8 24" stroke="#f39c12" stroke-width="0.8" opacity="0.6"/>
+                <path d="M28 28 L24 24" stroke="#f39c12" stroke-width="0.8" opacity="0.6"/>
             </svg>`,
             
             'heat_vision': `<svg width="32" height="32" viewBox="0 0 32 32">
@@ -2689,6 +2754,26 @@ class Game {
                 <path d="M16 26 C 12 22, 6 18, 6 12 C 6 9 8 7 11 7 C 13 7 15 8 16 10 C 17 8 19 7 21 7 C 24 7 26 9 26 12 C 26 18 20 22 16 26 Z" fill="#f1c40f" stroke="#f39c12" stroke-width="2"/>
                 <!-- Símbolo $$ verde no centro -->
                 <text x="16" y="20" text-anchor="middle" font-family="monospace" font-size="10" font-weight="bold" fill="#1e7e34">$$</text>
+            </svg>`,
+            
+            'dimensional_ball': `<svg width="32" height="32" viewBox="0 0 32 32">
+                <!-- Portal dimensional (círculo externo) -->
+                <circle cx="16" cy="16" r="8" fill="#8e44ad" stroke="#9b59b6" stroke-width="1.5" opacity="0.8"/>
+                <circle cx="16" cy="16" r="6" fill="#9b59b6" stroke="#8e44ad" stroke-width="0.8" opacity="0.6"/>
+                <!-- Bolinha no centro -->
+                <circle cx="16" cy="16" r="3" fill="#ffffff" stroke="#bdc3c7" stroke-width="0.6"/>
+                <!-- Efeitos dimensionais (energia) -->
+                <path d="M8 16 Q16 10 24 16" stroke="#f39c12" stroke-width="1" opacity="0.7" fill="none"/>
+                <path d="M8 16 Q16 22 24 16" stroke="#f39c12" stroke-width="1" opacity="0.7" fill="none"/>
+                <path d="M16 8 Q10 16 16 24" stroke="#f39c12" stroke-width="1" opacity="0.7" fill="none"/>
+                <path d="M16 8 Q22 16 16 24" stroke="#f39c12" stroke-width="1" opacity="0.7" fill="none"/>
+                <!-- Partículas de energia -->
+                <circle cx="10" cy="10" r="0.6" fill="#f39c12" opacity="0.8"/>
+                <circle cx="22" cy="10" r="0.6" fill="#f39c12" opacity="0.8"/>
+                <circle cx="10" cy="22" r="0.6" fill="#f39c12" opacity="0.8"/>
+                <circle cx="22" cy="22" r="0.6" fill="#f39c12" opacity="0.8"/>
+                <!-- Símbolo dimensional (infinito) -->
+                <path d="M13 14 Q12 13 13 12 Q14 11 16 12 Q18 11 19 12 Q20 13 19 14 Q18 15 16 14 Q14 15 13 14" stroke="#ffffff" stroke-width="0.6" fill="none" opacity="0.8"/>
             </svg>`,
             'money_saver': `<svg width="32" height="32" viewBox="0 0 32 32">
                 <rect x="6" y="8" width="20" height="16" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
@@ -3391,7 +3476,8 @@ class Game {
             effectActivator: { active: false, timer: 0, duration: 0, cooldown: 1200 },
             cushionPaddle: { active: false, timer: 0, duration: 600, cooldown: 3600 },
             multiBall: { active: false, timer: 0, duration: 0, cooldown: 7200 },
-            timeBall: { active: false, timer: 0, duration: 0, cooldown: 2400 }
+            timeBall: { active: false, timer: 0, duration: 0, cooldown: 2400 },
+            dimensionalBall: { active: false, timer: 0, duration: 300, cooldown: 3600 }
         };
         
         // Resetar timers de upgrades
@@ -3548,7 +3634,7 @@ class Game {
             {
                 id: 'super_magnet',
                 name: 'Super Ímã',
-                description: 'Pressione um botão para criar um campo magnético que puxa a bolinha por 2 segundos',
+                description: 'Campo magnético que puxa a bolinha por 2 segundos (Mantenha espaço pressionado)',
                 price: 180,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('super_magnet')
@@ -3715,7 +3801,7 @@ class Game {
             {
                 id: 'structural_damage',
                 name: 'Dano Estrutural',
-                description: 'A primeira batida no Tijolo Núcleo conta como duas',
+                description: 'A primeira batida no bloco vermelho dá 3 de dano',
                 price: 180,
                 type: 'special',
                 icon: this.getUpgradeIcon('structural_damage')
@@ -3775,12 +3861,23 @@ class Game {
                 price: 250,
                 type: 'ball',
                 icon: this.getUpgradeIcon('ghost_ball')
+            },
+            {
+                id: 'dimensional_ball',
+                name: 'Bolinha Dimensional',
+                description: 'Mantenha espaço pressionado (até 5s) para atravessar tijolos sem quebrá-los. Cooldown 60s.',
+                price: 140,
+                type: 'ball',
+                icon: this.getUpgradeIcon('dimensional_ball')
             }
         ];
         
-        // Adicionar poder removido se existir
+        // Adicionar poder removido se existir (evitar duplicatas pelo id)
         if (this.removedInitialPower) {
-            allUpgrades.push(this.removedInitialPower);
+            const exists = allUpgrades.some(u => u.id === this.removedInitialPower.id);
+            if (!exists) {
+                allUpgrades.push(this.removedInitialPower);
+            }
         }
         
         // Filtrar upgrades já comprados
@@ -4287,6 +4384,8 @@ class Game {
             'effect_activator': 12,
             'cushion_paddle': 6,
             'multi_ball': 20,
+            'time_ball': 40,
+            'dimensional_ball': 60,
             'explosive_ball': 8,
             'laser_paddle': 10,
             'shield_paddle': 15,
@@ -4310,7 +4409,8 @@ class Game {
             'effect_activator',
             'cushion_paddle',
             'multi_ball',
-            'time_ball'
+            'time_ball',
+            'dimensional_ball'
         ];
         return upgradesWithCooldown.includes(upgradeId);
     }
@@ -4325,7 +4425,8 @@ class Game {
             'effect_activator',
             'cushion_paddle',
             'multi_ball',
-            'time_ball'
+            'time_ball',
+            'dimensional_ball'
         ];
         
         upgradesWithCooldown.forEach(upgradeId => {
@@ -4472,6 +4573,20 @@ class Game {
                     cooldownElement.className = 'power-cooldown ready';
                 }
                 break;
+                
+            case 'dimensional_ball':
+                const dimensionalBallEffect = this.activeUpgradeEffects.dimensionalBall;
+                if (dimensionalBallEffect.timer > 0) {
+                    powerItem.className = 'power-item on-cooldown';
+                    const seconds = Math.ceil(dimensionalBallEffect.timer / 60);
+                    cooldownElement.textContent = `${seconds}s`;
+                    cooldownElement.className = 'power-cooldown';
+                } else {
+                    powerItem.className = 'power-item';
+                    cooldownElement.textContent = 'PRONTO';
+                    cooldownElement.className = 'power-cooldown ready';
+                }
+                break;
         }
     }
     
@@ -4543,7 +4658,8 @@ class Game {
             'cushion_paddle': 'Desaceleração',
             'multi_ball': 'Multi-bola',
             'time_ball': 'Bolinha do Tempo',
-            'ghost_ball': 'Bolinha Fantasma'
+            'ghost_ball': 'Bolinha Fantasma',
+            'dimensional_ball': 'Bolinha Dimensional'
         };
         return names[upgradeId] || upgradeId;
     }
@@ -4729,6 +4845,9 @@ class Game {
     }
     
     drawBall(ball) {
+        // Efeito visual da Bolinha Dimensional
+        const isDimensional = this.hasUpgrade('dimensional_ball') && this.activeUpgradeEffects.dimensionalBall.active;
+        
         // Se a bolinha está presa, mostrar indicador visual
         if (ball.attached) {
             // Desenhar linha conectando a bolinha ao paddle
@@ -4834,13 +4953,28 @@ class Game {
             gradient.addColorStop(1, '#ff6b35');
         }
         
-        this.ctx.fillStyle = gradient;
+        // Efeito visual da Bolinha Dimensional
+        if (isDimensional) {
+            this.ctx.globalAlpha = 0.8; // Transparência
+            // Cor roxa para Bolinha Dimensional (igual ao SVG)
+            this.ctx.fillStyle = '#8e44ad';
+        } else {
+            this.ctx.fillStyle = gradient;
+        }
+        
         this.ctx.beginPath();
         this.ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
         this.ctx.fill();
         
+        // Resetar transparência
+        if (isDimensional) {
+            this.ctx.globalAlpha = 1.0;
+        }
+        
         // Borda
-        if (this.hasUpgrade('lucky_ball')) {
+        if (isDimensional) {
+            this.ctx.strokeStyle = '#f39c12'; // Dourado para Bolinha Dimensional
+        } else if (this.hasUpgrade('lucky_ball')) {
             this.ctx.strokeStyle = '#d35400';
         } else if (this.hasUpgrade('wombo_combo_ball')) {
             this.ctx.strokeStyle = '#6c3483';
@@ -4853,7 +4987,9 @@ class Game {
         // Desenhar trail
         ball.trail.forEach((point, index) => {
             const alpha = index / ball.trail.length;
-            if (this.hasUpgrade('lucky_ball')) {
+            if (isDimensional) {
+                this.ctx.fillStyle = `rgba(142, 68, 173, ${alpha * 0.5})`; // Roxo para Bolinha Dimensional
+            } else if (this.hasUpgrade('lucky_ball')) {
                 this.ctx.fillStyle = `rgba(241, 196, 15, ${alpha * 0.5})`;
             } else if (this.hasUpgrade('wombo_combo_ball')) {
                 this.ctx.fillStyle = `rgba(155, 89, 182, ${alpha * 0.5})`;
