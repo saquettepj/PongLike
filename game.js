@@ -1770,7 +1770,7 @@ class Game {
                 
                 // Verificar colisão com tijolos
                 this.bricks.forEach(brick => {
-                    if (!brick.destroyed && 
+                    if (!brick.destroyed && brick.color !== 'red' && // Não pode quebrar o núcleo
                         powerUp.x + powerUp.radius > brick.x &&
                         powerUp.x - powerUp.radius < brick.x + brick.width &&
                         powerUp.y + powerUp.radius > brick.y &&
