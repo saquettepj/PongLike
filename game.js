@@ -87,7 +87,7 @@ class Game {
         // - Botões para pular fase e adicionar dinheiro
         // - Ferramentas de debug
         // ========================================
-        this.developerMode = true;
+        this.developerMode = false;
         this.gameRunning = false;
         this.gamePaused = false;
         this.ballHitCount = 0; // Contador de batidas da bolinha para Bolinha Prima
@@ -549,7 +549,8 @@ class Game {
     
     generateBricks() {
         this.bricks = [];
-        const rows = Math.min(15, 6 + Math.floor(this.currentPhase / 3));
+        // Sistema de fases: começa com 5 linhas na fase 1 e aumenta gradativamente até 15 linhas
+        const rows = Math.min(15, 5 + Math.floor((this.currentPhase - 1) / 2));
         const cols = Math.min(15, Math.floor(this.width / (this.config.brickWidth + this.config.brickSpacing)));
         const totalWidth = cols * (this.config.brickWidth + this.config.brickSpacing) - this.config.brickSpacing;
         const startX = (this.width - totalWidth) / 2; // Centralizar a formação
@@ -2577,8 +2578,14 @@ class Game {
     }
     
     checkShopPromotion() {
+        // Regra especial: Primeira loja (fase 1) sempre vem com desconto
+        if (this.currentPhase === 1) {
+            this.shopPromotion.active = true;
+            // Desconto para primeira loja: 20-40%
+            this.shopPromotion.discountPercent = Math.floor(Math.random() * 21) + 20; // 20-40%
+        }
         // Ativar promoção a cada 3 fases (fases 3, 6, 9, 12, etc.)
-        if (this.currentPhase % 3 === 0) {
+        else if (this.currentPhase % 3 === 0) {
             this.shopPromotion.active = true;
             // Desconto aleatório entre 20% e 40%
             this.shopPromotion.discountPercent = Math.floor(Math.random() * 21) + 20; // 20-40%
@@ -3026,8 +3033,9 @@ class Game {
             return;
         }
         
-        // Selecionar entre 2 a 4 upgrades aleatoriamente
-        const numOffers = Math.floor(Math.random() * 3) + 2; // 2-4 upgrades
+        // Regra especial: Primeira loja sempre tem 4 upgrades
+        // Outras lojas: entre 2 a 4 upgrades aleatoriamente
+        const numOffers = this.currentPhase === 1 ? 4 : Math.floor(Math.random() * 3) + 2; // 2-4 upgrades
         const selectedUpgrades = [];
         
         // Embaralhar e selecionar upgrades
