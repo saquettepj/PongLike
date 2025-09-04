@@ -3573,13 +3573,35 @@ class Game {
                 
                 // Se o card não está desabilitado (não foi comprado)
                 if (!card.classList.contains('disabled')) {
-                    // Extrair o preço do texto (remover emoji e espaços)
-                    const priceText = priceElement.textContent.replace(/[🪙\s]/g, '');
-                    const price = parseInt(priceText);
+                    // Extrair o preço do texto de forma mais robusta
+                    let priceText = priceElement.textContent;
                     
-                    if (!isNaN(price)) {
+                    // Se há um span com original-price, remover essa parte
+                    const originalPriceSpan = priceElement.querySelector('.original-price');
+                    if (originalPriceSpan) {
+                        priceText = priceText.replace(originalPriceSpan.textContent, '');
+                    }
+                    
+                    // Se há um span com discount-badge, remover essa parte
+                    const discountBadge = priceElement.querySelector('.discount-badge');
+                    if (discountBadge) {
+                        priceText = priceText.replace(discountBadge.textContent, '');
+                    }
+                    
+                    // Remover emoji, espaços e caracteres especiais
+                    priceText = priceText.replace(/[🪙\s-]/g, '');
+                    
+                    // Remover qualquer texto de desconto restante
+                    priceText = priceText.replace(/\d+%/g, '');
+                    
+                    // Extrair apenas o primeiro número encontrado (que deve ser o preço final)
+                    const priceMatch = priceText.match(/\d+/);
+                    const price = priceMatch ? parseInt(priceMatch[0]) : null;
+                    
+                    if (price !== null && !isNaN(price)) {
                         // Aplicar cor baseada na capacidade de compra
-                        const canAfford = this.money >= price;
+                        // Preços 0 (gratuitos) sempre ficam verdes
+                        const canAfford = price === 0 || this.money >= price;
                         const priceColorClass = canAfford ? 'price-affordable' : 'price-expensive';
                         priceElement.classList.add(priceColorClass);
                     }
