@@ -190,7 +190,7 @@ class Game {
         // Configurações
         this.config = {
             paddleSpeed: 5.76, // +20% de 4.8 para 5.76
-            ballSpeed: 4.08, // +20% de 3.4 para 4.08
+            ballSpeed: 4.9368, // +10% de 4.488 para 4.9368
             brickWidth: 60,
             brickHeight: 20,
             brickSpacing: 5,
@@ -576,6 +576,7 @@ class Game {
         // Iniciar o jogo
         this.initGameObjects();
         this.generateBricks();
+        this.applyUpgrades(); // Aplicar upgrades após inicializar objetos e gerar tijolos
         this.gameRunning = true;
         this.showScreen('gameScreen');
         this.updateUI();
@@ -1688,10 +1689,10 @@ class Game {
                 // Aplicar redução de 20% se tiver o upgrade Estabilizador de Zigue-zague
                 const zigzagReduction = this.hasUpgrade('zigzag_stabilizer') ? 0.8 : 1.0;
                 
-                // Movimento horizontal com amplitude muito menor
-                vx += Math.sin(this.ballEffects.zigzagTimer * 0.323) * 1.617 * zigzagReduction;
-                // Movimento vertical mais sutil
-                vy += Math.cos(this.ballEffects.zigzagTimer * 0.243) * 0.243 * zigzagReduction;
+                // Movimento horizontal com amplitude aumentada em 56% total (20% + 10% + 20%)
+                vx += Math.sin(this.ballEffects.zigzagTimer * 0.323) * 2.5613 * zigzagReduction; // +20% de 2.1344
+                // Movimento vertical mais sutil com amplitude aumentada em 56% total (20% + 10% + 20%)
+                vy += Math.cos(this.ballEffects.zigzagTimer * 0.243) * 0.3850 * zigzagReduction; // +20% de 0.3208
             }
             
 
@@ -4362,8 +4363,8 @@ class Game {
         this.moneyBeforeShop = null;
         
         this.initGameObjects();
-        this.applyUpgrades(); // Aplicar upgrades após inicializar objetos
         this.generateBricks();
+        this.applyUpgrades(); // Aplicar upgrades após inicializar objetos e gerar tijolos
         this.gameRunning = true;
         this.showScreen('gameScreen');
         this.updateUI();
@@ -5072,11 +5073,12 @@ class Game {
         this.ctx.lineWidth = 2;
         this.ctx.strokeRect(this.width - 120, 20, 100, 40);
         
-        // Texto
+        // Texto centralizado verticalmente
         this.ctx.fillStyle = color;
         this.ctx.font = 'bold 16px Arial';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText(timeString, this.width - 70, 45);
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(timeString, this.width - 70, 40); // Centralizado na caixa de 40px de altura
         
         // Resetar alinhamento
         this.ctx.textAlign = 'left';
@@ -5105,11 +5107,12 @@ class Game {
         this.ctx.lineWidth = 2;
         this.ctx.strokeRect(this.width - 120, 20, 100, 40);
         
-        // Texto (mesmo estilo do drawCountdownTimer)
+        // Texto centralizado verticalmente (mesmo estilo do drawCountdownTimer)
         this.ctx.fillStyle = color;
         this.ctx.font = 'bold 16px Arial';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText(timeString, this.width - 70, 45);
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(timeString, this.width - 70, 40); // Centralizado na caixa de 40px de altura
         
         // Resetar alinhamento
         this.ctx.textAlign = 'left';
