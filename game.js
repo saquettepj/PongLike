@@ -579,6 +579,14 @@ class Game {
                 icon: this.getUpgradeIcon('multi_ball')
             },
             {
+                id: 'combo_ball',
+                name: 'Bolinha Combo',
+                description: 'A cada 5 combos consecutivos, duplica a bolinha atual uma vez',
+                price: 150,
+                type: 'ball',
+                icon: this.getUpgradeIcon('combo_ball')
+            },
+            {
                 id: 'explosive_ball',
                 name: 'Bolinha Explosiva',
                 description: 'Explode ao atingir tijolos (não afeta o núcleo vermelho)',
@@ -2027,6 +2035,15 @@ class Game {
             // Se é um combo (mais de 1 bloco consecutivo), criar texto COMBO!
             if (this.currentPhaseCombo > 1) {
                 this.createComboText(brick.x + brick.width / 2, brick.y + brick.height / 2);
+                
+                // Bolinha Combo - duplicar a cada 5 combos consecutivos
+                if (this.hasUpgrade('combo_ball') && this.currentPhaseCombo % 5 === 0) {
+                    // Verificar se pode duplicar baseado no número de bolinhas
+                    const canDuplicate = this.canDuplicateBall();
+                    if (canDuplicate) {
+                        this.duplicateBall(ball);
+                    }
+                }
             }
 
             // Atualizar contador de tijolos
@@ -2609,6 +2626,21 @@ class Game {
                 <path d="M12 20 Q16 24 20 20" stroke="#ff6b35" stroke-width="1" fill="none"/>
             </svg>`,
             
+            'combo_ball': `<svg width="32" height="32" viewBox="0 0 32 32">
+                <!-- Bolinha original -->
+                <circle cx="16" cy="16" r="5" fill="#fdcb6e" stroke="#ff6b35" stroke-width="1.5"/>
+                <!-- Bolinha duplicada (com ângulo de 10°) -->
+                <circle cx="18" cy="14" r="5" fill="#9b59b6" stroke="#8e44ad" stroke-width="1.5" opacity="0.8"/>
+                <!-- Efeito de duplicação (linhas de energia) -->
+                <path d="M16 11 Q18 13 20 15" stroke="#f39c12" stroke-width="1" opacity="0.7" fill="none"/>
+                <path d="M16 21 Q18 19 20 17" stroke="#f39c12" stroke-width="1" opacity="0.7" fill="none"/>
+                <!-- Partículas de energia -->
+                <circle cx="14" cy="12" r="1" fill="#f39c12" opacity="0.8"/>
+                <circle cx="20" cy="18" r="1" fill="#f39c12" opacity="0.8"/>
+                <circle cx="15" cy="19" r="0.8" fill="#e67e22" opacity="0.7"/>
+                <circle cx="19" cy="13" r="0.8" fill="#e67e22" opacity="0.7"/>
+            </svg>`,
+            
             'explosive_ball': `<svg width="32" height="32" viewBox="0 0 32 32">
                 <circle cx="16" cy="16" r="6" fill="#fdcb6e" stroke="#ff6b35" stroke-width="2"/>
                 <path d="M16 4 L18 6 L16 8 L14 6 Z" fill="#e74c3c"/>
@@ -2941,6 +2973,51 @@ class Game {
             vx: (Math.random() - 0.5) * 2, // Movimento aleatório leve
             vy: -1 // Movimento para cima
         });
+    }
+    
+    canDuplicateBall() {
+        // Contar quantas bolinhas roxas (duplicadas) já existem
+        const purpleBalls = this.balls.filter(ball => ball.color === 'purple').length;
+        
+        // Só pode duplicar se não tiver nenhuma bolinha roxa ainda
+        return purpleBalls === 0;
+    }
+    
+    duplicateBall(originalBall) {
+        // Calcular ângulo atual da velocidade
+        const currentAngle = Math.atan2(originalBall.vy, originalBall.vx);
+        
+        // Adicionar 10 graus (convertido para radianos)
+        const newAngle = currentAngle + (10 * Math.PI / 180);
+        
+        // Calcular velocidade com ângulo modificado
+        const speed = Math.sqrt(originalBall.vx * originalBall.vx + originalBall.vy * originalBall.vy);
+        const newVx = Math.cos(newAngle) * speed;
+        const newVy = Math.sin(newAngle) * speed;
+        
+        // Criar nova bolinha idêntica à original com estrutura completa
+        const newBall = {
+            x: originalBall.x,
+            y: originalBall.y,
+            vx: newVx,
+            vy: newVy,
+            radius: originalBall.radius,
+            visible: originalBall.visible,
+            trail: [],
+            attached: false,
+            attachedTimer: 0,
+            explosive: originalBall.explosive || false,
+            color: 'purple' // Cor especial para bolinha duplicada
+        };
+        
+        // Adicionar à lista de bolinhas
+        this.balls.push(newBall);
+        
+        // Criar efeito visual de duplicação
+        this.createEffectText(originalBall.x, originalBall.y, 'DUPLICADA!', '#9b59b6');
+        
+        // Tocar som de duplicação
+        this.playSound('paddleHit');
     }
     
     createEffectText(x, y, text, color) {
@@ -3697,6 +3774,14 @@ class Game {
                 price: 200,
                 type: 'ball',
                 icon: this.getUpgradeIcon('multi_ball')
+            },
+            {
+                id: 'combo_ball',
+                name: 'Bolinha Combo',
+                description: 'A cada 5 combos consecutivos, duplica a bolinha atual uma vez',
+                price: 150,
+                type: 'ball',
+                icon: this.getUpgradeIcon('combo_ball')
             },
             {
                 id: 'explosive_ball',
@@ -4947,6 +5032,11 @@ class Game {
             gradient.addColorStop(0, '#ffffff');
             gradient.addColorStop(0.7, '#9b59b6');
             gradient.addColorStop(1, '#8e44ad');
+        } else if (ball.color === 'purple') {
+            // Bolinha duplicada (Combo) - cor roxa
+            gradient.addColorStop(0, '#ffffff');
+            gradient.addColorStop(0.7, '#9b59b6');
+            gradient.addColorStop(1, '#8e44ad');
         } else {
             gradient.addColorStop(0, '#ffffff');
             gradient.addColorStop(0.7, '#fdcb6e');
@@ -4993,6 +5083,8 @@ class Game {
                 this.ctx.fillStyle = `rgba(241, 196, 15, ${alpha * 0.5})`;
             } else if (this.hasUpgrade('wombo_combo_ball')) {
                 this.ctx.fillStyle = `rgba(155, 89, 182, ${alpha * 0.5})`;
+            } else if (ball.color === 'purple') {
+                this.ctx.fillStyle = `rgba(155, 89, 182, ${alpha * 0.5})`; // Roxo para bolinha duplicada
             } else {
                 this.ctx.fillStyle = `rgba(255, 107, 53, ${alpha * 0.5})`;
             }
