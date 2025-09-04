@@ -2256,7 +2256,7 @@ class Game {
         }
         
         // Tocar som de batida no tijolo
-        if (this.hasUpgrade('explosive_ball') && ball.explosive) {
+        if (this.hasUpgrade('explosive_ball') && ball.explosive && (brick.color === 'red' || brick.color === 'yellow')) {
             this.playSound('explosiveHit');
         } else {
             this.playSound('brickHit');
