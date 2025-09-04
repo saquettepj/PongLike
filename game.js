@@ -2862,7 +2862,6 @@ class Game {
             'lucky_amulet': `<svg width="32" height="32" viewBox="0 0 32 32">
                 <circle cx="16" cy="16" r="8" fill="#f1c40f" stroke="#f39c12" stroke-width="2"/>
                 <path d="M16 8 L18 12 L22 12 L19 15 L20 19 L16 17 L12 19 L13 15 L10 12 L14 12 Z" fill="#e67e22"/>
-                <circle cx="16" cy="16" r="2" fill="#ffffff"/>
             </svg>`,
             
             'life_insurance': `<svg width="32" height="32" viewBox="0 0 32 32">
