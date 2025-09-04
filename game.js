@@ -155,12 +155,12 @@ class Game {
         
         // Upgrades com ativação manual
         this.activeUpgradeEffects = {
-            superMagnet: { active: false, timer: 0, duration: 60, cooldown: 3000 }, 
+            superMagnet: { active: false, timer: 0, duration: 120, cooldown: 3000 }, 
             paddleDash: { active: false, timer: 0, duration: 180, cooldown: 1200 },
             chargedShot: { charging: false, chargeLevel: 0, maxCharge: 1200, cooldown: 1800 },
             safetyNet: { active: false, timer: 0, duration: 900, cooldown: 4800 },
             effectActivator: { active: false, timer: 0, duration: 0, cooldown: 1200 },
-            cushionPaddle: { active: false, timer: 0, duration: 600, cooldown: 3600 },
+            cushionPaddle: { active: false, timer: 0, duration: 1200, cooldown: 3600 },
             multiBall: { active: false, timer: 0, duration: 0, cooldown: 7200 },
             timeBall: { active: false, timer: 0, duration: 0, cooldown: 2400 },
             dimensionalBall: { active: false, timer: 0, duration: 300, cooldown: 3600 }
@@ -1305,9 +1305,31 @@ class Game {
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
                 if (distance > 0) {
+                    // Calcular velocidade atual da bolinha
+                    let currentSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+                    
+                    // Garantir velocidade mínima
+                    const minSpeed = this.config.ballSpeed;
+                    if (currentSpeed < minSpeed) {
+                        currentSpeed = minSpeed;
+                    }
+                    
+                    // Calcular direção para a plataforma
+                    const targetVx = (dx / distance) * currentSpeed;
+                    const targetVy = (dy / distance) * currentSpeed;
+                    
+                    // Aplicar atração gradual mantendo a velocidade mínima
                     const attraction = 0.08; // Força de atração reduzida
-                    ball.vx += (dx / distance) * attraction;
-                    ball.vy += (dy / distance) * attraction;
+                    ball.vx += (targetVx - ball.vx) * attraction;
+                    ball.vy += (targetVy - ball.vy) * attraction;
+                    
+                    // Garantir que a velocidade final não seja menor que a mínima
+                    const finalSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+                    if (finalSpeed < minSpeed) {
+                        const speedMultiplier = minSpeed / finalSpeed;
+                        ball.vx *= speedMultiplier;
+                        ball.vy *= speedMultiplier;
+                    }
                 }
             });
         }
@@ -3680,7 +3702,7 @@ class Game {
         
         // Resetar efeitos ativos de upgrades
         this.activeUpgradeEffects = {
-            superMagnet: { active: false, timer: 0, duration: 60, cooldown: 3000 }, 
+            superMagnet: { active: false, timer: 0, duration: 120, cooldown: 3000 }, 
             paddleDash: { active: false, timer: 0, duration: 180, cooldown: 1200 },
             chargedShot: { charging: false, chargeLevel: 0, maxCharge: 1200, cooldown: 1800 },
             safetyNet: { active: false, timer: 0, duration: 900, cooldown: 4800 },
