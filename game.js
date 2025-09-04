@@ -3011,7 +3011,7 @@ class Game {
         const rewards = {
             'blue': 1,
             'yellow': 3,
-            'green': 1,
+            'green': 2,
             'purple': 7,
             'gray': 3,
             'white': 5,

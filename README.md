@@ -89,7 +89,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 |-----|--------|------------|
 | 🔵 Azul | Física Padrão | 1 🪙 |
 | 🟡 Amarelo | Velocidade (+40%) | 3 🪙 |
-| 🟢 Verde | Inversão Horizontal | 1 🪙 |
+| 🟢 Verde | Inversão Horizontal | 2 🪙 |
 | 🟣 Roxo | Zigue-zague | 7 🪙 |
 | ⚫ Cinza | Invisibilidade (ciclo 1s) | 3 🪙 |
 | ⚪ Branco | Fragmento perigoso que cai e tira vida se acertar plataforma | 5 🪙 |
