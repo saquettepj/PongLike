@@ -799,7 +799,7 @@ class Game {
             {
                 id: 'risk_converter',
                 name: 'Conversor de Risco',
-                description: 'Diminui vida do bloco vermelho para 3, muda velocidade da bolinha entre 80%-140% a cada 5s e desativa a troca de posição do bloco vermelho',
+                description: 'Diminui vida do bloco vermelho para 2, muda velocidade da bolinha entre 80%-140% a cada 5s e desativa a troca de posição do bloco vermelho',
                 price: 100,
                 type: 'utility',
                 icon: this.getUpgradeIcon('risk_converter')
@@ -1078,9 +1078,9 @@ class Game {
                 let color = this.getBrickColor(row, col, rows, cols);
                 
                 // Determinar vida máxima do bloco vermelho
-                let redMaxHits = 6;
+                let redMaxHits = 4; // Reduzido de 6 para 4
                 if (color === 'red' && this.hasUpgrade('risk_converter')) {
-                    redMaxHits = 3; // Conversor de Risco diminui vida para 3
+                    redMaxHits = 2; // Conversor de Risco diminui vida para 2 (50% da vida base)
                 }
                 
                 // Verificar se deve ter película de vidro
@@ -4075,7 +4075,7 @@ class Game {
             {
                 id: 'risk_converter',
                 name: 'Conversor de Risco',
-                description: 'Diminui vida do bloco vermelho para 3, muda velocidade da bolinha entre 80%-140% a cada 5s e desativa a troca de posição do bloco vermelho',
+                description: 'Diminui vida do bloco vermelho para 2, muda velocidade da bolinha entre 80%-140% a cada 5s e desativa a troca de posição do bloco vermelho',
                 price: 100,
                 type: 'utility',
                 icon: this.getUpgradeIcon('risk_converter')
@@ -4291,7 +4291,7 @@ class Game {
                     // Chance de reciclar tijolos azuis
                     break;
                 case 'risk_converter':
-                    // Diminuir vida máxima do bloco vermelho para 3
+                    // Diminuir vida máxima do bloco vermelho para 2
                     break;
                 case 'life_insurance':
                     // Proteger dinheiro ao perder vida
