@@ -139,8 +139,8 @@ class Game {
             chargedShot: { charging: false, chargeLevel: 0, maxCharge: 1200, cooldown: 1800 },
             safetyNet: { active: false, timer: 0, duration: 900, cooldown: 4800 },
             effectActivator: { active: false, timer: 0, duration: 0, cooldown: 1200 },
-            cushionPaddle: { active: false, timer: 0, duration: 600, cooldown: 1200 },
-            multiBall: { active: false, timer: 0, duration: 0, cooldown: 3600 },
+            cushionPaddle: { active: false, timer: 0, duration: 600, cooldown: 3600 },
+            multiBall: { active: false, timer: 0, duration: 0, cooldown: 7200 },
             timeBall: { active: false, timer: 0, duration: 0, cooldown: 2400 }
         };
         
@@ -198,8 +198,8 @@ class Game {
         // Som explosivo para bolinha explosiva
         this.sounds.explosiveHit = this.createTone(200, 0.5, 'sawtooth');
         
-        // Som para plataforma de aceleração
-        this.sounds.cushionPaddle = this.createTone(350, 0.3, 'triangle');
+        // Som para plataforma de desaceleração
+        this.sounds.cushionPaddle = this.createTone(250, 0.4, 'triangle');
         
         // Som de tiro laser para canhões acoplados
         this.sounds.laserShot = this.createTone(800, 0.15, 'square');
@@ -1067,6 +1067,10 @@ class Game {
             // Aplicar multiplicador do Conversor de Risco
             if (this.hasUpgrade('risk_converter') && this.riskConverterSpeedMultiplier) {
                 speedMultiplier *= this.riskConverterSpeedMultiplier;
+            }
+            // Aplicar efeito de desaceleração da Plataforma de Desaceleração
+            if (this.activeUpgradeEffects.cushionPaddle.active) {
+                speedMultiplier *= 0.5; // Reduz velocidade em 50%
             }
             // Aplicar multiplicador de dificuldade progressiva
             speedMultiplier *= this.difficultySettings.ballSpeedMultiplier;
@@ -2021,24 +2025,29 @@ class Game {
             </svg>`,
             
             'cushion_paddle': `<svg width="32" height="32" viewBox="0 0 32 32">
-                <!-- Plataforma -->
+                <!-- Plataforma base (similar à Plataforma Larga) -->
                 <rect x="2" y="26" width="28" height="4" fill="#ff6b35" stroke="#d63031" stroke-width="1"/>
+                <rect x="1" y="25" width="30" height="2" fill="#fdcb6e"/>
+                <rect x="1" y="29" width="30" height="2" fill="#e17055"/>
                 
-                <!-- Blocos próximos (espaço apertado) -->
-                <rect x="4" y="20" width="6" height="4" fill="#3498db" stroke="#2980b9" stroke-width="1"/>
-                <rect x="12" y="18" width="6" height="4" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
-                <rect x="20" y="20" width="6" height="4" fill="#2ecc71" stroke="#27ae60" stroke-width="1"/>
+                <!-- Camada de gelo sobre a plataforma -->
+                <rect x="1" y="24" width="30" height="3" fill="#87ceeb" opacity="0.7"/>
+                <rect x="1" y="25" width="30" height="1" fill="#b0e0e6" opacity="0.8"/>
                 
-                <!-- Bolinha acelerada -->
-                <circle cx="16" cy="14" r="3" fill="#f1c40f" stroke="#f39c12" stroke-width="1"/>
+                <!-- Cristais de gelo na plataforma -->
+                <path d="M6 25 L8 23 L10 25 L8 27 Z" fill="#ffffff" opacity="0.9"/>
+                <path d="M14 25 L16 23 L18 25 L16 27 Z" fill="#ffffff" opacity="0.9"/>
+                <path d="M22 25 L24 23 L26 25 L24 27 Z" fill="#ffffff" opacity="0.9"/>
                 
-                <!-- Linhas de velocidade -->
-                <path d="M13 14 L10 12" stroke="#f1c40f" stroke-width="2" fill="none"/>
-                <path d="M19 14 L22 12" stroke="#f1c40f" stroke-width="2" fill="none"/>
-                <path d="M16 11 L16 8" stroke="#f1c40f" stroke-width="2" fill="none"/>
+                <!-- Bolinha congelada (com cristais de gelo) -->
+                <circle cx="16" cy="16" r="3" fill="#87ceeb" stroke="#4682b4" stroke-width="1"/>
+                <circle cx="16" cy="16" r="2" fill="#b0e0e6" opacity="0.8"/>
                 
-                <!-- Indicador de aceleração -->
-                <text x="16" y="6" text-anchor="middle" font-family="Arial" font-size="4" fill="#f1c40f">+30%</text>
+                <!-- Cristais de gelo ao redor da bolinha -->
+                <path d="M16 10 L18 12 L16 14 L14 12 Z" fill="#ffffff" opacity="0.8"/>
+                <path d="M22 16 L20 18 L18 16 L20 14 Z" fill="#ffffff" opacity="0.8"/>
+                <path d="M16 22 L14 20 L16 18 L18 20 Z" fill="#ffffff" opacity="0.8"/>
+                <path d="M10 16 L12 14 L14 16 L12 18 Z" fill="#ffffff" opacity="0.8"/>
             </svg>`,
             
             'repulsor_shield': `<svg width="32" height="32" viewBox="0 0 32 32">
@@ -2857,8 +2866,8 @@ class Game {
             chargedShot: { charging: false, chargeLevel: 0, maxCharge: 1200, cooldown: 1800 },
             safetyNet: { active: false, timer: 0, duration: 900, cooldown: 4800 },
             effectActivator: { active: false, timer: 0, duration: 0, cooldown: 1200 },
-            cushionPaddle: { active: false, timer: 0, duration: 600, cooldown: 1200 },
-            multiBall: { active: false, timer: 0, duration: 0, cooldown: 3600 },
+            cushionPaddle: { active: false, timer: 0, duration: 600, cooldown: 3600 },
+            multiBall: { active: false, timer: 0, duration: 0, cooldown: 7200 },
             timeBall: { active: false, timer: 0, duration: 0, cooldown: 2400 }
         };
         
@@ -3030,8 +3039,8 @@ class Game {
             },
             {
                 id: 'cushion_paddle',
-                name: 'Plataforma de Aceleração',
-                description: 'Ativa aceleração de 30% na bolinha por 10 segundos. Cooldown de 20 segundos.',
+                name: 'Plataforma de Desaceleração',
+                description: 'Diminui em 50% a velocidade de todas as bolinhas por 10 segundos. Cooldown de 60 segundos.',
                 price: 80,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('cushion_paddle')
@@ -3931,7 +3940,7 @@ class Game {
             'charged_shot': 'Tiro Carregado',
             'safety_net': 'Rede de Segurança',
             'effect_activator': 'Ativador',
-            'cushion_paddle': 'Aceleração',
+            'cushion_paddle': 'Desaceleração',
             'multi_ball': 'Multi-bola',
             'time_ball': 'Bolinha do Tempo'
         };
