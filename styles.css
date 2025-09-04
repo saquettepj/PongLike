@@ -756,13 +756,13 @@ body {
     width: 24px;
     height: 24px;
     margin-right: 0.5rem;
+    margin-bottom: 0.8rem;
 }
 
 .power-selection-name {
-    font-size: 0.9rem;
-    color: #ffffff;
-    font-weight: bold;
+    margin-left: 0.5rem;
 }
+
 
 .power-selection-instructions {
     font-size: 0.8rem;
@@ -865,26 +865,25 @@ body {
     box-shadow: 0 0 20px rgba(253, 203, 110, 0.5);
 }
 
-.power-selection-icon {
-    margin-bottom: 1rem;
+.initial-power-selection-icon {
+    margin-bottom: 1.5rem;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
-.power-selection-icon svg {
+.initial-power-selection-icon svg {
     width: 48px;
     height: 48px;
 }
 
-.power-selection-name {
+.initial-power-selection-name {
     font-size: 1.2rem;
     font-weight: bold;
     color: #fdcb6e;
-    margin-top: 1rem;
     margin-bottom: 1rem;
     text-shadow: 1px 1px 0px #e17055;
 }
 
-.power-selection-description {
+.initial-power-selection-description {
     color: #ffffff;
     font-size: 0.9rem;
     line-height: 1.4;
@@ -1372,6 +1371,7 @@ body {
         width: 20px;
         height: 20px;
         margin-right: 0.3rem;
+        margin-bottom: 0.5rem;
     }
     
     .power-selection-name {

@@ -94,6 +94,7 @@ class Game {
         this.gameTime = 0; // Tempo de jogo em segundos
         this.lastMultiBallTime = 0; // Último tempo que uma bola foi adicionada
         this.lastUpgradesCount = 0; // Contador para controlar quando recriar interface de poderes
+        this.lastActivatablePowersCount = 0; // Contador para controlar quando recriar interface de seleção de poderes
         this.selectedPowerIndex = 0; // Índice do poder selecionado
         this.activatablePowers = []; // Lista de poderes que podem ser ativados
         this.powerUIUpdateTimer = 0; // Timer para atualizar UI de poderes a cada segundo
@@ -137,7 +138,7 @@ class Game {
         
         // Upgrades com ativação manual
         this.activeUpgradeEffects = {
-            superMagnet: { active: false, timer: 0, duration: 120, cooldown: 3000 }, 
+            superMagnet: { active: false, timer: 0, duration: 60, cooldown: 3000 }, 
             paddleDash: { active: false, timer: 0, duration: 180, cooldown: 1200 },
             chargedShot: { charging: false, chargeLevel: 0, maxCharge: 1200, cooldown: 1800 },
             safetyNet: { active: false, timer: 0, duration: 900, cooldown: 4800 },
@@ -408,11 +409,11 @@ class Game {
             powerCard.dataset.powerId = power.id;
             
             powerCard.innerHTML = `
-                <div class="power-selection-icon">
+                <div class="initial-power-selection-icon">
                     ${power.icon}
                 </div>
-                <div class="power-selection-name">${power.name}</div>
-                <div class="power-selection-description">${power.description}</div>
+                <div class="initial-power-selection-name">${power.name}</div>
+                <div class="initial-power-selection-description">${power.description}</div>
             `;
             
             powerCard.addEventListener('click', () => {
@@ -1167,7 +1168,7 @@ class Game {
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
                 if (distance > 0) {
-                    const attraction = 0.3; // Força de atração
+                    const attraction = 0.08; // Força de atração reduzida
                     ball.vx += (dx / distance) * attraction;
                     ball.vy += (dy / distance) * attraction;
                 }
@@ -1750,12 +1751,21 @@ class Game {
         // Resetar combo atual da fase quando a bolinha toca na plataforma
         this.currentPhaseCombo = 0;
         
-        // Calcular novo ângulo baseado na posição de impacto
-        const hitPos = (ball.x - (this.paddle.x + this.paddle.width / 2)) / (this.paddle.width / 2);
-        const angle = hitPos * (Math.PI / 3); // Ângulo máximo de 60 graus
-        const ballSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-        ball.vx = Math.sin(angle) * ballSpeed;
-        ball.vy = -Math.abs(Math.cos(angle) * ballSpeed);
+        // Se o Super Ímã estava ativo, resetar a velocidade da bola para a velocidade base
+        if (this.activeUpgradeEffects.superMagnet.active) {
+            const baseSpeed = this.config.ballSpeed;
+            const hitPos = (ball.x - (this.paddle.x + this.paddle.width / 2)) / (this.paddle.width / 2);
+            const angle = hitPos * (Math.PI / 3); // Ângulo máximo de 60 graus
+            ball.vx = Math.sin(angle) * baseSpeed;
+            ball.vy = -Math.abs(Math.cos(angle) * baseSpeed);
+        } else {
+            // Calcular novo ângulo baseado na posição de impacto
+            const hitPos = (ball.x - (this.paddle.x + this.paddle.width / 2)) / (this.paddle.width / 2);
+            const angle = hitPos * (Math.PI / 3); // Ângulo máximo de 60 graus
+            const ballSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+            ball.vx = Math.sin(angle) * ballSpeed;
+            ball.vy = -Math.abs(Math.cos(angle) * ballSpeed);
+        }
         
         // Canhões Acoplados - atirar projéteis apenas em batidas ímpares
         if (this.hasUpgrade('attached_cannons')) {
@@ -3337,7 +3347,7 @@ class Game {
         
         // Resetar efeitos ativos de upgrades
         this.activeUpgradeEffects = {
-            superMagnet: { active: false, timer: 0, duration: 120, cooldown: 3000 }, 
+            superMagnet: { active: false, timer: 0, duration: 60, cooldown: 3000 }, 
             paddleDash: { active: false, timer: 0, duration: 180, cooldown: 1200 },
             chargedShot: { charging: false, chargeLevel: 0, maxCharge: 1200, cooldown: 1800 },
             safetyNet: { active: false, timer: 0, duration: 900, cooldown: 4800 },
@@ -4418,42 +4428,58 @@ class Game {
         const powerSelectionContainer = document.getElementById('powerSelectionContainer');
         if (!powerSelectionContainer) return;
         
-        // Limpar container
-        powerSelectionContainer.innerHTML = '';
-        
-        if (this.activatablePowers.length === 0) {
-            powerSelectionContainer.innerHTML = '<div class="no-powers">Nenhum poder ativável</div>';
-            return;
+        // Só recriar a interface se os poderes ativáveis mudaram
+        if (this.lastActivatablePowersCount !== this.activatablePowers.length) {
+            this.lastActivatablePowersCount = this.activatablePowers.length;
+            
+            // Limpar container
+            powerSelectionContainer.innerHTML = '';
+            
+            if (this.activatablePowers.length === 0) {
+                powerSelectionContainer.innerHTML = '<div class="no-powers">Nenhum poder ativável</div>';
+                return;
+            }
+            
+            // Criar interface de seleção
+            const title = document.createElement('div');
+            title.className = 'power-selection-title';
+            title.textContent = 'Poderes Ativáveis';
+            powerSelectionContainer.appendChild(title);
+            
+            this.activatablePowers.forEach((powerId, index) => {
+                const powerItem = document.createElement('div');
+                powerItem.className = `power-selection-item ${index === this.selectedPowerIndex ? 'selected' : ''}`;
+                powerItem.dataset.powerIndex = index;
+                
+                const icon = document.createElement('div');
+                icon.className = 'power-selection-icon';
+                icon.innerHTML = this.getUpgradeIcon(powerId);
+                powerItem.appendChild(icon);
+                
+                const name = document.createElement('div');
+                name.className = 'power-selection-name';
+                name.textContent = this.getUpgradeName(powerId);
+                powerItem.appendChild(name);
+                
+                powerSelectionContainer.appendChild(powerItem);
+            });
+            
+            // Adicionar instruções
+            const instructions = document.createElement('div');
+            instructions.className = 'power-selection-instructions';
+            instructions.innerHTML = 'W/S ou ↑/↓ para selecionar<br>ESPAÇO para ativar';
+            powerSelectionContainer.appendChild(instructions);
+        } else {
+            // Apenas atualizar a seleção visual sem recriar toda a interface
+            const powerItems = powerSelectionContainer.querySelectorAll('.power-selection-item');
+            powerItems.forEach((item, index) => {
+                if (index === this.selectedPowerIndex) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
         }
-        
-        // Criar interface de seleção
-        const title = document.createElement('div');
-        title.className = 'power-selection-title';
-        title.textContent = 'Poderes Ativáveis';
-        powerSelectionContainer.appendChild(title);
-        
-        this.activatablePowers.forEach((powerId, index) => {
-            const powerItem = document.createElement('div');
-            powerItem.className = `power-selection-item ${index === this.selectedPowerIndex ? 'selected' : ''}`;
-            
-            const icon = document.createElement('div');
-            icon.className = 'power-selection-icon';
-            icon.innerHTML = this.getUpgradeIcon(powerId);
-            powerItem.appendChild(icon);
-            
-            const name = document.createElement('div');
-            name.className = 'power-selection-name';
-            name.textContent = this.getUpgradeName(powerId);
-            powerItem.appendChild(name);
-            
-            powerSelectionContainer.appendChild(powerItem);
-        });
-        
-        // Adicionar instruções
-        const instructions = document.createElement('div');
-        instructions.className = 'power-selection-instructions';
-        instructions.innerHTML = 'W/S ou ↑/↓ para selecionar<br>ESPAÇO para ativar';
-        powerSelectionContainer.appendChild(instructions);
     }
     
     getUpgradeName(upgradeId) {
