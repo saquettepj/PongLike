@@ -103,7 +103,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 - **Seleção Aleatória**: Os upgrades disponíveis mudam a cada fase
 - **Promoções**: A cada 3 fases, a loja entra em promoção com descontos de 20-40%
 
-### Upgrades Disponíveis (30 total)
+### Upgrades Disponíveis (31 total)
 
 #### 🏓 Upgrades de Plataforma (7 total)
 1. **Plataforma Larga** - Aumenta tamanho em 50% (150 🪙)
@@ -114,7 +114,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 6. **Reforço** - Plataforma 2x mais alta e destrói bloco da linha de cima (220 🪙)
 7. **Tiro Carregado** - Atira projétil perfurante imediatamente (190 🪙)
 
-#### ⚽ Upgrades de Bolinha (12 total)
+#### ⚽ Upgrades de Bolinha (13 total)
 8. **Bolinha Perfurante** - Quebra tijolos azuis sem mudar direção (220 🪙)
 9. **Campo de Fricção** - Reduz velocidade em 10% (160 🪙)
 10. **Multi-bola** - Cria uma nova bolinha grudada na plataforma. Liberada automaticamente em 2 segundos. (cooldown 120s) (200 🪙)
@@ -124,23 +124,24 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 14. **Bolinha Espelhada** - Destrói bloco simétrico ao quebrar um (250 🪙)
 15. **Bolinha da Fortuna** - Bolinha dourada que dá +1 moeda por bloco (150 🪙)
 16. **Bolinha do Tempo** - Para a bolinha por 3 segundos. (cooldown 40s) (180 🪙)
-15. **Bolinha Prima** - Destrói bloco aleatório a cada número primo de batidas (120 🪙)
-16. **Bolinha Wombo Combo**: Com esta upgrade, cada bloco em combo dá +2 moedas (ao invés de +1) e a recompensa do combo máximo na loja é dobrada (120 🪙)
+17. **Bolinha Prima** - Destrói bloco aleatório a cada número primo de batidas (120 🪙)
+18. **Bolinha Wombo Combo**: Com esta upgrade, cada bloco em combo dá +2 moedas (ao invés de +1) e a recompensa do combo máximo na loja é dobrada (120 🪙)
+19. **Bolinha Fantasma** - Quando a bolinha cai pela primeira vez em cada fase, ela reaparece no topo do campo (250 🪙)
 
 #### 🛡️ Upgrades de Utilidade (6 total)
-19. **Coração Extra** - Ganha uma vida a cada fase (180 🪙)
-20. **Rede de Segurança** - Barreira temporária por 15s (cooldown 80s) (300 🪙)
-21. **Amuleto da Sorte** - +25% dinheiro (30 🪙)
-22. **Seguro de Vida** - Ganha 100 moedas ao perder vida (150 🪙)
-23. **Reciclagem** - Tijolos azuis podem reaparecer (30 🪙)
-24. **Conversor de Risco** - Diminui vida do bloco vermelho para 3, muda velocidade da bolinha entre 80%-140% a cada 5s e desativa a troca de posição do bloco vermelho (100 🪙)
+20. **Coração Extra** - Ganha uma vida a cada fase (180 🪙)
+21. **Rede de Segurança** - Barreira temporária por 15s (cooldown 80s) (300 🪙)
+22. **Amuleto da Sorte** - +25% dinheiro (30 🪙)
+23. **Seguro de Vida** - Ganha 100 moedas ao perder vida (150 🪙)
+24. **Reciclagem** - Tijolos azuis podem reaparecer (30 🪙)
+25. **Conversor de Risco** - Diminui vida do bloco vermelho para 3, muda velocidade da bolinha entre 80%-140% a cada 5s e desativa a troca de posição do bloco vermelho (100 🪙)
 
 #### 🔥 Upgrades "Quebra-Regras" (5 total)
-25. **Dano Estrutural** - Primeira batida no núcleo conta como duas (180 🪙)
-26. **Visão de Calor** - Rastro térmico mais visível (100 🪙)
-27. **Reversão Controlada** - Desativa completamente o efeito de Inversão do tijolo verde (120 🪙)
-28. **Investidor** - Sacrifica vida por 50 moedas (0 🪙)
-29. **Poupança** - Mantém até 50 moedas para próxima fase (80 🪙)
+26. **Dano Estrutural** - Primeira batida no núcleo conta como duas (180 🪙)
+27. **Visão de Calor** - Rastro térmico mais visível (100 🪙)
+28. **Reversão Controlada** - Desativa completamente o efeito de Inversão do tijolo verde (120 🪙)
+29. **Investidor** - Sacrifica vida por 50 moedas (0 🪙)
+30. **Poupança** - Mantém até 50 moedas para próxima fase (80 🪙)
 
 ## 🎮 Regras do Jogo
 

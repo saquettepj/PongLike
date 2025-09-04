@@ -15,6 +15,9 @@ class Game {
         this.money = 0;
         this.lives = 3;
         
+        // Controle da Bolinha Fantasma
+        this.ghostBallUsedThisPhase = false;
+        
         // Contador de tijolos atual
         this.currentBrickCount = {
             blue: 0,
@@ -390,6 +393,7 @@ class Game {
         this.money = 0;
         this.lives = 3;
         this.activeUpgrades = [];
+        this.ghostBallUsedThisPhase = false; // Resetar uso da Bolinha Fantasma
         this.resetBallEffects();
         
         // Atualizar configurações de dificuldade para a fase 1
@@ -1115,6 +1119,28 @@ class Game {
                     ball.vy = -Math.abs(ball.vy);
                     this.createParticles(ball.x, ball.y, '#2ecc71');
                 } else {
+                    // Verificar Bolinha Fantasma antes de remover a bolinha
+                    if (this.hasUpgrade('ghost_ball') && !this.ghostBallUsedThisPhase) {
+                        this.ghostBallUsedThisPhase = true;
+                        
+                        // Salvar a velocidade da bolinha que caiu
+                        const savedVx = ball.vx;
+                        const savedVy = Math.abs(ball.vy); // Garantir que seja para baixo
+                        
+                        // Tocar som de efeito fantasma
+                        this.playSound('cushionPaddle');
+                        
+                        // Reposicionar bolinha no topo mantendo a trajetória
+                        ball.x = this.width / 2;
+                        ball.y = 50; // Topo do campo
+                        ball.vx = savedVx; // Manter velocidade horizontal
+                        ball.vy = savedVy; // Manter velocidade vertical (para baixo)
+                        ball.trail = []; // Limpar trail
+                        
+                        // Não remover a bolinha - ela continua no jogo
+                        return;
+                    }
+                    
                     this.balls.splice(index, 1);
                     // Só perder vida quando não há mais bolas no jogo
                     if (this.balls.length === 0) {
@@ -2253,6 +2279,20 @@ class Game {
                 <!-- Areia caindo -->
                 <circle cx="22" cy="10" r="0.6" fill="#f39c12"/>
                 <circle cx="22" cy="11" r="0.3" fill="#f39c12"/>
+            </svg>`,
+            
+            'ghost_ball': `<svg width="32" height="32" viewBox="0 0 32 32">
+                <!-- Bolinha fantasma (semi-transparente) -->
+                <circle cx="16" cy="16" r="4" fill="#9b59b6" stroke="#8e44ad" stroke-width="1" opacity="0.7"/>
+                <circle cx="16" cy="16" r="3" fill="#bb8fce" opacity="0.5"/>
+                
+                <!-- Efeito fantasma (ondas) -->
+                <circle cx="16" cy="16" r="7" fill="none" stroke="#9b59b6" stroke-width="1" opacity="0.4"/>
+                <circle cx="16" cy="16" r="10" fill="none" stroke="#9b59b6" stroke-width="1" stroke-dasharray="2,2" opacity="0.3"/>
+                
+                <!-- Símbolo de reaparecimento (seta para cima) -->
+                <path d="M16 6 L14 8 L16 10 L18 8 Z" fill="#9b59b6" opacity="0.8"/>
+                <path d="M16 10 L16 14" stroke="#9b59b6" stroke-width="2" opacity="0.8"/>
             </svg>`
         };
         
@@ -2389,6 +2429,21 @@ class Game {
         });
     }
     
+    createEffectText(x, y, text, color) {
+        this.comboTexts.push({
+            x: x,
+            y: y,
+            text: text,
+            life: 120, // 2 segundos a 60 FPS
+            maxLife: 120,
+            alpha: 1,
+            scale: 1,
+            vx: (Math.random() - 0.5) * 2, // Movimento aleatório leve
+            vy: -1, // Movimento para cima
+            color: color || '#ffffff' // Cor personalizada
+        });
+    }
+    
     createFragment(x, y) {
         this.fragments.push({
             x: x,
@@ -2402,6 +2457,38 @@ class Game {
     }
     
     loseLife() {
+        // Verificar se tem Bolinha Fantasma e ainda não foi usada nesta fase
+        if (this.hasUpgrade('ghost_ball') && !this.ghostBallUsedThisPhase) {
+            this.ghostBallUsedThisPhase = true;
+            
+            // Salvar a velocidade da bolinha que caiu (se houver)
+            let savedVx = 0;
+            let savedVy = 2; // Velocidade padrão para baixo
+            if (this.balls.length > 0) {
+                savedVx = this.balls[0].vx;
+                savedVy = Math.abs(this.balls[0].vy); // Garantir que seja para baixo
+            }
+            
+            // Tocar som de efeito fantasma
+            this.playSound('cushionPaddle'); // Usar som existente
+            
+            // Recriar bolinha no topo do campo mantendo a trajetória
+            this.balls = [{
+                x: this.width / 2,
+                y: 50, // Topo do campo
+                vx: savedVx, // Manter velocidade horizontal
+                vy: savedVy, // Manter velocidade vertical (para baixo)
+                radius: this.config.ballRadius,
+                visible: true,
+                trail: [],
+                attached: false, // Não presa à plataforma
+                attachedTimer: 0,
+                explosive: false,
+            }];
+            
+            return; // Não perder vida nem moedas
+        }
+        
         this.lives--;
         
         // Tocar som de perda de vida
@@ -3243,6 +3330,14 @@ class Game {
                 price: 180,
                 type: 'ball',
                 icon: this.getUpgradeIcon('time_ball')
+            },
+            {
+                id: 'ghost_ball',
+                name: 'Bolinha Fantasma',
+                description: 'Quando a bolinha cai pela primeira vez em cada fase, ela reaparece no topo do campo.',
+                price: 250,
+                type: 'ball',
+                icon: this.getUpgradeIcon('ghost_ball')
             }
         ];
         
@@ -3362,6 +3457,7 @@ class Game {
         this.resetBallEffects(); // Resetar todos os efeitos para nova fase
         this.ballHitCount = 0; // Resetar contador da Bolinha Prima
         this.paddle.hitCount = 0; // Resetar contador de batidas da plataforma para Canhões Acoplados
+        this.ghostBallUsedThisPhase = false; // Resetar uso da Bolinha Fantasma para nova fase
         
         // Resetar combo da fase para nova fase
         this.currentPhaseCombo = 0;
@@ -3942,7 +4038,8 @@ class Game {
             'effect_activator': 'Ativador',
             'cushion_paddle': 'Desaceleração',
             'multi_ball': 'Multi-bola',
-            'time_ball': 'Bolinha do Tempo'
+            'time_ball': 'Bolinha do Tempo',
+            'ghost_ball': 'Bolinha Fantasma'
         };
         return names[upgradeId] || upgradeId;
     }
@@ -4294,8 +4391,8 @@ class Game {
         this.ctx.scale(comboText.scale, comboText.scale);
         this.ctx.translate(-comboText.x, -comboText.y);
         
-        // Cor laranja neon igual à bolinha (sem borda)
-        this.ctx.fillStyle = '#ff6b35';
+        // Usar cor personalizada se disponível, senão usar cor padrão
+        this.ctx.fillStyle = comboText.color || '#ff6b35';
         this.ctx.font = 'bold 17px Arial';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
