@@ -8,6 +8,27 @@ class Game {
         this.width = this.canvas.width;
         this.height = this.canvas.height;
         
+        // Otimizações do contexto 2D
+        this.ctx.imageSmoothingEnabled = false; // Desabilitar suavização para melhor performance
+        this.ctx.textBaseline = 'top';
+        
+        // Sistema de delta time para FPS independente
+        this.lastTime = 0;
+        this.targetFPS = 60;
+        this.frameTime = 1000 / this.targetFPS; // Tempo por frame em ms
+        this.accumulator = 0;
+        this.maxFPS = 120; // FPS máximo para evitar consumo excessivo
+        this.minFrameTime = 1000 / this.maxFPS;
+        
+        // Otimizações de renderização
+        this.needsRedraw = true;
+        this.lastRenderTime = 0;
+        
+        // Sistema de monitoramento de FPS (opcional)
+        this.fps = 0;
+        this.frameCount = 0;
+        this.fpsLastTime = 0;
+        
         // Estado do jogo
         this.currentScreen = 'mainMenu';
         this.currentPhase = 1;
@@ -168,8 +189,8 @@ class Game {
         
         // Configurações
         this.config = {
-            paddleSpeed: 2.4,
-            ballSpeed: 1.7,
+            paddleSpeed: 5.76, // +20% de 4.8 para 5.76
+            ballSpeed: 4.08, // +20% de 3.4 para 4.08
             brickWidth: 60,
             brickHeight: 20,
             brickSpacing: 5,
@@ -558,7 +579,7 @@ class Game {
         this.gameRunning = true;
         this.showScreen('gameScreen');
         this.updateUI();
-        this.gameLoop();
+        this.gameLoop(performance.now());
     }
     
     getAllUpgrades() {
@@ -1133,28 +1154,57 @@ class Game {
         return 'blue';
     }
     
-    gameLoop() {
+    gameLoop(currentTime = 0) {
         if (!this.gameRunning) return;
         
-        this.update();
+        // Calcular delta time
+        if (this.lastTime === 0) {
+            this.lastTime = currentTime;
+        }
+        
+        const deltaTime = (currentTime - this.lastTime) / 1000; // Converter para segundos
+        this.lastTime = currentTime;
+        
+        // Limitar delta time para evitar saltos grandes (máximo 60 FPS)
+        const clampedDeltaTime = Math.min(deltaTime, 1/60);
+        
+        // Atualizar lógica do jogo
+        this.update(clampedDeltaTime);
+        
+        // Renderizar sempre
         this.render();
         
-        requestAnimationFrame(() => this.gameLoop());
+        // Calcular FPS para debug (opcional)
+        this.calculateFPS(currentTime);
+        
+        requestAnimationFrame((time) => this.gameLoop(time));
     }
     
-    update() {
+    calculateFPS(currentTime) {
+        this.frameCount++;
+        if (currentTime - this.fpsLastTime >= 1000) {
+            this.fps = Math.round((this.frameCount * 1000) / (currentTime - this.fpsLastTime));
+            this.frameCount = 0;
+            this.fpsLastTime = currentTime;
+        }
+    }
+    
+    update(deltaTime = 1/60) {
         // Não atualizar se o jogo estiver pausado
         if (this.gamePaused) {
             return;
         }
         
-        // Atualizar tempo de jogo (60 FPS = 1/60 segundos por frame)
-        this.gameTime += 1/60;
-        this.phaseTime += 1/60;
+        // Atualizar tempo de jogo usando delta time
+        this.gameTime += deltaTime;
+        this.phaseTime += deltaTime;
         
-        this.updatePaddle();
-        this.updateBalls();
-        this.updateParticles();
+        // Marcar que precisa redesenhar
+        this.needsRedraw = true;
+        
+        this.updatePaddle(deltaTime);
+        this.updateBalls(deltaTime);
+        this.updateParticles(deltaTime);
         this.updateComboTexts();
         this.updateFragments();
         this.updatePowerUps();
@@ -1174,7 +1224,7 @@ class Game {
     
 
     
-    updatePaddle() {
+    updatePaddle(deltaTime = 1/60) {
         // Não atualizar paddle se o jogo estiver pausado
         if (this.gamePaused) {
             return;
@@ -1194,10 +1244,10 @@ class Game {
         
         // Controle apenas por teclado (A/D ou setas)
         if (this.keys['KeyA'] || this.keys['ArrowLeft']) {
-            this.paddle.x -= speed;
+            this.paddle.x -= speed * deltaTime * 60; // Ajustar para manter velocidade original
         }
         if (this.keys['KeyD'] || this.keys['ArrowRight']) {
-            this.paddle.x += speed;
+            this.paddle.x += speed * deltaTime * 60; // Ajustar para manter velocidade original
         }
         
         // Manter paddle dentro da tela
@@ -1370,7 +1420,7 @@ class Game {
                     }
                     
                     // Incrementar timer de mudança de direção
-                    this.redPanicDirectionTimer += 1/60; // 60 FPS
+                    this.redPanicDirectionTimer += 1/60; // Usar tempo fixo para consistência
                     
                     // Mudar direção aleatoriamente a cada 3 segundos
                     if (this.redPanicDirectionTimer >= 3) {
@@ -1409,7 +1459,7 @@ class Game {
     
     updateCountdown() {
         if (this.countdownActive && this.countdownTimer > 0) {
-            this.countdownTimer -= 1/60; // Decrementar por frame (60 FPS)
+            this.countdownTimer -= 1/60; // Usar tempo fixo para consistência
             
             if (this.countdownTimer <= 0) {
                 // Tempo esgotado - perder vida
@@ -1426,7 +1476,7 @@ class Game {
     
     updateChaoticMovementTimer() {
         if (this.phaseModifiers.chaoticMovement) {
-            this.chaoticMovementTimer += 1/60; // Incrementar por frame (60 FPS)
+            this.chaoticMovementTimer += 1/60; // Usar tempo fixo para consistência
             
             // Mudar direção a cada 20 segundos
             if (this.chaoticMovementTimer >= 20) {
@@ -1579,7 +1629,7 @@ class Game {
     }
     
     
-    updateBalls() {
+    updateBalls(deltaTime = 1/60) {
         this.balls.forEach((ball, index) => {
             // Se a bolinha está presa à plataforma, seguir o paddle
             if (ball.attached) {
@@ -1589,7 +1639,7 @@ class Game {
                 // Só aplicar timer de liberação automática se o Multi-bola estiver ativo
                 if (this.hasUpgrade('multi_ball')) {
                     // Incrementar timer de liberação automática
-                    ball.attachedTimer += 1/60; // 60 FPS
+                    ball.attachedTimer += 1/60; // Usar tempo fixo para consistência
                     
                     // Liberar automaticamente após 2 segundos
                     if (ball.attachedTimer >= 2) {
@@ -1646,9 +1696,9 @@ class Game {
             
 
             
-            // Atualizar posição
-            ball.x += vx;
-            ball.y += vy;
+            // Atualizar posição usando delta time
+            ball.x += vx * deltaTime * 60; // Ajustar para manter velocidade original
+            ball.y += vy * deltaTime * 60;
             
             // Adicionar ao trail
             ball.trail.push({x: ball.x, y: ball.y});
@@ -1696,10 +1746,10 @@ class Game {
         });
     }
     
-    updateParticles() {
+    updateParticles(deltaTime = 1/60) {
         this.particles.forEach((particle, index) => {
-            particle.x += particle.vx;
-            particle.y += particle.vy;
+            particle.x += particle.vx * deltaTime * 60;
+            particle.y += particle.vy * deltaTime * 60;
             particle.life--;
             particle.alpha = particle.life / particle.maxLife;
             
@@ -1945,7 +1995,7 @@ class Game {
                     x: this.paddle.x + this.paddle.width * 0.25, // Canhão esquerdo
                     y: this.paddle.y,
                     vx: 0,
-                    vy: -1.5,
+                    vy: -3.6, // +20% de -3.0 para -3.6
                     radius: 3,
                     type: 'cannon_shot',
                     life: 250
@@ -1955,7 +2005,7 @@ class Game {
                     x: this.paddle.x + this.paddle.width * 0.75, // Canhão direito
                     y: this.paddle.y,
                     vx: 0,
-                    vy: -1.5,
+                    vy: -3.6, // +20% de -3.0 para -3.6
                     radius: 3,
                     type: 'cannon_shot',
                     life: 250
@@ -2607,7 +2657,7 @@ class Game {
                 x: this.paddle.x + this.paddle.width / 2,
                 y: this.paddle.y,
                 vx: 0,
-                vy: -1.0,
+                vy: -2.4, // +20% de -2.0 para -2.4
                 radius: 4,
                 power: 1,
                 type: 'charged_shot',
@@ -3093,8 +3143,8 @@ class Game {
             this.particles.push({
                 x: x,
                 y: y,
-                vx: (Math.random() - 0.5) * 8,
-                vy: (Math.random() - 0.5) * 8,
+                vx: (Math.random() - 0.5) * 19.2, // +20% de 16 para 19.2
+                vy: (Math.random() - 0.5) * 19.2, // +20% de 16 para 19.2
                 color: color,
                 life: 30,
                 maxLife: 30,
@@ -3182,8 +3232,8 @@ class Game {
         this.fragments.push({
             x: x,
             y: y,
-            vx: (Math.random() - 0.5) * 2, // Pequeno movimento horizontal
-            vy: 2 + Math.random() * 2, // Velocidade para baixo
+            vx: (Math.random() - 0.5) * 1.92, // -60% de 4.8 para 1.92
+            vy: 1.92 + Math.random() * 1.92, // -60% de 4.8+4.8 para 1.92+1.92
             size: 8,
             color: '#ffffff',
             life: 300 // 5 segundos a 60fps
@@ -4313,7 +4363,7 @@ class Game {
         this.gameRunning = true;
         this.showScreen('gameScreen');
         this.updateUI();
-        this.gameLoop();
+        this.gameLoop(performance.now());
     }
     
     updateUI() {
@@ -4932,6 +4982,11 @@ class Game {
     }
     
     render() {
+        // Otimização: só renderizar se necessário
+        if (!this.needsRedraw) {
+            return;
+        }
+        
         // Limpar canvas
         this.ctx.fillStyle = '#000000';
         this.ctx.fillRect(0, 0, this.width, this.height);
@@ -4986,6 +5041,8 @@ class Game {
             this.drawChaoticMovementIndicator();
         }
         
+        // Marcar que a renderização foi concluída
+        this.needsRedraw = false;
     }
     
     drawCountdownTimer() {
