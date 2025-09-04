@@ -4866,43 +4866,53 @@ class Game {
                 powerSelectionContainer.innerHTML = '<div class="no-powers">Nenhum poder ativável</div>';
                 return;
             }
+            
+            // Criar interface de seleção apenas quando a contagem mudou
+            const title = document.createElement('div');
+            title.className = 'power-selection-title';
+            title.textContent = 'Poderes Ativáveis';
+            powerSelectionContainer.appendChild(title);
+            
+            this.activatablePowers.forEach((powerId, index) => {
+                const powerItem = document.createElement('div');
+                powerItem.className = `power-selection-item ${index === this.selectedPowerIndex ? 'selected' : ''}`;
+                powerItem.dataset.powerIndex = index;
+                
+                const icon = document.createElement('div');
+                icon.className = 'power-selection-icon';
+                icon.innerHTML = this.getUpgradeIcon(powerId);
+                powerItem.appendChild(icon);
+                
+                const name = document.createElement('div');
+                name.className = 'power-selection-name';
+                name.textContent = this.getUpgradeName(powerId);
+                powerItem.appendChild(name);
+                
+                powerSelectionContainer.appendChild(powerItem);
+            });
+            
+            // Adicionar instruções
+            const instructions = document.createElement('div');
+            instructions.className = 'power-selection-instructions';
+            instructions.innerHTML = 'W/S ou ↑/↓ para selecionar<br>ESPAÇO para ativar';
+            powerSelectionContainer.appendChild(instructions);
         } else if (this.activatablePowers.length === 0) {
             // Garantir que a mensagem apareça mesmo se a contagem não mudou
             if (powerSelectionContainer.innerHTML.trim() === '') {
                 powerSelectionContainer.innerHTML = '<div class="no-powers">Nenhum poder ativável</div>';
             }
             return;
+        } else {
+            // Se a contagem não mudou mas há poderes, apenas atualizar a seleção visual
+            const powerItems = powerSelectionContainer.querySelectorAll('.power-selection-item');
+            powerItems.forEach((item, index) => {
+                if (index === this.selectedPowerIndex) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
         }
-        
-        // Criar interface de seleção
-        const title = document.createElement('div');
-        title.className = 'power-selection-title';
-        title.textContent = 'Poderes Ativáveis';
-        powerSelectionContainer.appendChild(title);
-        
-        this.activatablePowers.forEach((powerId, index) => {
-            const powerItem = document.createElement('div');
-            powerItem.className = `power-selection-item ${index === this.selectedPowerIndex ? 'selected' : ''}`;
-            powerItem.dataset.powerIndex = index;
-            
-            const icon = document.createElement('div');
-            icon.className = 'power-selection-icon';
-            icon.innerHTML = this.getUpgradeIcon(powerId);
-            powerItem.appendChild(icon);
-            
-            const name = document.createElement('div');
-            name.className = 'power-selection-name';
-            name.textContent = this.getUpgradeName(powerId);
-            powerItem.appendChild(name);
-            
-            powerSelectionContainer.appendChild(powerItem);
-        });
-        
-        // Adicionar instruções
-        const instructions = document.createElement('div');
-        instructions.className = 'power-selection-instructions';
-        instructions.innerHTML = 'W/S ou ↑/↓ para selecionar<br>ESPAÇO para ativar';
-        powerSelectionContainer.appendChild(instructions);
     }
     
     getUpgradeName(upgradeId) {
