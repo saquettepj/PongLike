@@ -130,20 +130,21 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 20. **Bolinha Fantasma** - Quando a bolinha cai pela primeira vez em cada fase, ela reaparece no topo do campo (250 🪙)
 21. **Bolinha Dimensional** - Pode atravessar tijolos sem quebrá-los (até 5s) (140 🪙)
 
-#### 🛡️ Upgrades de Utilidade (6 total)
+#### 🛡️ Upgrades de Utilidade (7 total)
 22. **Coração Extra** - Ganha uma vida a cada fase (180 🪙)
 23. **Rede de Segurança** - Barreira temporária por 15s (cooldown 80s) (300 🪙)
 24. **Amuleto da Sorte** - +25% dinheiro (30 🪙)
 25. **Seguro de Vida** - Ganha 100 moedas ao perder vida (150 🪙)
 26. **Reciclagem** - Tijolos azuis podem reaparecer (30 🪙)
 27. **Conversor de Risco** - Diminui vida do bloco vermelho para 3, muda velocidade da bolinha entre 80%-140% a cada 5s e desativa a troca de posição do bloco vermelho (100 🪙)
+28. **Visão Acelerada** - Reduz velocidade dos fragmentos brancos em 40% (120 🪙)
 
 #### 🔥 Upgrades "Quebra-Regras" (5 total)
-28. **Dano Estrutural** - Primeira batida no bloco vermelho conta como 3 (180 🪙)
-29. **Visão de Calor** - Rastro térmico mais visível (100 🪙)
-30. **Reversão Controlada** - Desativa completamente o efeito de Inversão do tijolo verde (120 🪙)
-31. **Investidor** - Reduz vida máxima em 1 (de 4 para 3, ou de 5 para 4 com Coração Extra), mas toda fase inicia com +100 moedas (50 🪙)
-32. **Poupança** - Mantém até 50 moedas para próxima fase (80 🪙)
+29. **Dano Estrutural** - Primeira batida no bloco vermelho conta como 3 (180 🪙)
+30. **Visão de Calor** - Rastro térmico mais visível (100 🪙)
+31. **Reversão Controlada** - Desativa completamente o efeito de Inversão do tijolo verde (120 🪙)
+32. **Investidor** - Reduz vida máxima em 1 (de 4 para 3, ou de 5 para 4 com Coração Extra), mas toda fase inicia com +100 moedas (50 🪙)
+33. **Poupança** - Mantém até 50 moedas para próxima fase (80 🪙)
 
 ## 🎮 Regras do Jogo
 
@@ -218,7 +219,7 @@ brick-rogue/
 
 - ✅ Sistema completo de física da bolinha
 - ✅ 6 tipos de tijolos com efeitos únicos
-- ✅ Sistema de upgrades roguelike (33 upgrades)
+- ✅ Sistema de upgrades roguelike (34 upgrades)
 - ✅ Interface de usuário responsiva
 - ✅ Sistema de partículas e efeitos visuais
 - ✅ Persistência de recordes

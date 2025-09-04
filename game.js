@@ -715,6 +715,14 @@ class Game {
                 type: 'utility',
                 icon: this.getUpgradeIcon('risk_converter')
             },
+            {
+                id: 'accelerated_vision',
+                name: 'Visão Acelerada',
+                description: 'Reduz velocidade dos fragmentos brancos em 40%',
+                price: 120,
+                type: 'utility',
+                icon: this.getUpgradeIcon('accelerated_vision')
+            },
             // Upgrades "Quebra-Regras" (27-31)
             {
                 id: 'structural_damage',
@@ -1654,8 +1662,14 @@ class Game {
     
     updateFragments() {
         this.fragments.forEach((fragment, index) => {
-            fragment.x += fragment.vx;
-            fragment.y += fragment.vy;
+            // Aplicar efeito do upgrade Visão Acelerada (reduz velocidade em 40%)
+            let speedMultiplier = 1;
+            if (this.hasUpgrade('accelerated_vision')) {
+                speedMultiplier = 0.6; // Reduz 40% da velocidade
+            }
+            
+            fragment.x += fragment.vx * speedMultiplier;
+            fragment.y += fragment.vy * speedMultiplier;
             fragment.life--;
             
             // Verificar colisão com a plataforma
@@ -2653,6 +2667,14 @@ class Game {
                 <path d="M8 12 Q16 16 24 12" stroke="#95a5a6" stroke-width="2" fill="none"/>
                 <path d="M8 16 Q16 20 24 16" stroke="#95a5a6" stroke-width="2" fill="none"/>
                 <path d="M8 20 Q16 24 24 20" stroke="#95a5a6" stroke-width="2" fill="none"/>
+            </svg>`,
+            
+            'accelerated_vision': `<svg width="32" height="32" viewBox="0 0 32 32">
+                <circle cx="16" cy="16" r="4" fill="#ffffff" stroke="#2980b9" stroke-width="1"/>
+                <path d="M8 8 Q16 12 24 8" stroke="#95a5a6" stroke-width="1.5" fill="none" opacity="0.6"/>
+                <path d="M8 12 Q16 16 24 12" stroke="#95a5a6" stroke-width="1.5" fill="none" opacity="0.6"/>
+                <path d="M8 16 Q16 20 24 16" stroke="#95a5a6" stroke-width="1.5" fill="none" opacity="0.6"/>
+                <path d="M8 20 Q16 24 24 20" stroke="#95a5a6" stroke-width="1.5" fill="none" opacity="0.6"/>
             </svg>`,
             
 
@@ -3923,6 +3945,14 @@ class Game {
                 price: 100,
                 type: 'utility',
                 icon: this.getUpgradeIcon('risk_converter')
+            },
+            {
+                id: 'accelerated_vision',
+                name: 'Visão Acelerada',
+                description: 'Reduz velocidade dos fragmentos brancos em 40%',
+                price: 120,
+                type: 'utility',
+                icon: this.getUpgradeIcon('accelerated_vision')
             },
             
             // Upgrades "Quebra-Regras" (21-25)
