@@ -4451,8 +4451,21 @@ class Game {
             }
         });
         
-        // Combinar: ativos primeiro, depois inativos
-        const sortedUpgrades = [...activeUpgrades, ...inactiveUpgrades];
+        // Separar ativos por tipo de cooldown
+        const activeUpgradesWithCooldown = activeUpgrades.filter(upgrade => this.hasCooldown(upgrade.id));
+        const activeUpgradesWithoutCooldown = activeUpgrades.filter(upgrade => !this.hasCooldown(upgrade.id));
+        
+        // Separar inativos por tipo de cooldown
+        const inactiveUpgradesWithCooldown = inactiveUpgrades.filter(upgrade => this.hasCooldown(upgrade.id));
+        const inactiveUpgradesWithoutCooldown = inactiveUpgrades.filter(upgrade => !this.hasCooldown(upgrade.id));
+        
+        // Combinar: poderes com cooldown primeiro (ativos, depois inativos), depois sem cooldown (ativos, depois inativos)
+        const sortedUpgrades = [
+            ...activeUpgradesWithCooldown,
+            ...inactiveUpgradesWithCooldown,
+            ...activeUpgradesWithoutCooldown,
+            ...inactiveUpgradesWithoutCooldown
+        ];
         
         // Mostrar apenas os primeiros 10 upgrades
         const visibleUpgrades = sortedUpgrades.slice(0, 10);
