@@ -282,6 +282,7 @@ body {
 
 .canvas-container {
     position: relative;
+    align-self: baseline;
 }
 
 #gameCanvas {
@@ -1493,6 +1494,162 @@ body {
     }
 }
 
+/* Container de Upgrades do Desenvolvedor */
+.dev-upgrades-container {
+    align-self: flex-start;
+    width: 200px;
+    height: 600px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #e74c3c;
+    border-radius: 10px;
+    padding: 15px;
+    color: #ffffff;
+    flex-shrink: 0;
+    margin-left: 20px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden; /* Evita que o conteúdo saia do container */
+}
+
+.dev-upgrades-container h3 {
+    margin: 0 0 15px 0;
+    color: #e74c3c;
+    font-size: 1.1rem;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.dev-upgrades-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* Ocultar barra de rolagem */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    min-height: 0; /* Importante para flex funcionar */
+    max-height: 100%; /* Garante que não ultrapasse o container pai */
+}
+
+/* Ocultar barra de rolagem no WebKit (Chrome, Safari, Edge) */
+.dev-upgrades-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.dev-upgrades-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 0px 5px 30px 5px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.dev-upgrade-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid #e74c3c;
+    border-radius: 8px;
+    padding: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    min-height: 60px;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.dev-upgrade-item:hover {
+    background: rgba(231, 76, 60, 0.2);
+    border-color: #ff6b35;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+}
+
+.dev-upgrade-item.purchased {
+    background: rgba(46, 204, 113, 0.2);
+    border-color: #2ecc71;
+}
+
+.dev-upgrade-item.purchased:hover {
+    background: rgba(46, 204, 113, 0.3);
+    border-color: #27ae60;
+}
+
+.dev-upgrade-icon {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #e74c3c;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.dev-upgrade-item.purchased .dev-upgrade-icon {
+    color: #2ecc71;
+}
+
+.dev-upgrade-item .dev-upgrade-icon svg {
+    width: 100%;
+    height: 100%;
+    filter: grayscale(100%);
+    transition: all 0.3s ease;
+}
+
+.dev-upgrade-item.purchased .dev-upgrade-icon svg {
+    filter: grayscale(0%);
+}
+
+.dev-upgrade-name {
+    font-size: 0.6rem;
+    text-align: center;
+    color: #ffffff;
+    font-weight: bold;
+    line-height: 1.1;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    max-width: 100%;
+}
+
+.dev-upgrade-item.purchased .dev-upgrade-name {
+    color: #2ecc71;
+}
+
+/* Efeito de compra */
+.dev-upgrade-item.purchasing {
+    animation: devUpgradePurchase 0.6s ease forwards;
+}
+
+@keyframes devUpgradePurchase {
+    0% { 
+        transform: scale(1);
+        box-shadow: 0 0 0 rgba(46, 204, 113, 0);
+    }
+    50% { 
+        transform: scale(1.1);
+        box-shadow: 0 0 20px rgba(46, 204, 113, 0.6);
+    }
+    100% { 
+        transform: scale(1);
+        box-shadow: 0 0 10px rgba(46, 204, 113, 0.3);
+    }
+}
+
 /* Responsividade */
 @media (max-width: 1200px) {
     .game-container {
@@ -1539,6 +1696,33 @@ body {
         font-size: 0.7rem;
         margin-top: 0.8rem;
         padding-top: 0.8rem;
+    }
+    
+    .dev-upgrades-container {
+        width: 180px;
+        height: 500px;
+        margin-left: 15px;
+        padding: 12px;
+        overflow: hidden; /* Mantém consistência com o estilo principal */
+    }
+    
+    .dev-upgrades-grid {
+        gap: 6px;
+        padding: 0 3px 0 0;
+    }
+    
+    .dev-upgrade-item {
+        padding: 4px;
+        min-height: 50px;
+    }
+    
+    .dev-upgrade-icon {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .dev-upgrade-name {
+        font-size: 0.55rem;
     }
 }
 
@@ -1598,6 +1782,35 @@ body {
     
     .upgrades-grid {
         grid-template-columns: 1fr;
+    }
+    
+    .dev-upgrades-container {
+        width: 100%;
+        height: 300px;
+        margin-left: 0;
+        margin-top: 1rem;
+        padding: 10px;
+        overflow: hidden; /* Mantém consistência com o estilo principal */
+    }
+    
+    .dev-upgrades-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4px;
+        padding: 0 2px 0 0;
+    }
+    
+    .dev-upgrade-item {
+        padding: 3px;
+        min-height: 45px;
+    }
+    
+    .dev-upgrade-icon {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .dev-upgrade-name {
+        font-size: 0.5rem;
     }
     
     #gameUI {

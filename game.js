@@ -3825,23 +3825,164 @@ class Game {
         }, 2000);
     }
     
+    initializeDevUpgrades() {
+        // Inicializar upgrades comprados do desenvolvedor
+        if (!this.devUpgrades) {
+            this.devUpgrades = {};
+        }
+        
+        // Gerar todos os upgrades do jogo
+        this.generateDevUpgrades();
+        
+        // Atualizar visual dos upgrades
+        this.updateDevUpgradesVisual();
+    }
+    
+    generateDevUpgrades() {
+        const devUpgradesGrid = document.getElementById('devUpgradesGrid');
+        if (!devUpgradesGrid) return;
+        
+        // Limpar grid existente
+        devUpgradesGrid.innerHTML = '';
+        
+        // Obter todos os upgrades do jogo
+        const allUpgrades = this.getAllUpgrades();
+        
+        // Gerar itens de upgrade
+        allUpgrades.forEach(upgrade => {
+            const upgradeItem = document.createElement('div');
+            upgradeItem.className = 'dev-upgrade-item';
+            upgradeItem.setAttribute('data-upgrade', upgrade.id);
+            
+            upgradeItem.innerHTML = `
+                <div class="dev-upgrade-icon">
+                    ${upgrade.icon}
+                </div>
+                <div class="dev-upgrade-name">${upgrade.name}</div>
+            `;
+            
+            // Adicionar event listener
+            upgradeItem.addEventListener('click', (e) => {
+                this.purchaseDevUpgrade(upgrade.id, upgradeItem);
+            });
+            
+            devUpgradesGrid.appendChild(upgradeItem);
+        });
+    }
+    
+    purchaseDevUpgrade(upgradeId, element) {
+        if (!this.developerMode) return;
+        
+        const upgrade = this.getAllUpgrades().find(u => u.id === upgradeId);
+        const upgradeName = upgrade ? upgrade.name : upgradeId;
+        
+        // Verificar se o upgrade já foi comprado
+        if (!this.devUpgrades[upgradeId]) {
+            // Comprar upgrade
+            this.devUpgrades[upgradeId] = true;
+            
+            // Aplicar efeito visual de compra
+            element.classList.add('purchasing');
+            setTimeout(() => {
+                element.classList.remove('purchasing');
+                element.classList.add('purchased');
+            }, 300);
+            
+            // Aplicar efeito do upgrade
+            this.applyDevUpgrade(upgradeId);
+            
+            // Feedback visual
+            this.showDeveloperNotification(`${upgradeName} comprado!`);
+        } else {
+            // Descomprar upgrade
+            this.devUpgrades[upgradeId] = false;
+            
+            // Aplicar efeito visual de descompra
+            element.classList.add('purchasing');
+            setTimeout(() => {
+                element.classList.remove('purchasing');
+                element.classList.remove('purchased');
+            }, 300);
+            
+            // Remover efeito do upgrade
+            this.removeDevUpgrade(upgradeId);
+            
+            // Feedback visual
+            this.showDeveloperNotification(`${upgradeName} removido!`);
+        }
+    }
+    
+    applyDevUpgrade(upgradeId) {
+        // Adicionar upgrade à lista de upgrades ativos
+        if (!this.activeUpgrades) {
+            this.activeUpgrades = [];
+        }
+        
+        // Verificar se o upgrade já está ativo
+        const isAlreadyActive = this.activeUpgrades.some(upgrade => upgrade.id === upgradeId);
+        if (!isAlreadyActive) {
+            const upgrade = this.getAllUpgrades().find(u => u.id === upgradeId);
+            if (upgrade) {
+                this.activeUpgrades.push(upgrade);
+                
+                // Aplicar efeitos do upgrade
+                this.applyUpgrades();
+                
+                // Atualizar UI
+                this.updateUI();
+            }
+        }
+    }
+    
+    removeDevUpgrade(upgradeId) {
+        // Remover upgrade da lista de upgrades ativos
+        if (this.activeUpgrades) {
+            this.activeUpgrades = this.activeUpgrades.filter(upgrade => upgrade.id !== upgradeId);
+            
+            // Reaplicar todos os upgrades restantes
+            this.applyUpgrades();
+            
+            // Atualizar UI
+            this.updateUI();
+        }
+    }
+    
+    updateDevUpgradesVisual() {
+        const upgradeItems = document.querySelectorAll('.dev-upgrade-item');
+        upgradeItems.forEach(item => {
+            const upgradeId = item.getAttribute('data-upgrade');
+            if (this.devUpgrades && this.devUpgrades[upgradeId]) {
+                item.classList.add('purchased');
+            } else {
+                item.classList.remove('purchased');
+            }
+        });
+    }
+    
+    
     initializeDeveloperMode() {
         // Inicializar estado do modo desenvolvedor baseado na variável
         const developerPanel = document.getElementById('developerPanel');
         const controls = document.getElementById('developerControls');
         const infoPanel = document.getElementById('gameInfoPanel');
         const brickCounterPanel = document.getElementById('brickCounterPanel');
+        const devUpgradesContainer = document.getElementById('devUpgradesContainer');
         
         if (this.developerMode) {
             developerPanel.style.display = 'block';
             controls.style.display = 'flex';
             infoPanel.style.display = 'block';
             brickCounterPanel.style.display = 'block';
+            devUpgradesContainer.style.display = 'block';
+            
+            // Inicializar upgrades do desenvolvedor
+            this.initializeDevUpgrades();
         } else {
             developerPanel.style.display = 'none';
             controls.style.display = 'none';
             infoPanel.style.display = 'none';
             brickCounterPanel.style.display = 'none';
+            devUpgradesContainer.style.display = 'none';
         }
     }
     
