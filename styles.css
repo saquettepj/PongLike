@@ -79,7 +79,6 @@ body {
     width: 100%;
 }
 
-/* Centralizar o pause-layout no instructions-container */
 #pauseScreen .instructions-container {
     display: flex;
     justify-content: center;
@@ -99,12 +98,12 @@ body {
 
 .pause-column {
     flex: 1;
-    min-width: 0; /* Permite que as colunas encolham */
+    min-width: 0;
     overflow: visible;
     display: flex;
     flex-direction: column;
     align-items: center;
-    max-width: 300px; /* Largura máxima para evitar colunas muito largas */
+    max-width: 300px;
 }
 
 /* Estilos específicos para a tela de pause */
@@ -154,7 +153,6 @@ body {
     flex: 1;
 }
 
-/* Removido larguras fixas para permitir flexibilidade das colunas */
 
 .controls-section {
     background: rgba(0, 0, 0, 0.3);
@@ -163,7 +161,7 @@ body {
     border: 2px solid #ff6b35;
     box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
     width: 100%;
-    height: 100%; /* Ocupa toda a altura da coluna */
+    height: 100%;
     display: flex;
     flex-direction: column;
 }
@@ -179,7 +177,7 @@ body {
     display: grid;
     grid-template-columns: 1fr;
     gap: 0.8rem;
-    flex: 1; /* Ocupa o espaço restante da seção */
+    flex: 1;
 }
 
 .control-item {
@@ -298,7 +296,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    flex-shrink: 0; /* Não encolhe */
+    flex-shrink: 0;
 }
 
 .game-info {
@@ -508,17 +506,15 @@ body {
     flex-wrap: wrap;
     justify-content: flex-start;
     margin-top: 1rem;
-    flex: 1; /* Ocupa o espaço restante da seção */
-    align-content: flex-start; /* Alinha os itens no topo */
-    overflow-y: auto; /* Scroll vertical quando necessário */
-    overflow-x: hidden; /* Ocultar scroll horizontal */
-    /* Ocultar barra de rolagem */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* Internet Explorer 10+ */
+    flex: 1;
+    align-content: flex-start;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     position: relative;
 }
 
-/* Ocultar barra de rolagem no WebKit (Chrome, Safari, Edge) */
 .purchased-powers-grid::-webkit-scrollbar {
     display: none;
 }
@@ -745,8 +741,8 @@ body {
     border: 1px solid #ff6b35;
     border-radius: 8px;
     transition: all 0.3s ease;
-    min-width: 0; /* Permite que o item encolha */
-    overflow: hidden; /* Evita que o conteúdo saia do container */
+    min-width: 0;
+    overflow: hidden;
 }
 
 .power-selection-item.selected {
@@ -760,10 +756,9 @@ body {
     height: 24px;
     margin-right: 0.5rem;
     margin-bottom: 0.8rem;
-    flex-shrink: 0; /* Não encolhe o ícone */
+    flex-shrink: 0;
 }
 
-/* Margem específica para power-selection-icon dentro do powerSelectionUI */
 #powerSelectionUI .power-selection-icon {
     margin-bottom: 0.5rem;
 }
@@ -1157,11 +1152,10 @@ body {
 
 /* Estilos específicos para a opção de poupança */
 .savings-card {
-    /* Usar a mesma estilização dos upgrade-cards normais */
     background: linear-gradient(135deg, #1a1a2e, #16213e);
     border: 2px solid #a29bfe;
     position: relative;
-    grid-column: 1 / -1; /* Ocupa todas as colunas do grid */
+    grid-column: 1 / -1;
 }
 
 .savings-card:hover {
@@ -1267,7 +1261,7 @@ body {
     border: 2px solid #ff6b35;
     box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
     width: 100%;
-    height: 100%; /* Ocupa toda a altura da coluna */
+    height: 100%;
     display: flex;
     flex-direction: column;
 }
@@ -1283,7 +1277,7 @@ body {
     display: grid;
     grid-template-columns: 1fr;
     gap: 0.8rem;
-    flex: 1; /* Ocupa o espaço restante da seção */
+    flex: 1;
 }
 
 .brick-effect-item {
@@ -1434,65 +1428,6 @@ body {
     box-shadow: 0 8px 25px rgba(214, 48, 49, 0.6);
 }
 
-/* Otimização para telas 1080px */
-@media (max-height: 1080px) {
-    .upgrade-container {
-        max-height: 85vh;
-        padding: 1rem;
-    }
-    
-    .upgrade-container h2 {
-        font-size: 1.8rem;
-        margin-bottom: 0.2rem;
-    }
-    
-    .money-display {
-        margin: 0.4rem 0;
-        padding: 0.4rem;
-    }
-    
-    .upgrade-subtitle {
-        margin-bottom: 1rem;
-        font-size: 0.9rem;
-    }
-    
-    .upgrades-grid {
-        gap: 0.8rem;
-        margin-bottom: 1rem;
-    }
-    
-    .upgrade-card {
-        padding: 0.8rem;
-    }
-    
-    .upgrade-icon {
-        margin-bottom: 0.4rem;
-    }
-    
-    .upgrade-icon svg {
-        width: 36px;
-        height: 36px;
-    }
-    
-    .upgrade-name {
-        font-size: 0.9rem;
-        margin-bottom: 0.4rem;
-    }
-    
-    .upgrade-description {
-        font-size: 0.75rem;
-        margin-bottom: 0.4rem;
-    }
-    
-    .upgrade-price {
-        font-size: 0.8rem;
-    }
-    
-    .continue-button {
-        font-size: 1.1rem;
-        padding: 0.6rem 1.2rem;
-    }
-}
 
 /* Container de Upgrades do Desenvolvedor */
 .dev-upgrades-container {
@@ -1510,7 +1445,7 @@ body {
     flex-direction: column;
     box-sizing: border-box;
     position: relative;
-    overflow: hidden; /* Evita que o conteúdo saia do container */
+    overflow: hidden;
 }
 
 .dev-upgrades-container h3 {
@@ -1525,17 +1460,15 @@ body {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    /* Ocultar barra de rolagem */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* Internet Explorer 10+ */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
-    min-height: 0; /* Importante para flex funcionar */
-    max-height: 100%; /* Garante que não ultrapasse o container pai */
+    min-height: 0;
+    max-height: 100%;
 }
 
-/* Ocultar barra de rolagem no WebKit (Chrome, Safari, Edge) */
 .dev-upgrades-scroll::-webkit-scrollbar {
     display: none;
 }
@@ -1649,223 +1582,4 @@ body {
     }
 }
 
-/* Responsividade */
-@media (max-width: 1200px) {
-    .game-container {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .ui-container {
-        order: 2; /* Fica depois do canvas */
-        align-items: center;
-    }
-    
-    #powerSelectionUI {
-        width: 180px;
-    }
-    
-    .canvas-container {
-        order: 1; /* Canvas fica primeiro */
-    }
-    
-    #powerSelectionContainer {
-        min-width: 160px;
-        padding: 0.8rem;
-    }
-    
-    .power-selection-item {
-        padding: 0.4rem;
-        margin-bottom: 0.3rem;
-    }
-    
-    .power-selection-icon {
-        width: 20px;
-        height: 20px;
-        margin-right: 0.3rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .power-selection-name {
-        font-size: 0.75rem;
-        line-height: 1.1;
-    }
-    
-    .power-selection-instructions {
-        font-size: 0.7rem;
-        margin-top: 0.8rem;
-        padding-top: 0.8rem;
-    }
-    
-    .dev-upgrades-container {
-        width: 180px;
-        height: 500px;
-        margin-left: 15px;
-        padding: 12px;
-        overflow: hidden; /* Mantém consistência com o estilo principal */
-    }
-    
-    .dev-upgrades-grid {
-        gap: 6px;
-        padding: 0 3px 0 0;
-    }
-    
-    .dev-upgrade-item {
-        padding: 4px;
-        min-height: 50px;
-    }
-    
-    .dev-upgrade-icon {
-        width: 20px;
-        height: 20px;
-    }
-    
-    .dev-upgrade-name {
-        font-size: 0.55rem;
-    }
-}
 
-@media (max-width: 768px) {
-    .game-title {
-        font-size: 2.5rem;
-    }
-    
-    .instructions-container {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-    
-    .pause-layout {
-        flex-direction: column;
-        gap: 1.5rem;
-    }
-    
-    .pause-column {
-        flex: none;
-        min-width: auto;
-    }
-    
-    .pause-column:nth-child(2),
-    .pause-column:nth-child(3) {
-        flex: none; /* Remove tamanhos fixos em mobile */
-    }
-    
-    /* Reverter estilos específicos da tela de pause em mobile */
-    #pauseScreen .control-item {
-        flex-direction: column;
-        text-align: center;
-        max-width: none;
-    }
-    
-    #pauseScreen .control-text {
-        text-align: center;
-    }
-    
-    #pauseScreen .brick-effect-item {
-        flex-direction: column;
-        text-align: center;
-        max-width: none;
-    }
-    
-    #pauseScreen .brick-text {
-        text-align: center;
-    }
-    
-    .controls-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .bricks-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .upgrades-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .dev-upgrades-container {
-        width: 100%;
-        height: 300px;
-        margin-left: 0;
-        margin-top: 1rem;
-        padding: 10px;
-        overflow: hidden; /* Mantém consistência com o estilo principal */
-    }
-    
-    .dev-upgrades-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 4px;
-        padding: 0 2px 0 0;
-    }
-    
-    .dev-upgrade-item {
-        padding: 3px;
-        min-height: 45px;
-    }
-    
-    .dev-upgrade-icon {
-        width: 18px;
-        height: 18px;
-    }
-    
-    .dev-upgrade-name {
-        font-size: 0.5rem;
-    }
-    
-    #gameUI {
-        position: relative;
-        width: 100%;
-        right: 0;
-        top: 0;
-        margin-top: 1rem;
-    }
-    
-    #gameScreen {
-        flex-direction: column;
-    }
-    
-    /* Para telas muito pequenas, interface de poderes fica no topo */
-    .game-container {
-        flex-direction: column;
-        gap: 10px;
-    }
-    
-    .ui-container {
-        order: 1; /* Fica no topo */
-        width: 90%;
-        max-width: 300px;
-    }
-    
-    #powerSelectionUI {
-        width: 100%;
-    }
-    
-    .canvas-container {
-        order: 2; /* Canvas fica embaixo */
-    }
-    
-    #powerSelectionContainer {
-        min-width: auto;
-        width: 100%;
-    }
-    
-    .power-selection-item {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0.5rem;
-    }
-    
-    .power-selection-name {
-        font-size: 0.8rem;
-        line-height: 1.1;
-    }
-    
-    .power-duration-warning {
-        padding: 0.8rem;
-    }
-    
-    .warning-text {
-        font-size: 0.9rem;
-    }
-}
