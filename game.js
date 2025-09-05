@@ -832,6 +832,48 @@ class Game {
                 type: 'utility',
                 icon: this.getUpgradeIcon('zigzag_stabilizer')
             },
+            
+            // Upgrades "Especiais" (21-25)
+            {
+                id: 'structural_damage',
+                name: 'Dano Estrutural',
+                description: 'A primeira batida no bloco vermelho dá 3 de dano',
+                price: 180,
+                type: 'special',
+                icon: this.getUpgradeIcon('structural_damage')
+            },
+            {
+                id: 'heat_vision',
+                name: 'Visão de Calor',
+                description: 'A bolinha invisível deixa um rastro térmico muito mais visível',
+                price: 100,
+                type: 'special',
+                icon: this.getUpgradeIcon('heat_vision')
+            },
+            {
+                id: 'controlled_reversal',
+                name: 'Reversão Controlada',
+                description: 'Desativa completamente o efeito de Inversão do tijolo verde',
+                price: 120,
+                type: 'special',
+                icon: this.getUpgradeIcon('controlled_reversal')
+            },
+            {
+                id: 'investor',
+                name: 'Investidor',
+                description: 'Menos 1 vida máxima, mas toda fase começa com +100 moedas',
+                price: 50,
+                type: 'special',
+                icon: this.getUpgradeIcon('investor')
+            },
+            {
+                id: 'money_saver',
+                name: 'Poupança',
+                description: 'Mantém até 50 moedas para a próxima fase',
+                price: 80,
+                type: 'passive',
+                icon: this.getUpgradeIcon('money_saver')
+            },
         ];
     }
     
@@ -3886,10 +3928,13 @@ class Game {
             setTimeout(() => {
                 element.classList.remove('purchasing');
                 element.classList.add('purchased');
+                
+                // Aplicar efeito do upgrade
+                this.applyDevUpgrade(upgradeId);
+                
+                // Atualizar visual dos upgrades
+                this.updateDevUpgradesVisual();
             }, 300);
-            
-            // Aplicar efeito do upgrade
-            this.applyDevUpgrade(upgradeId);
             
             // Feedback visual
             this.showDeveloperNotification(`${upgradeName} comprado!`);
@@ -3902,10 +3947,13 @@ class Game {
             setTimeout(() => {
                 element.classList.remove('purchasing');
                 element.classList.remove('purchased');
+                
+                // Remover efeito do upgrade
+                this.removeDevUpgrade(upgradeId);
+                
+                // Atualizar visual dos upgrades
+                this.updateDevUpgradesVisual();
             }, 300);
-            
-            // Remover efeito do upgrade
-            this.removeDevUpgrade(upgradeId);
             
             // Feedback visual
             this.showDeveloperNotification(`${upgradeName} removido!`);
@@ -3951,7 +3999,11 @@ class Game {
         const upgradeItems = document.querySelectorAll('.dev-upgrade-item');
         upgradeItems.forEach(item => {
             const upgradeId = item.getAttribute('data-upgrade');
-            if (this.devUpgrades && this.devUpgrades[upgradeId]) {
+            // Verificar tanto no sistema de dev quanto no sistema normal de upgrades
+            const isPurchasedInDev = this.devUpgrades && this.devUpgrades[upgradeId];
+            const isPurchasedInNormal = this.hasUpgrade(upgradeId);
+            
+            if (isPurchasedInDev || isPurchasedInNormal) {
                 item.classList.add('purchased');
             } else {
                 item.classList.remove('purchased');
@@ -4600,6 +4652,11 @@ class Game {
                     break;
             }
         });
+        
+        // Atualizar visual dos upgrades do desenvolvedor se estiver no modo dev
+        if (this.developerMode) {
+            this.updateDevUpgradesVisual();
+        }
     }
     
     checkUpgradeEffects() {
@@ -4749,6 +4806,11 @@ class Game {
         // Atualizar lista de poderes ativáveis e interface de seleção
         this.updateActivatablePowers();
         this.updatePowerSelectionUI();
+        
+        // Atualizar visual dos upgrades do desenvolvedor se estiver no modo dev
+        if (this.developerMode) {
+            this.updateDevUpgradesVisual();
+        }
     }
     
     updateUpgradePriceColors() {
