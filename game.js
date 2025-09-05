@@ -1701,10 +1701,10 @@ class Game {
                 // Aplicar redução de 20% se tiver o upgrade Estabilizador de Zigue-zague
                 const zigzagReduction = this.hasUpgrade('zigzag_stabilizer') ? 0.8 : 1.0;
                 
-                // Movimento horizontal com amplitude aumentada em 20% (de 3.36170625 para 4.0340475)
-                vx += Math.sin(this.ballEffects.zigzagTimer * 0.323) * 4.0340475 * zigzagReduction;
-                // Movimento vertical mais sutil com amplitude aumentada em 20% (de 0.5053125 para 0.606375)
-                vy += Math.cos(this.ballEffects.zigzagTimer * 0.243) * 0.606375 * zigzagReduction;
+                // Movimento horizontal com amplitude reduzida em 10% (de 4.0340475 para 3.63064275)
+                vx += Math.sin(this.ballEffects.zigzagTimer * 0.323) * 3.63064275 * zigzagReduction;
+                // Movimento vertical mais sutil com amplitude reduzida em 10% (de 0.606375 para 0.5457375)
+                vy += Math.cos(this.ballEffects.zigzagTimer * 0.243) * 0.5457375 * zigzagReduction;
             }
             
 
