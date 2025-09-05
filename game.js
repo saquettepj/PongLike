@@ -179,14 +179,14 @@ class Game {
         
         // Upgrades com ativação manual (agora usando tempo real)
         this.activeUpgradeEffects = {
-            superMagnet: { active: false, startTime: 0, duration: 1000, cooldown: 10000 }, 
+            superMagnet: { active: false, startTime: 0, duration: 500, cooldown: 10000 }, 
             paddleDash: { active: false, startTime: 0, duration: 2000, cooldown: 8000 },
-            chargedShot: { active: false, startTime: 0, duration: 0, cooldown: 5000 },
+            chargedShot: { active: false, startTime: 0, duration: 500, cooldown: 5000 },
             safetyNet: { active: false, startTime: 0, duration: 5000, cooldown: 15000 },
-            effectActivator: { active: false, startTime: 0, duration: 0, cooldown: 5000 },
+            effectActivator: { active: false, startTime: 0, duration: 500, cooldown: 5000 },
             cushionPaddle: { active: false, startTime: 0, duration: 3000, cooldown: 10000 },
-            multiBall: { active: false, startTime: 0, duration: 0, cooldown: 20000 },
-            timeBall: { active: false, startTime: 0, duration: 0, cooldown: 15000 },
+            multiBall: { active: false, startTime: 0, duration: 500, cooldown: 20000 },
+            timeBall: { active: false, startTime: 0, duration: 500, cooldown: 15000 },
             dimensionalBall: { active: false, startTime: 0, duration: 3000, cooldown: 15000 }
         };
         
@@ -2088,6 +2088,13 @@ class Game {
         let shouldDestroy = true;
         let extraDamage = 0;
         
+        // Bolinha Explosiva - explodir apenas ao atingir bloco vermelho ou amarelo
+        // Verificar ANTES do cooldown para garantir que funcione mesmo com vidro
+        if (ball.explosive && (brick.color === 'red' || brick.color === 'yellow')) {
+            this.explodeBall(ball);
+            ball.explosive = false;
+        }
+        
         // Cooldown para bloco vermelho - evitar múltiplos danos em sequência
         if (brick.color === 'red') {
             const currentTime = Date.now();
@@ -2339,11 +2346,6 @@ class Game {
             ball.vy = -ball.vy; // Inverter direção vertical
         }
         
-        // Bolinha Explosiva - explodir apenas ao atingir bloco vermelho ou amarelo
-        if (ball.explosive && (brick.color === 'red' || brick.color === 'yellow')) {
-            this.explodeBall(ball);
-            ball.explosive = false;
-        }
         
         // Criar partículas
         this.createParticles(ball.x, ball.y, this.getBrickColorValue(brick.color));
@@ -3383,11 +3385,21 @@ class Game {
     }
     
     createFragment(x, y) {
+        // Calcular velocidade base
+        let baseVx = (Math.random() - 0.5) * 1.92; // -60% de 4.8 para 1.92
+        let baseVy = 1.92 + Math.random() * 1.92; // -60% de 4.8+4.8 para 1.92+1.92
+        
+        // Reduzir velocidade em 20% se Pânico Vermelho estiver ativo
+        if (this.phaseModifiers.redPanic) {
+            baseVx *= 0.8; // Reduzir 20%
+            baseVy *= 0.8; // Reduzir 20%
+        }
+        
         this.fragments.push({
             x: x,
             y: y,
-            vx: (Math.random() - 0.5) * 1.92, // -60% de 4.8 para 1.92
-            vy: 1.92 + Math.random() * 1.92, // -60% de 4.8+4.8 para 1.92+1.92
+            vx: baseVx,
+            vy: baseVy,
             size: 8,
             color: '#ffffff',
             life: 300 // 5 segundos a 60fps
@@ -3899,14 +3911,14 @@ class Game {
         
         // Resetar efeitos ativos de upgrades
         this.activeUpgradeEffects = {
-            superMagnet: { active: false, startTime: 0, duration: 1000, cooldown: 10000 }, 
+            superMagnet: { active: false, startTime: 0, duration: 500, cooldown: 10000 }, 
             paddleDash: { active: false, startTime: 0, duration: 2000, cooldown: 8000 },
-            chargedShot: { active: false, startTime: 0, duration: 0, cooldown: 5000 },
+            chargedShot: { active: false, startTime: 0, duration: 500, cooldown: 5000 },
             safetyNet: { active: false, startTime: 0, duration: 5000, cooldown: 15000 },
-            effectActivator: { active: false, startTime: 0, duration: 0, cooldown: 5000 },
+            effectActivator: { active: false, startTime: 0, duration: 500, cooldown: 5000 },
             cushionPaddle: { active: false, startTime: 0, duration: 3000, cooldown: 10000 },
-            multiBall: { active: false, startTime: 0, duration: 0, cooldown: 20000 },
-            timeBall: { active: false, startTime: 0, duration: 0, cooldown: 15000 },
+            multiBall: { active: false, startTime: 0, duration: 500, cooldown: 20000 },
+            timeBall: { active: false, startTime: 0, duration: 500, cooldown: 15000 },
             dimensionalBall: { active: false, startTime: 0, duration: 3000, cooldown: 15000 }
         };
         
@@ -5485,12 +5497,23 @@ class Game {
         
         // Película de vidro protetora
         if (brick.hasGlassCoating) {
-            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            // Película azul principal
+            this.ctx.fillStyle = 'rgba(52, 152, 219, 0.6)';
             this.ctx.fillRect(brick.x + 2, brick.y + 2, brick.width - 4, brick.height - 4);
             
-            // Efeito de brilho
-            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            // Efeito de brilho azul
+            this.ctx.fillStyle = 'rgba(52, 152, 219, 0.3)';
             this.ctx.fillRect(brick.x + 4, brick.y + 4, brick.width - 8, 2);
+            
+            // Borda azul para destacar
+            this.ctx.strokeStyle = 'rgba(52, 152, 219, 0.8)';
+            this.ctx.lineWidth = 2;
+            this.ctx.strokeRect(brick.x + 1, brick.y + 1, brick.width - 2, brick.height - 2);
+            
+            // Efeito de reflexo no canto superior esquerdo
+            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            this.ctx.fillRect(brick.x + 2, brick.y + 2, brick.width / 3, 2);
+            this.ctx.fillRect(brick.x + 2, brick.y + 2, 2, brick.height / 3);
         }
         
         // Mostrar rachaduras se for o tijolo núcleo
