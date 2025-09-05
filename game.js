@@ -3069,7 +3069,7 @@ class Game {
                 // Invisibilidade - só aplica se não estiver já ativo
                 if (!this.ballEffects.invisible) {
                     this.ballEffects.invisible = true;
-                    this.ballEffects.invisibleTimer = 60;
+                    this.ballEffects.invisibleTimer = 30; // Começar com 0.5s invisível
                     this.ballEffects.invisibleCycle = 1; // Começar invisível
                 }
                 break;
@@ -3122,16 +3122,16 @@ class Game {
             this.ballEffects.invisibleTimer--;
             
             if (this.ballEffects.invisibleCycle === 1) {
-                // Fase invisível (1 segundo)
+                // Fase invisível (0.5 segundo = 30 frames)
                 if (this.ballEffects.invisibleTimer <= 0) {
                     this.ballEffects.invisibleCycle = 0; // Mudar para visível
-                    this.ballEffects.invisibleTimer = 60;
+                    this.ballEffects.invisibleTimer = 60; // 1 segundo visível
                 }
             } else {
-                // Fase visível (1 segundo)
+                // Fase visível (1 segundo = 60 frames)
                 if (this.ballEffects.invisibleTimer <= 0) {
                     this.ballEffects.invisibleCycle = 1; // Mudar para invisível
-                    this.ballEffects.invisibleTimer = 60;
+                    this.ballEffects.invisibleTimer = 30; // 0.5 segundo invisível
                 }
             }
             
