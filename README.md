@@ -43,10 +43,10 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modificador dura apenas uma fase e é resetado na próxima.
 
 #### 🌪️ Movimento Caótico
-- **Efeito**: A bolinha muda completamente de direção a cada 20 segundos
+- **Efeito**: A bolinha muda completamente de direção a cada 10 segundos
 - **Impacto**: Dificuldade extrema de previsão - movimento totalmente imprevisível
 - **Dificuldade**: Muito Alta - exige reação rápida e adaptação constante
-- **Indicador**: Mostra ícone de tornado e tempo restante para próxima mudança (20 segundos)
+- **Indicador**: Mostra ícone de tornado e tempo restante para próxima mudança (10 segundos)
 
 #### 💰 Mercado Inflacionado
 - **Efeito**: Todos os upgrades na próxima loja custam 50% a mais
@@ -72,7 +72,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 - **Dificuldade**: Muito Alta - força o jogador a jogar sem suas vantagens
 
 #### ⏰ Contagem Regressiva
-- **Efeito**: Timer de 120 segundos + bloco vermelho móvel + restauração de blocos
+- **Efeito**: Timer de 60 segundos + bloco vermelho móvel + restauração de blocos
 - **Impacto**: Se o Tijolo Vermelho não for acertado antes do tempo acabar, o jogador perde uma vida
 - **Dificuldade**: **EXTREMA** - pressão de tempo + alvo móvel + restauração de blocos
 
@@ -108,31 +108,31 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 #### 🏓 Upgrades de Plataforma (7 total)
 1. **Plataforma Larga** - Aumenta tamanho em 50% (150 🪙)
 2. **Canhões Acoplados** - Atira projéteis apenas em batidas ímpares (170 🪙)
-3. **Super Ímã** - Campo magnético para puxar bolinha por 0.5s (cooldown 20s) (180 🪙)
-4. **Dash de Plataforma** - Movimento rápido lateral por 2s (cooldown 15s) (140 🪙)
-5. **Plataforma de Desaceleração** - Diminui em 50% a velocidade de todas as bolinhas por 6s (cooldown 20s) (80 🪙)
+3. **Super Ímã** - Campo magnético para puxar bolinha por 1s (cooldown 10s) (180 🪙)
+4. **Dash de Plataforma** - Movimento rápido lateral por 2s (cooldown 8s) (140 🪙)
+5. **Plataforma de Desaceleração** - Diminui em 50% a velocidade de todas as bolinhas por 3s (cooldown 10s) (80 🪙)
 6. **Reforço** - Plataforma 2x mais alta e destrói bloco da linha de cima (220 🪙)
-7. **Tiro Carregado** - Atira projétil perfurante imediatamente (cooldown 15s) (190 🪙)
+7. **Tiro Carregado** - Atira projétil perfurante imediatamente (cooldown 5s) (190 🪙)
 
 #### ⚽ Upgrades de Bolinha (14 total)
 8. **Bolinha Perfurante** - Quebra tijolos azuis sem mudar direção (220 🪙)
 9. **Campo de Fricção** - Reduz velocidade em 10% (160 🪙)
-10. **Multi-bola** - Cria uma nova bolinha grudada na plataforma. Liberada automaticamente em 2 segundos. (cooldown 40s) (200 🪙)
+10. **Multi-bola** - Cria uma nova bolinha grudada na plataforma. Liberada automaticamente em 2 segundos. (cooldown 20s) (200 🪙)
 11. **Bolinha Combo** - A cada 5 combos consecutivos, duplica a bolinha atual uma vez (150 🪙)
 12. **Bolinha Explosiva** - Explode se atingir tijolos amarelos ou vermelho (não afeta o núcleo vermelho) (250 🪙)
 13. **Eco da Bolinha** - Destrói um bloco aleatório adicional a cada batida (apenas em fases ímpares) (250 🪙)
 14. **Ativador de Efeito** - Ativa efeito aleatório dos blocos na bolinha e ganha moedas baseadas na cor do bloco do efeito ativado (cooldown 5s) (60 🪙)
 15. **Bolinha Espelhada** - Destrói bloco simétrico ao quebrar um (apenas nos primeiros 2 minutos) (250 🪙)
 16. **Bolinha da Fortuna** - Bolinha dourada que dá +1 moeda por bloco (150 🪙)
-17. **Bolinha do Tempo** - Para a bolinha por 3 segundos. (cooldown 25s) (180 🪙)
+17. **Bolinha do Tempo** - Para a bolinha por 3 segundos. (cooldown 15s) (180 🪙)
 18. **Bolinha Prima** - Destrói bloco aleatório a cada número primo de batidas (120 🪙)
 19. **Bolinha Wombo Combo**: Com esta upgrade, cada bloco em combo dá +2 moedas (ao invés de +1) e a recompensa do combo máximo na loja é dobrada (120 🪙)
 20. **Bolinha Fantasma** - Quando a bolinha cai pela primeira vez em cada fase, ela reaparece no topo do campo (250 🪙)
-21. **Bolinha Dimensional** - Pode atravessar tijolos sem quebrá-los (Mantenha espaço pressionado) (até 3s, cooldown 25s) (140 🪙)
+21. **Bolinha Dimensional** - Pode atravessar tijolos sem quebrá-los (Mantenha espaço pressionado) (até 3s, cooldown 15s) (140 🪙)
 
 #### 🛡️ Upgrades de Utilidade (8 total)
 22. **Coração Extra** - Ganha uma vida a cada fase (180 🪙)
-23. **Rede de Segurança** - Barreira temporária por 10s (cooldown 30s) (300 🪙)
+23. **Rede de Segurança** - Barreira temporária por 5s (cooldown 15s) (300 🪙)
 24. **Amuleto da Sorte** - 25% de chance de dobrar dinheiro ao destruir blocos (80 🪙)
 25. **Seguro de Vida** - Ganha 100 moedas ao perder vida (150 🪙)
 26. **Reciclagem** - Tijolos azuis podem reaparecer (30 🪙)

@@ -177,15 +177,15 @@ class Game {
         
         // Upgrades com ativação manual (agora usando tempo real)
         this.activeUpgradeEffects = {
-            superMagnet: { active: false, startTime: 0, duration: 500, cooldown: 20000 }, 
-            paddleDash: { active: false, startTime: 0, duration: 2000, cooldown: 15000 },
-            chargedShot: { active: false, startTime: 0, duration: 0, cooldown: 15000 },
-            safetyNet: { active: false, startTime: 0, duration: 10000, cooldown: 30000 },
+            superMagnet: { active: false, startTime: 0, duration: 1000, cooldown: 10000 }, 
+            paddleDash: { active: false, startTime: 0, duration: 2000, cooldown: 8000 },
+            chargedShot: { active: false, startTime: 0, duration: 0, cooldown: 5000 },
+            safetyNet: { active: false, startTime: 0, duration: 5000, cooldown: 15000 },
             effectActivator: { active: false, startTime: 0, duration: 0, cooldown: 5000 },
-            cushionPaddle: { active: false, startTime: 0, duration: 6000, cooldown: 20000 },
-            multiBall: { active: false, startTime: 0, duration: 0, cooldown: 40000 },
-            timeBall: { active: false, startTime: 0, duration: 0, cooldown: 25000 },
-            dimensionalBall: { active: false, startTime: 0, duration: 3000, cooldown: 25000 }
+            cushionPaddle: { active: false, startTime: 0, duration: 3000, cooldown: 10000 },
+            multiBall: { active: false, startTime: 0, duration: 0, cooldown: 20000 },
+            timeBall: { active: false, startTime: 0, duration: 0, cooldown: 15000 },
+            dimensionalBall: { active: false, startTime: 0, duration: 3000, cooldown: 15000 }
         };
         
         // Configurações
@@ -607,7 +607,7 @@ class Game {
             {
                 id: 'super_magnet',
                 name: 'Super Ímã',
-                description: 'Campo magnético para puxar bolinha por 0.5s (cooldown 20s)',
+                description: 'Campo magnético para puxar bolinha por 1s (cooldown 10s)',
                 price: 180,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('super_magnet')
@@ -615,7 +615,7 @@ class Game {
             {
                 id: 'paddle_dash',
                 name: 'Dash de Plataforma',
-                description: 'Movimento rápido lateral por 2s (cooldown 15s)',
+                description: 'Movimento rápido lateral por 2s (cooldown 8s)',
                 price: 140,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('paddle_dash')
@@ -623,7 +623,7 @@ class Game {
             {
                 id: 'cushion_paddle',
                 name: 'Plataforma de Desaceleração',
-                description: 'Diminui em 50% a velocidade de todas as bolinhas por 6s (cooldown 20s)',
+                description: 'Diminui em 50% a velocidade de todas as bolinhas por 3s (cooldown 10s)',
                 price: 80,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('cushion_paddle')
@@ -664,7 +664,7 @@ class Game {
             {
                 id: 'multi_ball',
                 name: 'Multi-bola',
-                description: 'Cria uma nova bolinha grudada na plataforma. Liberada automaticamente em 2 segundos (cooldown 40s)',
+                description: 'Cria uma nova bolinha grudada na plataforma. Liberada automaticamente em 2 segundos (cooldown 20s)',
                 price: 200,
                 type: 'ball',
                 icon: this.getUpgradeIcon('multi_ball')
@@ -720,7 +720,7 @@ class Game {
             {
                 id: 'time_ball',
                 name: 'Bolinha do Tempo',
-                description: 'Para a bolinha por 3 segundos (cooldown 25s)',
+                description: 'Para a bolinha por 3 segundos (cooldown 15s)',
                 price: 180,
                 type: 'ball',
                 icon: this.getUpgradeIcon('time_ball')
@@ -752,7 +752,7 @@ class Game {
             {
                 id: 'dimensional_ball',
                 name: 'Bolinha Dimensional',
-                description: 'Pode atravessar tijolos sem quebrá-los (Mantenha espaço pressionado) (até 3s, cooldown 25s)',
+                description: 'Pode atravessar tijolos sem quebrá-los (Mantenha espaço pressionado) (até 3s, cooldown 15s)',
                 price: 140,
                 type: 'ball',
                 icon: this.getUpgradeIcon('dimensional_ball')
@@ -769,7 +769,7 @@ class Game {
             {
                 id: 'safety_net',
                 name: 'Rede de Segurança',
-                description: 'Barreira temporária por 10s (cooldown 30s)',
+                description: 'Barreira temporária por 5s (cooldown 15s)',
                 price: 300,
                 type: 'utility',
                 icon: this.getUpgradeIcon('safety_net')
@@ -1241,7 +1241,7 @@ class Game {
         
         // Dash de Plataforma
         if (this.hasUpgrade('paddle_dash') && this.activeUpgradeEffects.paddleDash.active) {
-            speed *= 3; // Velocidade triplicada durante o dash
+            speed *= 2; // Velocidade aumentada durante o dash
         }
         
         // Controle apenas por teclado (A/D ou setas)
@@ -1257,52 +1257,44 @@ class Game {
     }
     
     updateUpgradeEffects() {
-        // Atualizar timers dos efeitos
+        // Atualizar timers dos efeitos usando tempo real para todos
         Object.keys(this.activeUpgradeEffects).forEach(key => {
             const effect = this.activeUpgradeEffects[key];
             
-            // Sistema de tempo real para dimensionalBall
-            if (key === 'dimensionalBall') {
-                if (effect.startTime > 0) {
-                    const currentTime = Date.now();
-                    const elapsedTime = currentTime - effect.startTime;
-                    
-                    // Verificar se o efeito deve ser desativado
-                    if (effect.active && effect.duration > 0 && elapsedTime >= effect.duration) {
-                        effect.active = false;
-                        // Iniciar cooldown
-                        effect.startTime = currentTime; // Resetar para cooldown
-                    }
-                    // Verificar se o cooldown terminou
-                    else if (!effect.active && effect.cooldown > 0 && elapsedTime >= effect.cooldown) {
-                        effect.startTime = 0; // Cooldown terminou, pode ser ativado novamente
-                    }
-                }
-            } else {
-                // Sistema FPS para outros efeitos
-                if (effect.timer > 0) {
-                    effect.timer--;
-                }
+            if (effect.startTime > 0) {
+                const currentTime = Date.now();
+                const elapsedTime = currentTime - effect.startTime;
                 
-                // Desativar efeitos quando o timer chegar a zero
-                if (effect.timer <= 0 && effect.active) {
+                // Verificar se o efeito deve ser desativado
+                if (effect.active && effect.duration > 0 && elapsedTime >= effect.duration) {
                     effect.active = false;
-                    // Se for Super Ímã, Dash de Plataforma, Rede de Segurança, Plataforma de Aceleração, iniciar cooldown
-                    if ((key === 'superMagnet' || key === 'paddleDash' || key === 'safetyNet' || key === 'cushionPaddle') && effect.cooldown) {
-                        effect.timer = effect.cooldown;
-                    }
+                    // Iniciar cooldown
+                    effect.startTime = currentTime; // Resetar para cooldown
+                }
+                // Verificar se o cooldown terminou
+                else if (!effect.active && effect.cooldown > 0 && elapsedTime >= effect.cooldown) {
+                    effect.startTime = 0; // Cooldown terminou, pode ser ativado novamente
                 }
             }
         });
         
-        // Decrementar cooldown do tiro carregado
-        if (this.activeUpgradeEffects.chargedShot.cooldown > 0) {
-            this.activeUpgradeEffects.chargedShot.cooldown--;
+        // Sistema de tempo real para tiro carregado e ativador de efeito
+        const currentTime = Date.now();
+        
+        // Tiro carregado
+        if (this.activeUpgradeEffects.chargedShot.startTime > 0) {
+            const elapsedTime = currentTime - this.activeUpgradeEffects.chargedShot.startTime;
+            if (elapsedTime >= this.activeUpgradeEffects.chargedShot.cooldown) {
+                this.activeUpgradeEffects.chargedShot.startTime = 0;
+            }
         }
         
-        // Decrementar cooldown do ativador de efeito
-        if (this.activeUpgradeEffects.effectActivator.cooldown > 0) {
-            this.activeUpgradeEffects.effectActivator.cooldown--;
+        // Ativador de efeito
+        if (this.activeUpgradeEffects.effectActivator.startTime > 0) {
+            const elapsedTime = currentTime - this.activeUpgradeEffects.effectActivator.startTime;
+            if (elapsedTime >= this.activeUpgradeEffects.effectActivator.cooldown) {
+                this.activeUpgradeEffects.effectActivator.startTime = 0;
+            }
         }
         
         
@@ -1709,10 +1701,10 @@ class Game {
                 // Aplicar redução de 20% se tiver o upgrade Estabilizador de Zigue-zague
                 const zigzagReduction = this.hasUpgrade('zigzag_stabilizer') ? 0.8 : 1.0;
                 
-                // Movimento horizontal com amplitude aumentada em 56% total (20% + 10% + 20%)
-                vx += Math.sin(this.ballEffects.zigzagTimer * 0.323) * 2.5613 * zigzagReduction; // +20% de 2.1344
-                // Movimento vertical mais sutil com amplitude aumentada em 56% total (20% + 10% + 20%)
-                vy += Math.cos(this.ballEffects.zigzagTimer * 0.243) * 0.3850 * zigzagReduction; // +20% de 0.3208
+                // Movimento horizontal com amplitude aumentada em 20% (de 3.36170625 para 4.0340475)
+                vx += Math.sin(this.ballEffects.zigzagTimer * 0.323) * 4.0340475 * zigzagReduction;
+                // Movimento vertical mais sutil com amplitude aumentada em 20% (de 0.5053125 para 0.606375)
+                vy += Math.cos(this.ballEffects.zigzagTimer * 0.243) * 0.606375 * zigzagReduction;
             }
             
 
@@ -2518,42 +2510,42 @@ class Game {
     activateSpecificUpgrade(powerId) {
         switch (powerId) {
             case 'super_magnet':
-                if (!this.activeUpgradeEffects.superMagnet.active && this.activeUpgradeEffects.superMagnet.timer <= 0) {
+                if (!this.activeUpgradeEffects.superMagnet.active && this.activeUpgradeEffects.superMagnet.startTime === 0) {
                     this.activeUpgradeEffects.superMagnet.active = true;
-                    this.activeUpgradeEffects.superMagnet.timer = this.activeUpgradeEffects.superMagnet.duration;
+                    this.activeUpgradeEffects.superMagnet.startTime = Date.now();
                     this.createParticles(this.paddle.x + this.paddle.width / 2, this.paddle.y, '#3498db');
                     this.playSound('superMagnet');
                 }
                 break;
                 
             case 'paddle_dash':
-                if (!this.activeUpgradeEffects.paddleDash.active && this.activeUpgradeEffects.paddleDash.timer <= 0) {
+                if (!this.activeUpgradeEffects.paddleDash.active && this.activeUpgradeEffects.paddleDash.startTime === 0) {
                     this.activeUpgradeEffects.paddleDash.active = true;
-                    this.activeUpgradeEffects.paddleDash.timer = this.activeUpgradeEffects.paddleDash.duration;
+                    this.activeUpgradeEffects.paddleDash.startTime = Date.now();
                     this.createParticles(this.paddle.x + this.paddle.width / 2, this.paddle.y, '#f1c40f');
                     this.playSound('paddleDash');
                 }
                 break;
                 
             case 'charged_shot':
-                if (this.activeUpgradeEffects.chargedShot.cooldown <= 0) {
+                if (this.activeUpgradeEffects.chargedShot.startTime === 0) {
                     // Atirar imediatamente sem carregamento
                     this.fireChargedShot();
                 }
                 break;
                 
             case 'safety_net':
-                if (!this.activeUpgradeEffects.safetyNet.active && this.activeUpgradeEffects.safetyNet.timer <= 0) {
+                if (!this.activeUpgradeEffects.safetyNet.active && this.activeUpgradeEffects.safetyNet.startTime === 0) {
                     this.activeUpgradeEffects.safetyNet.active = true;
-                    this.activeUpgradeEffects.safetyNet.timer = this.activeUpgradeEffects.safetyNet.duration;
+                    this.activeUpgradeEffects.safetyNet.startTime = Date.now();
                     this.createParticles(this.width / 2, this.height - 20, '#2ecc71');
                     this.playSound('safetyNet');
                 }
                 break;
                 
             case 'effect_activator':
-                if (this.activeUpgradeEffects.effectActivator.cooldown <= 0) {
-                    this.activeUpgradeEffects.effectActivator.cooldown = 1200; // 20 segundos cooldown
+                if (this.activeUpgradeEffects.effectActivator.startTime === 0) {
+                    this.activeUpgradeEffects.effectActivator.startTime = Date.now();
                     // Ativar efeito aleatório
                     const effects = ['yellow', 'green', 'purple', 'gray'];
                     const randomEffect = effects[Math.floor(Math.random() * effects.length)];
@@ -2568,16 +2560,16 @@ class Game {
                 break;
                 
             case 'cushion_paddle':
-                if (!this.activeUpgradeEffects.cushionPaddle.active && this.activeUpgradeEffects.cushionPaddle.timer <= 0) {
+                if (!this.activeUpgradeEffects.cushionPaddle.active && this.activeUpgradeEffects.cushionPaddle.startTime === 0) {
                     this.activeUpgradeEffects.cushionPaddle.active = true;
-                    this.activeUpgradeEffects.cushionPaddle.timer = this.activeUpgradeEffects.cushionPaddle.duration;
+                    this.activeUpgradeEffects.cushionPaddle.startTime = Date.now();
                     this.createParticles(this.paddle.x + this.paddle.width / 2, this.paddle.y, '#e67e22');
                     this.playSound('cushionPaddle');
                 }
                 break;
                 
             case 'multi_ball':
-                if (this.activeUpgradeEffects.multiBall.timer <= 0) {
+                if (this.activeUpgradeEffects.multiBall.startTime === 0) {
                     // Criar nova bola grudada na plataforma
                     this.balls.push({
                         x: this.paddle.x + this.paddle.width / 2,
@@ -2592,8 +2584,8 @@ class Game {
                         trail: []
                     });
                     
-                    // Iniciar cooldown de 1 minuto
-                    this.activeUpgradeEffects.multiBall.timer = this.activeUpgradeEffects.multiBall.cooldown;
+                    // Iniciar cooldown usando tempo real
+                    this.activeUpgradeEffects.multiBall.startTime = Date.now();
                     
                     // Efeitos visuais e sonoros
                     this.createParticles(this.paddle.x + this.paddle.width / 2, this.paddle.y, '#fdcb6e');
@@ -2602,7 +2594,7 @@ class Game {
                 break;
                 
             case 'time_ball':
-                if (this.activeUpgradeEffects.timeBall.timer <= 0) {
+                if (this.activeUpgradeEffects.timeBall.startTime === 0) {
                     // Salvar estado do efeito zig-zag
                     const wasZigzagActive = this.ballEffects.zigzag;
                     
@@ -2622,8 +2614,8 @@ class Game {
                         ball.savedZigzagState = wasZigzagActive; // Salvar estado do zig-zag
                     });
                     
-                    // Iniciar cooldown de 40 segundos
-                    this.activeUpgradeEffects.timeBall.timer = this.activeUpgradeEffects.timeBall.cooldown;
+                    // Iniciar cooldown usando tempo real
+                    this.activeUpgradeEffects.timeBall.startTime = Date.now();
                     
                     // Efeitos visuais e sonoros
                     this.createParticles(this.width / 2, this.height / 2, '#3498db');
@@ -2684,8 +2676,8 @@ class Game {
             // Tocar som
             this.playSound('chargedShot');
             
-            // Iniciar cooldown de 30 segundos
-            this.activeUpgradeEffects.chargedShot.cooldown = 1800;
+            // Iniciar cooldown usando tempo real
+            this.activeUpgradeEffects.chargedShot.startTime = Date.now();
         }
     }
     
@@ -3084,7 +3076,7 @@ class Game {
                 // Invisibilidade - só aplica se não estiver já ativo
                 if (!this.ballEffects.invisible) {
                     this.ballEffects.invisible = true;
-                    this.ballEffects.invisibleTimer = 30; // Começar com 0.5s invisível
+                    this.ballEffects.invisibleTimer = 60; // Começar com 1s invisível
                     this.ballEffects.invisibleCycle = 1; // Começar invisível
                 }
                 break;
@@ -3137,7 +3129,7 @@ class Game {
             this.ballEffects.invisibleTimer--;
             
             if (this.ballEffects.invisibleCycle === 1) {
-                // Fase invisível (0.5 segundo = 30 frames)
+                // Fase invisível (1 segundo = 60 frames)
                 if (this.ballEffects.invisibleTimer <= 0) {
                     this.ballEffects.invisibleCycle = 0; // Mudar para visível
                     this.ballEffects.invisibleTimer = 60; // 1 segundo visível
@@ -3146,7 +3138,7 @@ class Game {
                 // Fase visível (1 segundo = 60 frames)
                 if (this.ballEffects.invisibleTimer <= 0) {
                     this.ballEffects.invisibleCycle = 1; // Mudar para invisível
-                    this.ballEffects.invisibleTimer = 30; // 0.5 segundo invisível
+                    this.ballEffects.invisibleTimer = 60; // 1 segundo invisível
                 }
             }
             
@@ -3762,15 +3754,15 @@ class Game {
         
         // Resetar efeitos ativos de upgrades
         this.activeUpgradeEffects = {
-            superMagnet: { active: false, startTime: 0, duration: 500, cooldown: 20000 }, 
-            paddleDash: { active: false, startTime: 0, duration: 2000, cooldown: 15000 },
-            chargedShot: { active: false, startTime: 0, duration: 0, cooldown: 15000 },
-            safetyNet: { active: false, startTime: 0, duration: 10000, cooldown: 30000 },
+            superMagnet: { active: false, startTime: 0, duration: 1000, cooldown: 10000 }, 
+            paddleDash: { active: false, startTime: 0, duration: 2000, cooldown: 8000 },
+            chargedShot: { active: false, startTime: 0, duration: 0, cooldown: 5000 },
+            safetyNet: { active: false, startTime: 0, duration: 5000, cooldown: 15000 },
             effectActivator: { active: false, startTime: 0, duration: 0, cooldown: 5000 },
-            cushionPaddle: { active: false, startTime: 0, duration: 6000, cooldown: 20000 },
-            multiBall: { active: false, startTime: 0, duration: 0, cooldown: 40000 },
-            timeBall: { active: false, startTime: 0, duration: 0, cooldown: 25000 },
-            dimensionalBall: { active: false, startTime: 0, duration: 3000, cooldown: 25000 }
+            cushionPaddle: { active: false, startTime: 0, duration: 3000, cooldown: 10000 },
+            multiBall: { active: false, startTime: 0, duration: 0, cooldown: 20000 },
+            timeBall: { active: false, startTime: 0, duration: 0, cooldown: 15000 },
+            dimensionalBall: { active: false, startTime: 0, duration: 3000, cooldown: 15000 }
         };
         
         // Resetar timers de upgrades
@@ -4895,23 +4887,50 @@ class Game {
         });
     }
     
+    // Função auxiliar para calcular tempo restante baseado em tempo real
+    getRemainingTime(effect) {
+        if (effect.startTime === 0) return 0;
+        
+        const currentTime = Date.now();
+        const elapsedTime = currentTime - effect.startTime;
+        
+        if (effect.active && effect.duration > 0) {
+            // Efeito ativo - calcular tempo restante da duração
+            return Math.max(0, effect.duration - elapsedTime);
+        } else if (!effect.active && effect.cooldown > 0) {
+            // Efeito em cooldown - calcular tempo restante do cooldown
+            return Math.max(0, effect.cooldown - elapsedTime);
+        }
+        
+        return 0;
+    }
+
     updateSinglePowerState(upgradeId, powerItem, cooldownElement) {
         switch (upgradeId) {
             case 'super_magnet':
                 const superMagnetEffect = this.activeUpgradeEffects.superMagnet;
                 if (superMagnetEffect.active) {
                     powerItem.className = 'power-item active';
-                    cooldownElement.textContent = 'ATIVO';
+                    const remainingTime = this.getRemainingTime(superMagnetEffect);
+                    if (remainingTime > 0) {
+                        const seconds = Math.ceil(remainingTime / 1000);
+                        cooldownElement.textContent = `${seconds}s`;
+                    } else {
+                        cooldownElement.textContent = 'ATIVO';
+                    }
                     cooldownElement.className = 'power-cooldown ready';
-                } else if (superMagnetEffect.timer > 0) {
-                    powerItem.className = 'power-item on-cooldown';
-                    const seconds = Math.ceil(superMagnetEffect.timer / 60);
-                    cooldownElement.textContent = `${seconds}s`;
-                    cooldownElement.className = 'power-cooldown';
                 } else {
-                    powerItem.className = 'power-item';
-                    cooldownElement.textContent = 'PRONTO';
-                    cooldownElement.className = 'power-cooldown ready';
+                    const remainingTime = this.getRemainingTime(superMagnetEffect);
+                    if (remainingTime > 0) {
+                        powerItem.className = 'power-item on-cooldown';
+                        const seconds = Math.ceil(remainingTime / 1000);
+                        cooldownElement.textContent = `${seconds}s`;
+                        cooldownElement.className = 'power-cooldown';
+                    } else {
+                        powerItem.className = 'power-item';
+                        cooldownElement.textContent = 'PRONTO';
+                        cooldownElement.className = 'power-cooldown ready';
+                    }
                 }
                 break;
                 
@@ -4919,26 +4938,35 @@ class Game {
                 const dashEffect = this.activeUpgradeEffects.paddleDash;
                 if (dashEffect.active) {
                     powerItem.className = 'power-item active';
-                    const seconds = Math.ceil(dashEffect.timer / 60);
-                    cooldownElement.textContent = `${seconds}s`;
+                    const remainingTime = this.getRemainingTime(dashEffect);
+                    if (remainingTime > 0) {
+                        const seconds = Math.ceil(remainingTime / 1000);
+                        cooldownElement.textContent = `${seconds}s`;
+                    } else {
+                        cooldownElement.textContent = 'ATIVO';
+                    }
                     cooldownElement.className = 'power-cooldown ready';
-                } else if (dashEffect.timer > 0) {
-                    powerItem.className = 'power-item on-cooldown';
-                    const seconds = Math.ceil(dashEffect.timer / 60);
-                    cooldownElement.textContent = `${seconds}s`;
-                    cooldownElement.className = 'power-cooldown';
                 } else {
-                    powerItem.className = 'power-item';
-                    cooldownElement.textContent = 'PRONTO';
-                    cooldownElement.className = 'power-cooldown ready';
+                    const remainingTime = this.getRemainingTime(dashEffect);
+                    if (remainingTime > 0) {
+                        powerItem.className = 'power-item on-cooldown';
+                        const seconds = Math.ceil(remainingTime / 1000);
+                        cooldownElement.textContent = `${seconds}s`;
+                        cooldownElement.className = 'power-cooldown';
+                    } else {
+                        powerItem.className = 'power-item';
+                        cooldownElement.textContent = 'PRONTO';
+                        cooldownElement.className = 'power-cooldown ready';
+                    }
                 }
                 break;
                 
             case 'charged_shot':
                 const chargedEffect = this.activeUpgradeEffects.chargedShot;
-                if (chargedEffect.cooldown > 0) {
+                const chargedRemainingTime = this.getRemainingTime(chargedEffect);
+                if (chargedRemainingTime > 0) {
                     powerItem.className = 'power-item on-cooldown';
-                    const seconds = Math.ceil(chargedEffect.cooldown / 60);
+                    const seconds = Math.ceil(chargedRemainingTime / 1000);
                     cooldownElement.textContent = `${seconds}s`;
                     cooldownElement.className = 'power-cooldown';
                 } else {
@@ -4952,26 +4980,35 @@ class Game {
                 const safetyEffect = this.activeUpgradeEffects.safetyNet;
                 if (safetyEffect.active) {
                     powerItem.className = 'power-item active';
-                    const seconds = Math.ceil(safetyEffect.timer / 60);
-                    cooldownElement.textContent = `${seconds}s`;
+                    const remainingTime = this.getRemainingTime(safetyEffect);
+                    if (remainingTime > 0) {
+                        const seconds = Math.ceil(remainingTime / 1000);
+                        cooldownElement.textContent = `${seconds}s`;
+                    } else {
+                        cooldownElement.textContent = 'ATIVO';
+                    }
                     cooldownElement.className = 'power-cooldown ready';
-                } else if (safetyEffect.timer > 0) {
-                    powerItem.className = 'power-item on-cooldown';
-                    const seconds = Math.ceil(safetyEffect.timer / 60);
-                    cooldownElement.textContent = `${seconds}s`;
-                    cooldownElement.className = 'power-cooldown';
                 } else {
-                    powerItem.className = 'power-item';
-                    cooldownElement.textContent = 'PRONTO';
-                    cooldownElement.className = 'power-cooldown ready';
+                    const remainingTime = this.getRemainingTime(safetyEffect);
+                    if (remainingTime > 0) {
+                        powerItem.className = 'power-item on-cooldown';
+                        const seconds = Math.ceil(remainingTime / 1000);
+                        cooldownElement.textContent = `${seconds}s`;
+                        cooldownElement.className = 'power-cooldown';
+                    } else {
+                        powerItem.className = 'power-item';
+                        cooldownElement.textContent = 'PRONTO';
+                        cooldownElement.className = 'power-cooldown ready';
+                    }
                 }
                 break;
                 
             case 'effect_activator':
                 const activatorEffect = this.activeUpgradeEffects.effectActivator;
-                if (activatorEffect.cooldown > 0) {
+                const activatorRemainingTime = this.getRemainingTime(activatorEffect);
+                if (activatorRemainingTime > 0) {
                     powerItem.className = 'power-item on-cooldown';
-                    const seconds = Math.ceil(activatorEffect.cooldown / 60);
+                    const seconds = Math.ceil(activatorRemainingTime / 1000);
                     cooldownElement.textContent = `${seconds}s`;
                     cooldownElement.className = 'power-cooldown';
                 } else {
@@ -4985,26 +5022,35 @@ class Game {
                 const cushionEffect = this.activeUpgradeEffects.cushionPaddle;
                 if (cushionEffect.active) {
                     powerItem.className = 'power-item active';
-                    const seconds = Math.ceil(cushionEffect.timer / 60);
-                    cooldownElement.textContent = `${seconds}s`;
+                    const remainingTime = this.getRemainingTime(cushionEffect);
+                    if (remainingTime > 0) {
+                        const seconds = Math.ceil(remainingTime / 1000);
+                        cooldownElement.textContent = `${seconds}s`;
+                    } else {
+                        cooldownElement.textContent = 'ATIVO';
+                    }
                     cooldownElement.className = 'power-cooldown ready';
-                } else if (cushionEffect.timer > 0) {
-                    powerItem.className = 'power-item on-cooldown';
-                    const seconds = Math.ceil(cushionEffect.timer / 60);
-                    cooldownElement.textContent = `${seconds}s`;
-                    cooldownElement.className = 'power-cooldown';
                 } else {
-                    powerItem.className = 'power-item';
-                    cooldownElement.textContent = 'PRONTO';
-                    cooldownElement.className = 'power-cooldown ready';
+                    const remainingTime = this.getRemainingTime(cushionEffect);
+                    if (remainingTime > 0) {
+                        powerItem.className = 'power-item on-cooldown';
+                        const seconds = Math.ceil(remainingTime / 1000);
+                        cooldownElement.textContent = `${seconds}s`;
+                        cooldownElement.className = 'power-cooldown';
+                    } else {
+                        powerItem.className = 'power-item';
+                        cooldownElement.textContent = 'PRONTO';
+                        cooldownElement.className = 'power-cooldown ready';
+                    }
                 }
                 break;
                 
             case 'multi_ball':
                 const multiBallEffect = this.activeUpgradeEffects.multiBall;
-                if (multiBallEffect.timer > 0) {
+                const multiBallRemainingTime = this.getRemainingTime(multiBallEffect);
+                if (multiBallRemainingTime > 0) {
                     powerItem.className = 'power-item on-cooldown';
-                    const seconds = Math.ceil(multiBallEffect.timer / 60);
+                    const seconds = Math.ceil(multiBallRemainingTime / 1000);
                     cooldownElement.textContent = `${seconds}s`;
                     cooldownElement.className = 'power-cooldown';
                 } else {
@@ -5016,9 +5062,10 @@ class Game {
                 
             case 'time_ball':
                 const timeBallEffect = this.activeUpgradeEffects.timeBall;
-                if (timeBallEffect.timer > 0) {
+                const timeBallRemainingTime = this.getRemainingTime(timeBallEffect);
+                if (timeBallRemainingTime > 0) {
                     powerItem.className = 'power-item on-cooldown';
-                    const seconds = Math.ceil(timeBallEffect.timer / 60);
+                    const seconds = Math.ceil(timeBallRemainingTime / 1000);
                     cooldownElement.textContent = `${seconds}s`;
                     cooldownElement.className = 'power-cooldown';
                 } else {
@@ -5032,24 +5079,26 @@ class Game {
                 const dimensionalBallEffect = this.activeUpgradeEffects.dimensionalBall;
                 if (dimensionalBallEffect.active) {
                     powerItem.className = 'power-item active';
-                    const currentTime = Date.now();
-                    const elapsedTime = currentTime - dimensionalBallEffect.startTime;
-                    const remainingTime = Math.max(0, dimensionalBallEffect.duration - elapsedTime);
-                    const seconds = Math.ceil(remainingTime / 1000);
-                    cooldownElement.textContent = `${seconds}s`;
+                    const remainingTime = this.getRemainingTime(dimensionalBallEffect);
+                    if (remainingTime > 0) {
+                        const seconds = Math.ceil(remainingTime / 1000);
+                        cooldownElement.textContent = `${seconds}s`;
+                    } else {
+                        cooldownElement.textContent = 'ATIVO';
+                    }
                     cooldownElement.className = 'power-cooldown active';
-                } else if (dimensionalBallEffect.startTime > 0) {
-                    powerItem.className = 'power-item on-cooldown';
-                    const currentTime = Date.now();
-                    const elapsedTime = currentTime - dimensionalBallEffect.startTime;
-                    const remainingTime = Math.max(0, dimensionalBallEffect.cooldown - elapsedTime);
-                    const seconds = Math.ceil(remainingTime / 1000);
-                    cooldownElement.textContent = `${seconds}s`;
-                    cooldownElement.className = 'power-cooldown';
                 } else {
-                    powerItem.className = 'power-item';
-                    cooldownElement.textContent = 'PRONTO';
-                    cooldownElement.className = 'power-cooldown ready';
+                    const remainingTime = this.getRemainingTime(dimensionalBallEffect);
+                    if (remainingTime > 0) {
+                        powerItem.className = 'power-item on-cooldown';
+                        const seconds = Math.ceil(remainingTime / 1000);
+                        cooldownElement.textContent = `${seconds}s`;
+                        cooldownElement.className = 'power-cooldown';
+                    } else {
+                        powerItem.className = 'power-item';
+                        cooldownElement.textContent = 'PRONTO';
+                        cooldownElement.className = 'power-cooldown ready';
+                    }
                 }
                 break;
         }
@@ -5496,7 +5545,7 @@ class Game {
             this.ctx.fillStyle = '#ffffff';
             this.ctx.font = 'bold 12px Arial';
             this.ctx.textAlign = 'center';
-            this.ctx.fillText(timeLeft.toString(), ball.x, ball.y + 4);
+            this.ctx.fillText(timeLeft.toString(), ball.x, ball.y - 6);
             this.ctx.textAlign = 'left';
         }
     }
