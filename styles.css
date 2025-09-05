@@ -744,6 +744,8 @@ body {
     border: 1px solid #ff6b35;
     border-radius: 8px;
     transition: all 0.3s ease;
+    min-width: 0; /* Permite que o item encolha */
+    overflow: hidden; /* Evita que o conteúdo saia do container */
 }
 
 .power-selection-item.selected {
@@ -757,10 +759,22 @@ body {
     height: 24px;
     margin-right: 0.5rem;
     margin-bottom: 0.8rem;
+    flex-shrink: 0; /* Não encolhe o ícone */
+}
+
+/* Margem específica para power-selection-icon dentro do powerSelectionUI */
+#powerSelectionUI .power-selection-icon {
+    margin-bottom: 0.5rem;
 }
 
 .power-selection-name {
     margin-left: 0.5rem;
+    flex: 1;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    font-size: 0.85rem;
+    line-height: 1.2;
 }
 
 
@@ -928,24 +942,26 @@ body {
     background: rgba(0, 0, 0, 0.8);
     border: 3px solid #ff6b35;
     border-radius: 20px;
-    padding: 2rem;
+    padding: 1.2rem;      
     max-width: 800px;
     width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
     box-shadow: 0 0 30px rgba(255, 107, 53, 0.4);
 }
 
 .upgrade-container h2 {
-    font-size: 2.5rem;
+    font-size: 2rem;
     color: #ff6b35;
     text-align: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.3rem;
     text-shadow: 2px 2px 0px #d63031;
 }
 
 .money-display {
     text-align: center;
-    margin: 1rem 0;
-    padding: 1rem;
+    margin: 0.6rem 0;
+    padding: 0.6rem;
     background: rgba(255, 107, 53, 0.1);
     border: 2px solid #ff6b35;
     border-radius: 10px;
@@ -967,22 +983,22 @@ body {
 .upgrade-subtitle {
     text-align: center;
     color: #fdcb6e;
-    margin-bottom: 2rem;
-    font-size: 1.1rem;
+    margin-bottom: 1.2rem;
+    font-size: 1rem;
 }
 
 .upgrades-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.2rem;
 }
 
 .upgrade-card {
     background: linear-gradient(135deg, #1a1a2e, #16213e);
     border: 2px solid #a29bfe;
     border-radius: 15px;
-    padding: 1.5rem;
+    padding: 1rem;
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
@@ -1017,39 +1033,39 @@ body {
 }
 
 .upgrade-icon {
-    margin-bottom: 1rem;
+    margin-bottom: 0.6rem;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .upgrade-icon svg {
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
 }
 
 .upgrade-name {
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: bold;
     color: #fdcb6e;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.6rem;
     text-shadow: 1px 1px 0px #e17055;
 }
 
 .upgrade-description {
     color: #ffffff;
-    font-size: 0.9rem;
-    line-height: 1.4;
-    margin-bottom: 1rem;
+    font-size: 0.8rem;
+    line-height: 1.3;
+    margin-bottom: 0.6rem;
 }
 
 .upgrade-price {
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     font-weight: bold;
     color: #ff6b35;
     text-align: right;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 2px;
+    gap: 1px;
 }
 
 /* Cores dos preços baseadas na capacidade de compra */
@@ -1102,9 +1118,9 @@ body {
 }
 
 .continue-button {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     font-weight: bold;
-    padding: 1rem 2rem;
+    padding: 0.8rem 1.5rem;
     background: linear-gradient(45deg, #ff6b35, #fdcb6e);
     color: #2c1810;
     border: none;
@@ -1144,13 +1160,15 @@ body {
     background: linear-gradient(135deg, #1a1a2e, #16213e);
     border: 2px solid #a29bfe;
     position: relative;
+    grid-column: 1 / -1; /* Ocupa todas as colunas do grid */
 }
 
 .savings-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(162, 155, 254, 0.4);
-    border-color: #ff6b35;
+    transform: none;
+    box-shadow: none;
+    border-color: #a29bfe;
 }
+
 
 .savings-card.disabled {
     opacity: 0.5;
@@ -1415,6 +1433,66 @@ body {
     box-shadow: 0 8px 25px rgba(214, 48, 49, 0.6);
 }
 
+/* Otimização para telas 1080px */
+@media (max-height: 1080px) {
+    .upgrade-container {
+        max-height: 85vh;
+        padding: 1rem;
+    }
+    
+    .upgrade-container h2 {
+        font-size: 1.8rem;
+        margin-bottom: 0.2rem;
+    }
+    
+    .money-display {
+        margin: 0.4rem 0;
+        padding: 0.4rem;
+    }
+    
+    .upgrade-subtitle {
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .upgrades-grid {
+        gap: 0.8rem;
+        margin-bottom: 1rem;
+    }
+    
+    .upgrade-card {
+        padding: 0.8rem;
+    }
+    
+    .upgrade-icon {
+        margin-bottom: 0.4rem;
+    }
+    
+    .upgrade-icon svg {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .upgrade-name {
+        font-size: 0.9rem;
+        margin-bottom: 0.4rem;
+    }
+    
+    .upgrade-description {
+        font-size: 0.75rem;
+        margin-bottom: 0.4rem;
+    }
+    
+    .upgrade-price {
+        font-size: 0.8rem;
+    }
+    
+    .continue-button {
+        font-size: 1.1rem;
+        padding: 0.6rem 1.2rem;
+    }
+}
+
 /* Responsividade */
 @media (max-width: 1200px) {
     .game-container {
@@ -1453,7 +1531,8 @@ body {
     }
     
     .power-selection-name {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
+        line-height: 1.1;
     }
     
     .power-selection-instructions {
@@ -1566,7 +1645,8 @@ body {
     }
     
     .power-selection-name {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
+        line-height: 1.1;
     }
     
     .power-duration-warning {
