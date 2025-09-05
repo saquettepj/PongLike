@@ -103,7 +103,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 - **Seleção Aleatória**: Os upgrades disponíveis mudam a cada fase
 - **Promoções**: A cada 3 fases, a loja entra em promoção com descontos de 20-40%
 
-### Upgrades Disponíveis (36 total)
+### Upgrades Disponíveis (37 total)
 
 #### 🏓 Upgrades de Plataforma (8 total)
 1. **Plataforma Larga** - Aumenta tamanho em 50% (150 🪙)
@@ -115,7 +115,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 7. **Impulso de Velocidade** - Aumenta a velocidade da plataforma em 25% (120 🪙)
 8. **Tiro Carregado** - Atira projétil perfurante imediatamente (cooldown 5s) (190 🪙)
 
-#### ⚽ Upgrades de Bolinha (14 total)
+#### ⚽ Upgrades de Bolinha (15 total)
 8. **Bolinha Perfurante** - Quebra tijolos azuis sem mudar direção (220 🪙)
 9. **Campo de Fricção** - Reduz velocidade em 10% (160 🪙)
 10. **Multi-bola** - Cria uma nova bolinha grudada na plataforma. Liberada automaticamente em 2 segundos. (cooldown 20s) (200 🪙)
@@ -130,6 +130,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 19. **Bolinha Wombo Combo**: Com esta upgrade, cada bloco em combo dá +2 moedas (ao invés de +1) e a recompensa do combo máximo na loja é dobrada (120 🪙)
 20. **Bolinha Fantasma** - Quando a bolinha cai pela primeira vez em cada fase, ela reaparece no topo do campo (250 🪙)
 21. **Bolinha Dimensional** - Pode atravessar tijolos sem quebrá-los (Mantenha espaço pressionado) (até 3s, cooldown 15s) (140 🪙)
+22. **Estilhaços** - 50% de chance de estilhaçar o vidro de um bloco, causando efeito explosivo (200 🪙)
 
 #### 🛡️ Upgrades de Utilidade (8 total)
 22. **Coração Extra** - Ganha uma vida a cada fase (180 🪙)
@@ -222,7 +223,7 @@ brick-rogue/
 
 - ✅ Sistema completo de física da bolinha
 - ✅ 6 tipos de tijolos com efeitos únicos
-- ✅ Sistema de upgrades roguelike (34 upgrades)
+- ✅ Sistema de upgrades roguelike (37 upgrades)
 - ✅ Interface de usuário responsiva
 - ✅ Sistema de partículas e efeitos visuais
 - ✅ Persistência de recordes

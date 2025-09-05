@@ -767,6 +767,14 @@ class Game {
                 type: 'ball',
                 icon: this.getUpgradeIcon('dimensional_ball')
             },
+            {
+                id: 'shatter_glass',
+                name: 'Estilhaços',
+                description: '50% de chance de estilhaçar o vidro de um bloco, causando efeito explosivo',
+                price: 200,
+                type: 'ball',
+                icon: this.getUpgradeIcon('shatter_glass')
+            },
             // Upgrades de Utilidade (21-26)
             {
                 id: 'extra_life',
@@ -2137,6 +2145,11 @@ class Game {
             ball.explosive = false;
         }
         
+        // Upgrade Estilhaços - 50% de chance de estilhaçar vidro de bloco
+        if (this.hasUpgrade('shatter_glass') && brick.hasGlassCoating && Math.random() < 0.5) {
+            this.shatterGlass(brick, ball);
+        }
+        
         // Cooldown para bloco vermelho - evitar múltiplos danos em sequência
         if (brick.color === 'red') {
             const currentTime = Date.now();
@@ -2540,6 +2553,66 @@ class Game {
                 maxLife: 30,
                 alpha: 1,
                 size: Math.random() * 6 + 3
+            });
+        }
+    }
+    
+    shatterGlass(brick, ball) {
+        // Tocar som de vidro estilhaçando
+        this.playSound('explosiveHit'); // Usar o mesmo som da explosão por enquanto
+        
+        const explosionRadius = 60; // Raio menor que a explosão normal
+        
+        // Quebrar tijolos próximos (exceto o bloco vermelho)
+        this.bricks.forEach(targetBrick => {
+            if (!targetBrick.destroyed && targetBrick.color !== 'red') {
+                const dx = (targetBrick.x + targetBrick.width / 2) - brick.x;
+                const dy = (targetBrick.y + targetBrick.height / 2) - brick.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance <= explosionRadius) {
+                    targetBrick.destroyed = true;
+                    // Atualizar contador de tijolos
+                    if (this.currentBrickCount[targetBrick.color] > 0) {
+                        this.currentBrickCount[targetBrick.color]--;
+                    }
+                    this.money += this.getBrickReward(targetBrick.color);
+                    this.createParticles(targetBrick.x + targetBrick.width / 2, targetBrick.y + targetBrick.height / 2, this.getBrickColorValue(targetBrick.color));
+                }
+            }
+        });
+        
+        // Criar partículas de vidro estilhaçado
+        for (let i = 0; i < 15; i++) {
+            const angle = (i / 15) * Math.PI * 2;
+            const speed = 3 + Math.random() * 4;
+            this.particles.push({
+                x: brick.x + brick.width / 2,
+                y: brick.y + brick.height / 2,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                color: '#87ceeb', // Cor azul clara do vidro
+                life: 25,
+                maxLife: 25,
+                alpha: 0.8,
+                size: Math.random() * 4 + 2
+            });
+        }
+        
+        // Criar partículas de explosão laranja
+        for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2;
+            const speed = 2 + Math.random() * 3;
+            this.particles.push({
+                x: brick.x + brick.width / 2,
+                y: brick.y + brick.height / 2,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                color: '#f39c12',
+                life: 20,
+                maxLife: 20,
+                alpha: 0.9,
+                size: Math.random() * 3 + 2
             });
         }
     }
@@ -3125,6 +3198,41 @@ class Game {
                 <circle cx="22" cy="22" r="0.6" fill="#f39c12" opacity="0.8"/>
                 <!-- Símbolo dimensional (infinito) -->
                 <path d="M13 14 Q12 13 13 12 Q14 11 16 12 Q18 11 19 12 Q20 13 19 14 Q18 15 16 14 Q14 15 13 14" stroke="#ffffff" stroke-width="0.6" fill="none" opacity="0.8"/>
+            </svg>`,
+            
+            'shatter_glass': `<svg width="32" height="32" viewBox="0 0 32 32">
+                <!-- Bloco de vidro central (como a bolinha da explosiva) -->
+                <rect x="10" y="10" width="12" height="8" fill="#3498db" stroke="#2980b9" stroke-width="1" opacity="0.8"/>
+                <rect x="11" y="11" width="10" height="6" fill="#5dade2" opacity="0.6"/>
+                
+                <!-- Rachaduras no vidro central -->
+                <path d="M13 10 L13 18" stroke="#ffffff" stroke-width="0.8" opacity="0.9"/>
+                <path d="M16 10 L16 18" stroke="#ffffff" stroke-width="0.8" opacity="0.9"/>
+                <path d="M19 10 L19 18" stroke="#ffffff" stroke-width="0.8" opacity="0.9"/>
+                <path d="M10 13 L22 13" stroke="#ffffff" stroke-width="0.8" opacity="0.9"/>
+                <path d="M10 15 L22 15" stroke="#ffffff" stroke-width="0.8" opacity="0.9"/>
+                
+                <!-- Fragmentos de vidro voando (estilo da bolinha explosiva) -->
+                <path d="M16 4 L18 6 L16 8 L14 6 Z" fill="#3498db" opacity="0.8"/>
+                <path d="M28 16 L26 18 L24 16 L26 14 Z" fill="#3498db" opacity="0.8"/>
+                <path d="M16 28 L14 26 L16 24 L18 26 Z" fill="#3498db" opacity="0.8"/>
+                <path d="M4 16 L6 14 L8 16 L6 18 Z" fill="#3498db" opacity="0.8"/>
+                
+                <!-- Fragmentos menores (tons mais claros) -->
+                <path d="M22 6 L24 8 L22 10 L20 8 Z" fill="#5dade2" opacity="0.7"/>
+                <path d="M26 22 L24 20 L26 18 L28 20 Z" fill="#5dade2" opacity="0.7"/>
+                <path d="M10 26 L8 24 L10 22 L12 24 Z" fill="#5dade2" opacity="0.7"/>
+                <path d="M6 10 L4 8 L6 6 L8 8 Z" fill="#5dade2" opacity="0.7"/>
+                
+                <!-- Fragmentos adicionais para mais realismo -->
+                <path d="M12 2 L14 4 L12 6 L10 4 Z" fill="#85c1e9" opacity="0.6"/>
+                <path d="M20 2 L22 4 L20 6 L18 4 Z" fill="#85c1e9" opacity="0.6"/>
+                <path d="M12 26 L14 24 L12 22 L10 24 Z" fill="#85c1e9" opacity="0.6"/>
+                <path d="M20 26 L22 24 L20 22 L18 24 Z" fill="#85c1e9" opacity="0.6"/>
+                
+                <!-- Efeito de luz no vidro central -->
+                <rect x="12" y="12" width="2" height="4" fill="#ffffff" opacity="0.6"/>
+                <rect x="18" y="12" width="2" height="4" fill="#ffffff" opacity="0.4"/>
             </svg>`,
             'money_saver': `<svg width="32" height="32" viewBox="0 0 32 32">
                 <rect x="6" y="8" width="20" height="16" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
@@ -4521,6 +4629,14 @@ class Game {
                 price: 140,
                 type: 'ball',
                 icon: this.getUpgradeIcon('dimensional_ball')
+            },
+            {
+                id: 'shatter_glass',
+                name: 'Estilhaços',
+                description: '50% de chance de estilhaçar o vidro de um bloco, causando efeito explosivo',
+                price: 200,
+                type: 'ball',
+                icon: this.getUpgradeIcon('shatter_glass')
             }
         ];
         
