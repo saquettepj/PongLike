@@ -2705,14 +2705,30 @@ class Game {
             
             'attached_cannons': `<svg width="32" height="32" viewBox="0 0 32 32">
                 <rect x="2" y="26" width="28" height="4" fill="#ff6b35" stroke="#d63031" stroke-width="1"/>
-                <rect x="8" y="20" width="3" height="8" fill="#95a5a6" stroke="#7f8c8d" stroke-width="1"/>
-                <rect x="21" y="20" width="3" height="8" fill="#95a5a6" stroke="#7f8c8d" stroke-width="1"/>
-                <circle cx="9.5" cy="18" r="2" fill="#e74c3c"/>
-                <circle cx="22.5" cy="18" r="2" fill="#e74c3c"/>
+                <rect x="1" y="25" width="30" height="2" fill="#fdcb6e"/>
+                <rect x="1" y="29" width="30" height="2" fill="#e17055"/>
+                
+                <!-- Canhão esquerdo -->
+                <rect x="7" y="18" width="4" height="6" fill="#95a5a6" stroke="#7f8c8d" stroke-width="1"/>
+                <rect x="6" y="17" width="6" height="2" fill="#7f8c8d" stroke="#6c7b7d" stroke-width="1"/>
+                <circle cx="9" cy="16" r="1.5" fill="#2c3e50" stroke="#1a252f" stroke-width="1"/>
+                <circle cx="9" cy="13" r="1.5" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+                
+                <!-- Canhão direito -->
+                <rect x="21" y="18" width="4" height="6" fill="#95a5a6" stroke="#7f8c8d" stroke-width="1"/>
+                <rect x="20" y="17" width="6" height="2" fill="#7f8c8d" stroke="#6c7b7d" stroke-width="1"/>
+                <circle cx="23" cy="16" r="1.5" fill="#2c3e50" stroke="#1a252f" stroke-width="1"/>
+                <circle cx="23" cy="13" r="1.5" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+                
+                <!-- Efeito de energia dos canhões -->
+                <path d="M6 10 Q9 8 12 10" stroke="#e74c3c" stroke-width="1" fill="none" opacity="0.7"/>
+                <path d="M20 10 Q23 8 26 10" stroke="#e74c3c" stroke-width="1" fill="none" opacity="0.7"/>
             </svg>`,
             
             'super_magnet': `<svg width="32" height="32" viewBox="0 0 32 32">
                 <rect x="2" y="26" width="28" height="4" fill="#ff6b35" stroke="#d63031" stroke-width="1"/>
+                <rect x="1" y="25" width="30" height="2" fill="#fdcb6e"/>
+                <rect x="1" y="29" width="30" height="2" fill="#e17055"/>
                 <rect x="12" y="18" width="8" height="8" fill="#3498db" stroke="#2980b9" stroke-width="1"/>
                 <circle cx="16" cy="22" r="2" fill="#ffffff"/>
                 <path d="M8 12 Q16 8 24 12" stroke="#3498db" stroke-width="2" fill="none"/>
@@ -2721,6 +2737,8 @@ class Game {
             
             'paddle_dash': `<svg width="32" height="32" viewBox="0 0 32 32">
                 <rect x="2" y="26" width="28" height="4" fill="#ff6b35" stroke="#d63031" stroke-width="1"/>
+                <rect x="1" y="25" width="30" height="2" fill="#fdcb6e"/>
+                <rect x="1" y="29" width="30" height="2" fill="#e17055"/>
                 <path d="M16 20 L20 16 L16 12 L20 8" stroke="#f1c40f" stroke-width="2" fill="none"/>
                 <circle cx="20" cy="8" r="2" fill="#f1c40f"/>
             </svg>`,
@@ -2803,9 +2821,22 @@ class Game {
             
             'charged_shot': `<svg width="32" height="32" viewBox="0 0 32 32">
                 <rect x="2" y="26" width="28" height="4" fill="#ff6b35" stroke="#d63031" stroke-width="1"/>
-                <rect x="14" y="12" width="4" height="12" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
-                <circle cx="16" cy="10" r="3" fill="#f1c40f" stroke="#f39c12" stroke-width="1"/>
-                <path d="M16 7 L18 5 L14 5 Z" fill="#e67e22"/>
+                <rect x="1" y="25" width="30" height="2" fill="#fdcb6e"/>
+                <rect x="1" y="29" width="30" height="2" fill="#e17055"/>
+                
+                <!-- Canhão curto e elegante -->
+                <rect x="13" y="18" width="6" height="6" fill="#95a5a6" stroke="#7f8c8d" stroke-width="1"/>
+                <rect x="12" y="17" width="8" height="2" fill="#7f8c8d" stroke="#6c7b7d" stroke-width="1"/>
+                
+                <!-- Boca do canhão -->
+                <circle cx="16" cy="16" r="2" fill="#2c3e50" stroke="#1a252f" stroke-width="1"/>
+                
+                <!-- Projétil carregado -->
+                <circle cx="16" cy="12" r="2.5" fill="#f1c40f" stroke="#f39c12" stroke-width="1"/>
+                <circle cx="16" cy="12" r="1.5" fill="#f7dc6f"/>
+                
+                <!-- Efeito de energia -->
+                <path d="M12 8 Q16 6 20 8" stroke="#f1c40f" stroke-width="1.5" fill="none" opacity="0.8"/>
             </svg>`,
             
             // Upgrades de Bolinha
@@ -2910,12 +2941,17 @@ class Game {
             
             // Upgrades de Utilidade
             'extra_life': `<svg width="32" height="32" viewBox="0 0 32 32">
-                <path d="M16 6 C12 6, 8 10, 8 16 C8 22, 16 28, 16 28 C16 28, 24 22, 24 16 C24 10, 20 6, 16 6 Z" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
-                <path d="M16 8 C13 8, 10 11, 10 16 C10 21, 16 26, 16 26 C16 26, 22 21, 22 16 C22 11, 19 8, 16 8 Z" fill="#ff6b35"/>
+                <!-- Coração vermelho realista -->
+                <path d="M16 8 C12 4, 6 6, 6 12 C6 18, 16 26, 16 26 C16 26, 26 18, 26 12 C26 6, 20 4, 16 8 Z" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+                
+                <!-- Símbolo + branco no centro -->
+                <path d="M16 12 L16 20 M12 16 L20 16" stroke="#ffffff" stroke-width="3" fill="none" stroke-linecap="round"/>
             </svg>`,
             
             'safety_net': `<svg width="32" height="32" viewBox="0 0 32 32">
                 <rect x="2" y="26" width="28" height="4" fill="#ff6b35" stroke="#d63031" stroke-width="1"/>
+                <rect x="1" y="25" width="30" height="2" fill="#fdcb6e"/>
+                <rect x="1" y="29" width="30" height="2" fill="#e17055"/>
                 <path d="M4 24 L28 24" stroke="#2ecc71" stroke-width="2"/>
                 <path d="M6 22 L26 22" stroke="#2ecc71" stroke-width="2"/>
                 <path d="M8 20 L24 20" stroke="#2ecc71" stroke-width="2"/>
@@ -5624,32 +5660,78 @@ class Game {
     
     drawPowerUp(powerUp) {
         if (powerUp.type === 'charged_shot') {
+            // Efeito de luz pulsante
+            const pulseIntensity = 0.5 + 0.5 * Math.sin(Date.now() * 0.01);
+            const pulseRadius = powerUp.radius + pulseIntensity * 3;
+            
+            // Desenhar halo de luz pulsante
+            const glowGradient = this.ctx.createRadialGradient(
+                powerUp.x, powerUp.y, 0,
+                powerUp.x, powerUp.y, pulseRadius
+            );
+            glowGradient.addColorStop(0, `rgba(255, 255, 0, ${0.3 * pulseIntensity})`);
+            glowGradient.addColorStop(0.5, `rgba(255, 215, 0, ${0.2 * pulseIntensity})`);
+            glowGradient.addColorStop(1, 'rgba(255, 255, 0, 0)');
+            
+            this.ctx.fillStyle = glowGradient;
+            this.ctx.beginPath();
+            this.ctx.arc(powerUp.x, powerUp.y, pulseRadius, 0, Math.PI * 2);
+            this.ctx.fill();
+            
             // Desenhar projétil carregado
             const gradient = this.ctx.createRadialGradient(
                 powerUp.x, powerUp.y, 0,
                 powerUp.x, powerUp.y, powerUp.radius
             );
-            gradient.addColorStop(0, '#f1c40f');
-            gradient.addColorStop(0.7, '#e67e22');
-            gradient.addColorStop(1, '#d35400');
+            gradient.addColorStop(0, '#ffff00');
+            gradient.addColorStop(0.3, '#ffd700');
+            gradient.addColorStop(0.7, '#ffa500');
+            gradient.addColorStop(1, '#ff8c00');
             
             this.ctx.fillStyle = gradient;
             this.ctx.beginPath();
             this.ctx.arc(powerUp.x, powerUp.y, powerUp.radius, 0, Math.PI * 2);
             this.ctx.fill();
             
-            // Borda
-            this.ctx.strokeStyle = '#e74c3c';
+            // Borda dourada
+            this.ctx.strokeStyle = '#ffd700';
             this.ctx.lineWidth = 2;
             this.ctx.stroke();
         } else if (powerUp.type === 'cannon_shot') {
-            // Desenhar projétil de canhão
-            this.ctx.fillStyle = '#e74c3c';
+            // Efeito de luz pulsante vermelha
+            const pulseIntensity = 0.5 + 0.5 * Math.sin(Date.now() * 0.01);
+            const pulseRadius = powerUp.radius + pulseIntensity * 2;
+            
+            // Desenhar halo de luz pulsante vermelha
+            const glowGradient = this.ctx.createRadialGradient(
+                powerUp.x, powerUp.y, 0,
+                powerUp.x, powerUp.y, pulseRadius
+            );
+            glowGradient.addColorStop(0, `rgba(255, 0, 0, ${0.4 * pulseIntensity})`);
+            glowGradient.addColorStop(0.5, `rgba(231, 76, 60, ${0.3 * pulseIntensity})`);
+            glowGradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+            
+            this.ctx.fillStyle = glowGradient;
+            this.ctx.beginPath();
+            this.ctx.arc(powerUp.x, powerUp.y, pulseRadius, 0, Math.PI * 2);
+            this.ctx.fill();
+            
+            // Desenhar projétil de canhão vermelho
+            const gradient = this.ctx.createRadialGradient(
+                powerUp.x, powerUp.y, 0,
+                powerUp.x, powerUp.y, powerUp.radius
+            );
+            gradient.addColorStop(0, '#ff0000');
+            gradient.addColorStop(0.3, '#e74c3c');
+            gradient.addColorStop(0.7, '#c0392b');
+            gradient.addColorStop(1, '#a93226');
+            
+            this.ctx.fillStyle = gradient;
             this.ctx.beginPath();
             this.ctx.arc(powerUp.x, powerUp.y, powerUp.radius, 0, Math.PI * 2);
             this.ctx.fill();
             
-            // Borda
+            // Borda vermelha
             this.ctx.strokeStyle = '#c0392b';
             this.ctx.lineWidth = 1;
             this.ctx.stroke();
