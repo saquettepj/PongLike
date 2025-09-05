@@ -898,19 +898,19 @@ body {
     font-size: 1.5rem;
     font-weight: bold;
     padding: 1rem 2rem;
-    background: linear-gradient(45deg, #00b894, #00cec9);
-    color: #ffffff;
+    background: linear-gradient(45deg, #ff6b35, #fdcb6e);
+    color: #2c1810;
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    text-shadow: 1px 1px 0px #00695c;
-    box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
+    text-shadow: 1px 1px 0px #ffffff;
+    box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
     transition: all 0.3s ease;
 }
 
 .confirm-power-button:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 184, 148, 0.6);
+    box-shadow: 0 8px 25px rgba(255, 107, 53, 0.6);
 }
 
 .confirm-power-button:disabled {
@@ -959,7 +959,7 @@ body {
 
 #shopMoney {
     font-size: 1.5rem;
-    color: #ff6b35;
+    color: #fdcb6e;
     font-weight: bold;
     margin-left: 0.5rem;
 }
@@ -1105,19 +1105,19 @@ body {
     font-size: 1.5rem;
     font-weight: bold;
     padding: 1rem 2rem;
-    background: linear-gradient(45deg, #00b894, #00cec9);
-    color: #ffffff;
+    background: linear-gradient(45deg, #ff6b35, #fdcb6e);
+    color: #2c1810;
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    text-shadow: 1px 1px 0px #00695c;
-    box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
+    text-shadow: 1px 1px 0px #ffffff;
+    box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
     transition: all 0.3s ease;
 }
 
 .continue-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 184, 148, 0.6);
+    box-shadow: 0 8px 25px rgba(255, 107, 53, 0.6);
 }
 
 .continue-button:disabled {
@@ -1136,6 +1136,84 @@ body {
     border-radius: 15px;
     margin: 1rem 0;
     text-shadow: 1px 1px 0px #e17055;
+}
+
+/* Estilos específicos para a opção de poupança */
+.savings-card {
+    /* Usar a mesma estilização dos upgrade-cards normais */
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 2px solid #a29bfe;
+    position: relative;
+}
+
+.savings-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(162, 155, 254, 0.4);
+    border-color: #ff6b35;
+}
+
+.savings-card.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(100%);
+}
+
+.savings-card.disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.savings-card .upgrade-name {
+    color: #fdcb6e;
+    text-shadow: 1px 1px 0px #e17055;
+}
+
+.savings-card .upgrade-description {
+    color: #ffffff;
+    font-weight: normal;
+}
+
+
+/* Animação para notificação de poupança */
+@keyframes savingsPop {
+    0% { 
+        transform: translate(-50%, -50%) scale(0.5); 
+        opacity: 0; 
+    }
+    50% { 
+        transform: translate(-50%, -50%) scale(1.1); 
+        opacity: 1; 
+    }
+    100% { 
+        transform: translate(-50%, -50%) scale(1); 
+        opacity: 1; 
+    }
+}
+
+.savings-notification-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.savings-icon {
+    font-size: 2rem;
+}
+
+.savings-text {
+    text-align: left;
+}
+
+.savings-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 0.3rem;
+    text-shadow: 1px 1px 0px #1e8449;
+}
+
+.savings-details {
+    font-size: 0.9rem;
+    opacity: 0.9;
 }
 
 /* Tela de Pause */

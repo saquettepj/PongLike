@@ -36,6 +36,7 @@ class Game {
         this.money = 0;
         this.lives = 3;
         this.maxLives = 4;
+        this.shopPurchases = []; // Rastrear compras na loja atual
 
         // Funções auxiliares para limite de vidas
         this.getMaxLivesCap = () => {
@@ -3820,19 +3821,17 @@ class Game {
         
         // Verificar se há upgrades suficientes
         if (availableUpgrades.length === 0) {
-            // Se não há upgrades disponíveis, mostrar mensagem
-            upgradesGrid.innerHTML = '<div class="no-upgrades">Todos os upgrades foram comprados!</div>';
+            // Se não há upgrades disponíveis, mostrar apenas a opção de poupança
+            this.createSavingsOption(upgradesGrid);
             return;
         }
         
-        // Regra especial: Primeira loja sempre tem 4 upgrades
-        // Outras lojas: entre 2 a 4 upgrades aleatoriamente
-        const numOffers = this.currentPhase === 1 ? 4 : Math.floor(Math.random() * 3) + 2; // 2-4 upgrades
+        // Sempre mostrar 3 upgrades aleatórios + 1 opção fixa de poupança
         const selectedUpgrades = [];
         
-        // Embaralhar e selecionar upgrades
+        // Embaralhar e selecionar 3 upgrades aleatórios
         const shuffledUpgrades = [...availableUpgrades].sort(() => Math.random() - 0.5);
-        for (let i = 0; i < Math.min(numOffers, shuffledUpgrades.length); i++) {
+        for (let i = 0; i < Math.min(3, shuffledUpgrades.length); i++) {
             selectedUpgrades.push(shuffledUpgrades[i]);
         }
         
@@ -3883,6 +3882,9 @@ class Game {
             
             upgradesGrid.appendChild(upgradeCard);
         });
+        
+        // Adicionar opção fixa de poupança
+        this.createSavingsOption(upgradesGrid);
         
         // Atualizar cores dos preços após gerar todos os upgrades
         this.updateUpgradePriceColors();
@@ -4202,6 +4204,13 @@ class Game {
         if (this.money >= priceToPay) {
             this.money -= priceToPay;
             
+            // Registrar compra para sistema de poupança
+            this.shopPurchases.push({
+                upgrade: upgrade,
+                price: priceToPay,
+                timestamp: Date.now()
+            });
+            
             // Tocar som de compra
             this.playSound('purchase');
             
@@ -4219,6 +4228,9 @@ class Game {
             
             // Atualizar cores dos preços após a compra
             this.updateUpgradePriceColors();
+            
+            // Atualizar visualmente a opção de poupança se existir
+            this.updateSavingsCardVisual();
             
             // Aplicar upgrade imediatamente se for do tipo especial
             if (upgrade.id === 'investor') {
@@ -4336,23 +4348,26 @@ class Game {
         // Atualizar configurações de dificuldade
         this.updateDifficultySettings();
         
-        // Verificar se comprou algo na loja
+        // Sistema de poupança automática - aplicado a cada loja individualmente
         const moneyBeforeShop = this.moneyBeforeShop || 0;
-        const moneySpent = moneyBeforeShop - this.money;
+        const hasBoughtSomething = this.shopPurchases && this.shopPurchases.length > 0;
         
-        // Se não comprou nada (não gastou dinheiro), manter 30% do dinheiro
-        if (moneySpent === 0 && moneyBeforeShop > 0) {
-            this.money = Math.floor(moneyBeforeShop * 0.3);
-        } else {
-            // Zerar dinheiro após comprar upgrades (não cumulativo)
-            // Exceto se tiver o upgrade "Poupança"
-            if (!this.hasUpgrade('money_saver')) {
-                this.money = 0;
-            } else {
-                // Manter apenas 50 moedas se tiver o upgrade
-                this.money = Math.min(this.money, 50);
+        if (!hasBoughtSomething && moneyBeforeShop > 0) {
+            // Se não comprou nada nesta loja, manter 30% do dinheiro desta loja
+            const savedMoney = Math.floor(moneyBeforeShop * 0.3);
+            this.money = savedMoney;
+            
+            // Mostrar notificação de poupança ativada apenas no modo desenvolvedor
+            if (this.developerMode) {
+                this.showSavingsNotification(savedMoney, moneyBeforeShop);
             }
+        } else {
+            // Se comprou algo nesta loja, zerar dinheiro (não cumulativo)
+            this.money = 0;
         }
+        
+        // Limpar compras da loja para próxima fase
+        this.shopPurchases = [];
 
         // Investidor: cada fase inicia com +100 moedas
         if (this.hasUpgrade && this.hasUpgrade('investor')) {
@@ -4474,6 +4489,114 @@ class Game {
                 }
             }
         });
+    }
+    
+    createSavingsOption(upgradesGrid) {
+        const savingsCard = document.createElement('div');
+        savingsCard.className = 'upgrade-card savings-card';
+        
+        // Verificar se o jogador já comprou algo nesta loja
+        const hasBoughtSomething = this.shopPurchases && this.shopPurchases.length > 0;
+        
+        if (hasBoughtSomething) {
+            savingsCard.classList.add('disabled');
+        }
+        
+        // SVG do porquinho rosa segurando moeda
+        const piggyBankIcon = `
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Corpo do porquinho -->
+                <ellipse cx="24" cy="32" rx="18" ry="12" fill="#ff69b4"/>
+                <!-- Cabeça do porquinho -->
+                <circle cx="24" cy="20" r="12" fill="#ff69b4"/>
+                <!-- Focinho de porco -->
+                <ellipse cx="24" cy="16" rx="5" ry="4" fill="#ffb6c1"/>
+                <!-- Nariz do porco (2 buracos) -->
+                <ellipse cx="22" cy="15" rx="1" ry="0.8" fill="#ff1493"/>
+                <ellipse cx="26" cy="15" rx="1" ry="0.8" fill="#ff1493"/>
+                <!-- Orelhas -->
+                <ellipse cx="16" cy="12" rx="3" ry="5" fill="#ff69b4" transform="rotate(-30 16 12)"/>
+                <ellipse cx="32" cy="12" rx="3" ry="5" fill="#ff69b4" transform="rotate(30 32 12)"/>
+                <!-- Pernas -->
+                <ellipse cx="18" cy="42" rx="3" ry="4" fill="#ff69b4"/>
+                <ellipse cx="30" cy="42" rx="3" ry="4" fill="#ff69b4"/>
+                <!-- Moeda na pata -->
+                <circle cx="12" cy="28" r="4" fill="#ffd700" stroke="#ff8c00" stroke-width="1"/>
+                <text x="12" y="31" text-anchor="middle" font-size="4" fill="#ff8c00" font-weight="bold">$</text>
+                <!-- Riscos na moeda -->
+                <line x1="8" y1="28" x2="16" y2="28" stroke="#ff8c00" stroke-width="0.5"/>
+                <line x1="12" y1="24" x2="12" y2="32" stroke="#ff8c00" stroke-width="0.5"/>
+            </svg>
+        `;
+        
+        savingsCard.innerHTML = `
+            <div class="upgrade-icon">${piggyBankIcon}</div>
+            <div class="upgrade-name">Poupança</div>
+            <div class="upgrade-description">Se não comprar nada nesta loja, guarde 30% do dinheiro para próxima partida</div>
+        `;
+        
+        // A opção de poupança não é clicável - é automática
+        if (!hasBoughtSomething) {
+            savingsCard.style.cursor = 'default';
+        }
+        
+        upgradesGrid.appendChild(savingsCard);
+    }
+    
+    showSavingsNotification(savedMoney, originalMoney) {
+        // Criar elemento de notificação
+        const notification = document.createElement('div');
+        notification.className = 'savings-notification';
+        notification.innerHTML = `
+            <div class="savings-notification-content">
+                <div class="savings-icon">🐷</div>
+                <div class="savings-text">
+                    <div class="savings-title">Poupança Ativada!</div>
+                    <div class="savings-details">Guardou ${savedMoney} de ${originalMoney} moedas (30%)</div>
+                </div>
+            </div>
+        `;
+        
+        // Adicionar estilos inline para garantir que funcione
+        notification.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            padding: 1.5rem 2rem;
+            border-radius: 15px;
+            border: 3px solid #27ae60;
+            box-shadow: 0 10px 30px rgba(46, 204, 113, 0.5);
+            z-index: 10000;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            animation: savingsPop 0.6s ease forwards;
+        `;
+        
+        // Adicionar ao DOM
+        document.body.appendChild(notification);
+        
+        // Remover após 3 segundos
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 3000);
+    }
+    
+    updateSavingsCardVisual() {
+        const savingsCard = document.querySelector('.savings-card');
+        if (savingsCard) {
+            const hasBoughtSomething = this.shopPurchases && this.shopPurchases.length > 0;
+            
+            if (hasBoughtSomething) {
+                savingsCard.classList.add('disabled');
+            } else {
+                savingsCard.classList.remove('disabled');
+            }
+        }
     }
     
     updateBrickCounter() {
