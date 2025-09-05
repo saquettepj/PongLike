@@ -175,17 +175,17 @@ class Game {
         this.mouseX = 0;
         this.mousePressed = false;
         
-        // Upgrades com ativação manual
+        // Upgrades com ativação manual (agora usando tempo real)
         this.activeUpgradeEffects = {
-            superMagnet: { active: false, timer: 0, duration: 120, cooldown: 3000 }, 
-            paddleDash: { active: false, timer: 0, duration: 180, cooldown: 1200 },
-            chargedShot: { charging: false, chargeLevel: 0, maxCharge: 1200, cooldown: 1800 },
-            safetyNet: { active: false, timer: 0, duration: 900, cooldown: 4800 },
-            effectActivator: { active: false, timer: 0, duration: 0, cooldown: 1200 },
-            cushionPaddle: { active: false, timer: 0, duration: 1200, cooldown: 3600 },
-            multiBall: { active: false, timer: 0, duration: 0, cooldown: 7200 },
-            timeBall: { active: false, timer: 0, duration: 0, cooldown: 2400 },
-            dimensionalBall: { active: false, timer: 0, duration: 300, cooldown: 3600 }
+            superMagnet: { active: false, startTime: 0, duration: 500, cooldown: 20000 }, 
+            paddleDash: { active: false, startTime: 0, duration: 2000, cooldown: 15000 },
+            chargedShot: { active: false, startTime: 0, duration: 0, cooldown: 15000 },
+            safetyNet: { active: false, startTime: 0, duration: 10000, cooldown: 30000 },
+            effectActivator: { active: false, startTime: 0, duration: 0, cooldown: 5000 },
+            cushionPaddle: { active: false, startTime: 0, duration: 6000, cooldown: 20000 },
+            multiBall: { active: false, startTime: 0, duration: 0, cooldown: 40000 },
+            timeBall: { active: false, startTime: 0, duration: 0, cooldown: 25000 },
+            dimensionalBall: { active: false, startTime: 0, duration: 3000, cooldown: 25000 }
         };
         
         // Configurações
@@ -465,7 +465,7 @@ class Game {
             if (e.code === 'Space' && this.gameRunning && !this.gamePaused) {
                 if (this.hasUpgrade('dimensional_ball') && this.activeUpgradeEffects.dimensionalBall.active) {
                     this.activeUpgradeEffects.dimensionalBall.active = false;
-                    this.activeUpgradeEffects.dimensionalBall.timer = this.activeUpgradeEffects.dimensionalBall.cooldown;
+                    this.activeUpgradeEffects.dimensionalBall.startTime = Date.now();
                 }
             }
             
@@ -607,7 +607,7 @@ class Game {
             {
                 id: 'super_magnet',
                 name: 'Super Ímã',
-                description: 'Campo magnético para puxar bolinha',
+                description: 'Campo magnético para puxar bolinha por 0.5s (cooldown 20s)',
                 price: 180,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('super_magnet')
@@ -615,7 +615,7 @@ class Game {
             {
                 id: 'paddle_dash',
                 name: 'Dash de Plataforma',
-                description: 'Movimento rápido lateral por 3s',
+                description: 'Movimento rápido lateral por 2s (cooldown 15s)',
                 price: 140,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('paddle_dash')
@@ -623,7 +623,7 @@ class Game {
             {
                 id: 'cushion_paddle',
                 name: 'Plataforma de Desaceleração',
-                description: 'Diminui em 50% a velocidade de todas as bolinhas por 10 segundos',
+                description: 'Diminui em 50% a velocidade de todas as bolinhas por 6s (cooldown 20s)',
                 price: 80,
                 type: 'paddle',
                 icon: this.getUpgradeIcon('cushion_paddle')
@@ -664,7 +664,7 @@ class Game {
             {
                 id: 'multi_ball',
                 name: 'Multi-bola',
-                description: 'Cria uma nova bolinha grudada na plataforma. Liberada automaticamente em 2 segundos',
+                description: 'Cria uma nova bolinha grudada na plataforma. Liberada automaticamente em 2 segundos (cooldown 40s)',
                 price: 200,
                 type: 'ball',
                 icon: this.getUpgradeIcon('multi_ball')
@@ -696,7 +696,7 @@ class Game {
             {
                 id: 'effect_activator',
                 name: 'Ativador de Efeito',
-                description: 'Ativa efeito aleatório dos blocos na bolinha e ganha moedas baseadas na cor do bloco do efeito ativado',
+                description: 'Ativa efeito aleatório dos blocos na bolinha e ganha moedas baseadas na cor do bloco do efeito ativado (cooldown 5s)',
                 price: 60,
                 type: 'ball',
                 icon: this.getUpgradeIcon('effect_activator')
@@ -720,7 +720,7 @@ class Game {
             {
                 id: 'time_ball',
                 name: 'Bolinha do Tempo',
-                description: 'Para a bolinha por 3 segundos',
+                description: 'Para a bolinha por 3 segundos (cooldown 25s)',
                 price: 180,
                 type: 'ball',
                 icon: this.getUpgradeIcon('time_ball')
@@ -752,7 +752,7 @@ class Game {
             {
                 id: 'dimensional_ball',
                 name: 'Bolinha Dimensional',
-                description: 'Pode atravessar tijolos sem quebrá-los (Mantenha espaço pressionado) (até 5s)',
+                description: 'Pode atravessar tijolos sem quebrá-los (Mantenha espaço pressionado) (até 3s, cooldown 25s)',
                 price: 140,
                 type: 'ball',
                 icon: this.getUpgradeIcon('dimensional_ball')
@@ -769,7 +769,7 @@ class Game {
             {
                 id: 'safety_net',
                 name: 'Rede de Segurança',
-                description: 'Barreira temporária por 15s',
+                description: 'Barreira temporária por 10s (cooldown 30s)',
                 price: 300,
                 type: 'utility',
                 icon: this.getUpgradeIcon('safety_net')
@@ -1260,20 +1260,39 @@ class Game {
         // Atualizar timers dos efeitos
         Object.keys(this.activeUpgradeEffects).forEach(key => {
             const effect = this.activeUpgradeEffects[key];
-            if (effect.timer > 0) {
-                effect.timer--;
-            }
             
-            // Desativar efeitos quando o timer chegar a zero
-            if (effect.timer <= 0 && effect.active) {
-                effect.active = false;
-                // Se for Super Ímã, Dash de Plataforma, Rede de Segurança, Plataforma de Aceleração, Bolinha Dimensional, iniciar cooldown
-                if ((key === 'superMagnet' || key === 'paddleDash' || key === 'safetyNet' || key === 'cushionPaddle' || key === 'dimensionalBall') && effect.cooldown) {
-                    effect.timer = effect.cooldown;
+            // Sistema de tempo real para dimensionalBall
+            if (key === 'dimensionalBall') {
+                if (effect.startTime > 0) {
+                    const currentTime = Date.now();
+                    const elapsedTime = currentTime - effect.startTime;
+                    
+                    // Verificar se o efeito deve ser desativado
+                    if (effect.active && effect.duration > 0 && elapsedTime >= effect.duration) {
+                        effect.active = false;
+                        // Iniciar cooldown
+                        effect.startTime = currentTime; // Resetar para cooldown
+                    }
+                    // Verificar se o cooldown terminou
+                    else if (!effect.active && effect.cooldown > 0 && elapsedTime >= effect.cooldown) {
+                        effect.startTime = 0; // Cooldown terminou, pode ser ativado novamente
+                    }
+                }
+            } else {
+                // Sistema FPS para outros efeitos
+                if (effect.timer > 0) {
+                    effect.timer--;
+                }
+                
+                // Desativar efeitos quando o timer chegar a zero
+                if (effect.timer <= 0 && effect.active) {
+                    effect.active = false;
+                    // Se for Super Ímã, Dash de Plataforma, Rede de Segurança, Plataforma de Aceleração, iniciar cooldown
+                    if ((key === 'superMagnet' || key === 'paddleDash' || key === 'safetyNet' || key === 'cushionPaddle') && effect.cooldown) {
+                        effect.timer = effect.cooldown;
+                    }
                 }
             }
-            
-
         });
         
         // Decrementar cooldown do tiro carregado
@@ -2613,15 +2632,11 @@ class Game {
                 break;
                 
             case 'dimensional_ball':
-                // Toggle: espaço ativa/desativa; cooldown inicia apenas ao desativar
-                if (this.activeUpgradeEffects.dimensionalBall.active) {
-                    // Desativar manualmente e iniciar cooldown
-                    this.activeUpgradeEffects.dimensionalBall.active = false;
-                    this.activeUpgradeEffects.dimensionalBall.timer = this.activeUpgradeEffects.dimensionalBall.cooldown;
-                } else if (this.activeUpgradeEffects.dimensionalBall.timer <= 0) {
-                    // Ativar se não estiver em cooldown
+                // Ativar apenas se não estiver ativa e não estiver em cooldown
+                if (!this.activeUpgradeEffects.dimensionalBall.active && this.activeUpgradeEffects.dimensionalBall.startTime === 0) {
+                    // Ativar e iniciar contador de 3 segundos
                     this.activeUpgradeEffects.dimensionalBall.active = true;
-                    this.activeUpgradeEffects.dimensionalBall.timer = this.activeUpgradeEffects.dimensionalBall.duration;
+                    this.activeUpgradeEffects.dimensionalBall.startTime = Date.now();
                     this.createParticles(this.paddle.x + this.paddle.width / 2, this.paddle.y, '#8e44ad');
                     this.playSound('superMagnet');
                 }
@@ -3747,15 +3762,15 @@ class Game {
         
         // Resetar efeitos ativos de upgrades
         this.activeUpgradeEffects = {
-            superMagnet: { active: false, timer: 0, duration: 120, cooldown: 3000 }, 
-            paddleDash: { active: false, timer: 0, duration: 180, cooldown: 1200 },
-            chargedShot: { charging: false, chargeLevel: 0, maxCharge: 1200, cooldown: 1800 },
-            safetyNet: { active: false, timer: 0, duration: 900, cooldown: 4800 },
-            effectActivator: { active: false, timer: 0, duration: 0, cooldown: 1200 },
-            cushionPaddle: { active: false, timer: 0, duration: 600, cooldown: 3600 },
-            multiBall: { active: false, timer: 0, duration: 0, cooldown: 7200 },
-            timeBall: { active: false, timer: 0, duration: 0, cooldown: 2400 },
-            dimensionalBall: { active: false, timer: 0, duration: 300, cooldown: 3600 }
+            superMagnet: { active: false, startTime: 0, duration: 500, cooldown: 20000 }, 
+            paddleDash: { active: false, startTime: 0, duration: 2000, cooldown: 15000 },
+            chargedShot: { active: false, startTime: 0, duration: 0, cooldown: 15000 },
+            safetyNet: { active: false, startTime: 0, duration: 10000, cooldown: 30000 },
+            effectActivator: { active: false, startTime: 0, duration: 0, cooldown: 5000 },
+            cushionPaddle: { active: false, startTime: 0, duration: 6000, cooldown: 20000 },
+            multiBall: { active: false, startTime: 0, duration: 0, cooldown: 40000 },
+            timeBall: { active: false, startTime: 0, duration: 0, cooldown: 25000 },
+            dimensionalBall: { active: false, startTime: 0, duration: 3000, cooldown: 25000 }
         };
         
         // Resetar timers de upgrades
@@ -5015,9 +5030,20 @@ class Game {
                 
             case 'dimensional_ball':
                 const dimensionalBallEffect = this.activeUpgradeEffects.dimensionalBall;
-                if (dimensionalBallEffect.timer > 0) {
+                if (dimensionalBallEffect.active) {
+                    powerItem.className = 'power-item active';
+                    const currentTime = Date.now();
+                    const elapsedTime = currentTime - dimensionalBallEffect.startTime;
+                    const remainingTime = Math.max(0, dimensionalBallEffect.duration - elapsedTime);
+                    const seconds = Math.ceil(remainingTime / 1000);
+                    cooldownElement.textContent = `${seconds}s`;
+                    cooldownElement.className = 'power-cooldown active';
+                } else if (dimensionalBallEffect.startTime > 0) {
                     powerItem.className = 'power-item on-cooldown';
-                    const seconds = Math.ceil(dimensionalBallEffect.timer / 60);
+                    const currentTime = Date.now();
+                    const elapsedTime = currentTime - dimensionalBallEffect.startTime;
+                    const remainingTime = Math.max(0, dimensionalBallEffect.cooldown - elapsedTime);
+                    const seconds = Math.ceil(remainingTime / 1000);
                     cooldownElement.textContent = `${seconds}s`;
                     cooldownElement.className = 'power-cooldown';
                 } else {
