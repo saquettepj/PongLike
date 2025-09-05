@@ -103,16 +103,17 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 - **Seleção Aleatória**: Os upgrades disponíveis mudam a cada fase
 - **Promoções**: A cada 3 fases, a loja entra em promoção com descontos de 20-40%
 
-### Upgrades Disponíveis (35 total)
+### Upgrades Disponíveis (36 total)
 
-#### 🏓 Upgrades de Plataforma (7 total)
+#### 🏓 Upgrades de Plataforma (8 total)
 1. **Plataforma Larga** - Aumenta tamanho em 50% (150 🪙)
 2. **Canhões Acoplados** - Atira projéteis apenas em batidas ímpares (170 🪙)
 3. **Super Ímã** - Campo magnético para puxar bolinha por 1s (cooldown 10s) (180 🪙)
 4. **Dash de Plataforma** - Movimento rápido lateral por 2s (cooldown 8s) (140 🪙)
 5. **Plataforma de Desaceleração** - Diminui em 50% a velocidade de todas as bolinhas por 3s (cooldown 10s) (80 🪙)
 6. **Reforço** - Plataforma 2x mais alta e destrói bloco da linha de cima (220 🪙)
-7. **Tiro Carregado** - Atira projétil perfurante imediatamente (cooldown 5s) (190 🪙)
+7. **Impulso de Velocidade** - Aumenta a velocidade da plataforma em 25% (120 🪙)
+8. **Tiro Carregado** - Atira projétil perfurante imediatamente (cooldown 5s) (190 🪙)
 
 #### ⚽ Upgrades de Bolinha (14 total)
 8. **Bolinha Perfurante** - Quebra tijolos azuis sem mudar direção (220 🪙)

@@ -637,6 +637,14 @@ class Game {
                 icon: this.getUpgradeIcon('reinforced_paddle')
             },
             {
+                id: 'speed_boost',
+                name: 'Impulso de Velocidade',
+                description: 'Aumenta a velocidade da plataforma em 25%',
+                price: 120,
+                type: 'paddle',
+                icon: this.getUpgradeIcon('speed_boost')
+            },
+            {
                 id: 'charged_shot',
                 name: 'Tiro Carregado',
                 description: 'Atira projétil perfurante imediatamente',
@@ -1242,6 +1250,11 @@ class Game {
         // Dash de Plataforma
         if (this.hasUpgrade('paddle_dash') && this.activeUpgradeEffects.paddleDash.active) {
             speed *= 2; // Velocidade aumentada durante o dash
+        }
+        
+        // Impulso de Velocidade - upgrade passivo
+        if (this.hasUpgrade('speed_boost')) {
+            speed *= 1.25; // Aumenta velocidade em 25%
         }
         
         // Controle apenas por teclado (A/D ou setas)
@@ -2755,6 +2768,19 @@ class Game {
                 <!-- Seta indicando poder de destruição -->
                 <path d="M16 10 L16 8" stroke="#f1c40f" stroke-width="2" fill="none"/>
                 <path d="M14 8 L16 6 L18 8" fill="#f1c40f"/>
+            </svg>`,
+            
+            'speed_boost': `<svg width="32" height="32" viewBox="0 0 32 32">
+                <!-- Plataforma base -->
+                <rect x="2" y="26" width="28" height="4" fill="#ff6b35" stroke="#d63031" stroke-width="1"/>
+                <rect x="1" y="25" width="30" height="2" fill="#fdcb6e"/>
+                <rect x="1" y="29" width="30" height="2" fill="#e17055"/>
+                
+                <!-- Símbolo de velocidade aumentada -->
+                <!-- Ondas de velocidade (de ponta cabeça) -->
+                <path d="M8 20 Q16 16 24 20" stroke="white" stroke-width="1.5" fill="none" opacity="0.7"/>
+                <path d="M8 16 Q16 12 24 16" stroke="white" stroke-width="1.5" fill="none" opacity="0.7"/>
+                <path d="M8 12 Q16 8 24 12" stroke="white" stroke-width="1.5" fill="none" opacity="0.7"/>
             </svg>`,
             
             'repulsor_shield': `<svg width="32" height="32" viewBox="0 0 32 32">
@@ -4296,6 +4322,9 @@ class Game {
                     break;
                 case 'zigzag_stabilizer':
                     // Estabilizador de Zigue-zague - efeito passivo aplicado no updateBalls
+                    break;
+                case 'speed_boost':
+                    // Impulso de Velocidade - efeito passivo aplicado no updatePaddle
                     break;
             }
         });
