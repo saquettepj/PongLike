@@ -161,7 +161,9 @@ class Game {
             invisible: false,
             invisibleTimer: 0,
             invisibleCycle: 0, // 0 = visível, 1 = invisível
-            zigzagTimer: 0
+            zigzagTimer: 0,
+            zigzagPattern: 0, // 0 = padrão normal, 1 = padrão invertido
+            zigzagInverted: false // Inversão horizontal específica do zigzag
         };
         
         // Timers para upgrades especiais
@@ -191,7 +193,7 @@ class Game {
         // Configurações
         this.config = {
             paddleSpeed: 5.76, // +20% de 4.8 para 5.76
-            ballSpeed: 4.9368, // +10% de 4.488 para 4.9368
+            ballSpeed: 4.44312, // -10% de 4.9368 para 4.44312
             brickWidth: 60,
             brickHeight: 20,
             brickSpacing: 5,
@@ -1399,11 +1401,15 @@ class Game {
                     if (ball.savedZigzagState) {
                         this.ballEffects.zigzag = true;
                         this.ballEffects.zigzagTimer = 0;
+                        this.ballEffects.zigzagPattern = ball.savedZigzagPattern || 0;
+                        this.ballEffects.zigzagInverted = ball.savedZigzagInverted || false;
                     }
                     
                     delete ball.savedVx;
                     delete ball.savedVy;
                     delete ball.savedZigzagState;
+                    delete ball.savedZigzagPattern;
+                    delete ball.savedZigzagInverted;
                 }
             }
         });
@@ -1537,12 +1543,18 @@ class Game {
         // Tocar som místico
         this.playSound('chaoticMovement');
         
-        // Aplicar efeito do bloco roxo (zigue-zague) apenas se não estiver ativo
-        if (!this.ballEffects.zigzag) {
+        // Aplicar efeito do bloco roxo (zigue-zague) - alternar padrão se já estiver ativo
+        if (this.ballEffects.zigzag) {
+            this.ballEffects.zigzagPattern = this.ballEffects.zigzagPattern === 0 ? 1 : 0; // Alternar entre 0 e 1
+            this.ballEffects.zigzagTimer = 0; // Resetar timer para mudança imediata
+            this.ballEffects.zigzagInverted = !this.ballEffects.zigzagInverted; // Alternar inversão: uma sim, uma não
+        } else {
             setTimeout(() => {
                 if (!this.ballEffects.zigzag) {
                     this.ballEffects.zigzag = true;
                     this.ballEffects.zigzagTimer = 0;
+                    this.ballEffects.zigzagPattern = 0;
+                    this.ballEffects.zigzagInverted = false; // Começar sem inversão
                 }
             }, 1000); // 1 segundo depois
         }
@@ -1707,17 +1719,29 @@ class Game {
                 vx = -vx;
             }
             
-            // Efeito de zigue-zague (amplitude ainda menor)
+            // Efeito de zigue-zague simplificado
             if (this.ballEffects.zigzag) {
-                this.ballEffects.zigzagTimer += 0.0404;
+                this.ballEffects.zigzagTimer += 0.05; // Timer mais lento para movimento mais suave
                 
                 // Aplicar redução de 20% se tiver o upgrade Estabilizador de Zigue-zague
                 const zigzagReduction = this.hasUpgrade('zigzag_stabilizer') ? 0.8 : 1.0;
                 
-                // Movimento horizontal com amplitude reduzida em 10% (de 4.0340475 para 3.63064275)
-                vx += Math.sin(this.ballEffects.zigzagTimer * 0.323) * 3.63064275 * zigzagReduction;
-                // Movimento vertical mais sutil com amplitude reduzida em 10% (de 0.606375 para 0.5457375)
-                vy += Math.cos(this.ballEffects.zigzagTimer * 0.243) * 0.5457375 * zigzagReduction;
+                
+                // Aplicar inversão horizontal específica do zigzag
+                if (this.ballEffects.zigzagInverted) {
+                    vx = -vx; // Inverter direção horizontal da bolinha
+                }
+                
+                // Aplicar padrão de zigzag baseado no zigzagPattern
+                if (this.ballEffects.zigzagPattern === 0) {
+                    // Padrão normal: movimento em S para a direita (mais suave)
+                    vx += Math.sin(this.ballEffects.zigzagTimer * 0.3) * 2.5 * zigzagReduction;
+                    vy += Math.cos(this.ballEffects.zigzagTimer * 0.2) * 0.8 * zigzagReduction;
+                } else {
+                    // Padrão invertido: movimento em S para a esquerda (simétrico)
+                    vx += -Math.sin(this.ballEffects.zigzagTimer * 0.3) * 2.5 * zigzagReduction;
+                    vy += -Math.cos(this.ballEffects.zigzagTimer * 0.2) * 0.8 * zigzagReduction;
+                }
             }
             
 
@@ -2562,7 +2586,7 @@ class Game {
                     // Ativar efeito aleatório
                     const effects = ['yellow', 'green', 'purple', 'gray'];
                     const randomEffect = effects[Math.floor(Math.random() * effects.length)];
-                    this.applyBrickEffect(randomEffect);
+                    this.applyBrickEffectForActivator(randomEffect);
                     
                     // Ganhar moedas baseadas na cor do efeito ativado
                     const coinsEarned = this.getBrickReward(randomEffect);
@@ -2625,6 +2649,8 @@ class Game {
                         ball.timePaused = true;
                         ball.timePauseCountdown = 180; // 3 segundos (60 FPS * 3)
                         ball.savedZigzagState = wasZigzagActive; // Salvar estado do zig-zag
+                        ball.savedZigzagPattern = this.ballEffects.zigzagPattern; // Salvar estado do padrão
+                        ball.savedZigzagInverted = this.ballEffects.zigzagInverted; // Salvar estado da inversão
                     });
                     
                     // Iniciar cooldown usando tempo real
@@ -3128,11 +3154,66 @@ class Game {
                 this.ballEffects.inverted = !this.ballEffects.inverted;
                 break;
             case 'purple':
-                // Zigue-zague - só aplica se não estiver já ativo
+                // Zigue-zague + Inversão horizontal específica do zigzag (alternada)
+                
+                // Ativar zigzag se não estiver ativo
                 if (!this.ballEffects.zigzag) {
                     this.ballEffects.zigzag = true;
+                    this.ballEffects.zigzagPattern = 0; // Começar com padrão 0
                     this.ballEffects.zigzagTimer = 0;
+                    this.ballEffects.zigzagInverted = false; // Começar sem inversão
+                } else {
+                    // Alternar padrão: 0 -> 1 ou 1 -> 0
+                    this.ballEffects.zigzagPattern = 1 - this.ballEffects.zigzagPattern;
+                    this.ballEffects.zigzagTimer = 0; // Resetar para mudança imediata
                 }
+                
+                // Alternar inversão horizontal: uma sim, uma não
+                this.ballEffects.zigzagInverted = !this.ballEffects.zigzagInverted;
+                break;
+            case 'gray':
+                // Invisibilidade - só aplica se não estiver já ativo
+                if (!this.ballEffects.invisible) {
+                    this.ballEffects.invisible = true;
+                    this.ballEffects.invisibleTimer = 60; // Começar com 1s invisível
+                    this.ballEffects.invisibleCycle = 1; // Começar invisível
+                }
+                break;
+        }
+    }
+    
+    applyBrickEffectForActivator(color) {
+        // Versão do applyBrickEffect para o Ativador de Efeito
+        // Não inclui inversão horizontal para o efeito roxo
+        switch (color) {
+            case 'blue':
+                // Efeito padrão - nenhum
+                break;
+
+            case 'yellow':
+                // Só aplica se não estiver já ativo
+                if (this.ballEffects.speedMultiplier <= 1) {
+                    this.ballEffects.speedMultiplier *= 1.4;
+                }
+                break;
+            case 'green':
+                // Inverter direção horizontal (sempre alterna)
+                this.ballEffects.inverted = !this.ballEffects.inverted;
+                break;
+            case 'purple':
+                // Zigue-zague SEM inversão horizontal (apenas para Ativador de Efeito)
+                
+                // Ativar zigzag se não estiver ativo
+                if (!this.ballEffects.zigzag) {
+                    this.ballEffects.zigzag = true;
+                    this.ballEffects.zigzagPattern = 0; // Começar com padrão 0
+                    this.ballEffects.zigzagTimer = 0;
+                } else {
+                    // Alternar padrão: 0 -> 1 ou 1 -> 0
+                    this.ballEffects.zigzagPattern = 1 - this.ballEffects.zigzagPattern;
+                    this.ballEffects.zigzagTimer = 0; // Resetar para mudança imediata
+                }
+                // NÃO alterar zigzagInverted - sem inversão horizontal
                 break;
             case 'gray':
                 // Invisibilidade - só aplica se não estiver já ativo
@@ -3181,7 +3262,9 @@ class Game {
             invisible: false,
             invisibleTimer: 0,
             invisibleCycle: 0,
-            zigzagTimer: 0
+            zigzagTimer: 0,
+            zigzagPattern: 0,
+            zigzagInverted: false
         };
     }
     
