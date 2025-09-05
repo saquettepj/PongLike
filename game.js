@@ -108,7 +108,7 @@ class Game {
         this.resumeCountdownActive = false;
         
         // Sistema de movimento caótico
-        this.chaoticMovementTimer = 0; // Timer para mudança de direção (20 segundos)
+        this.chaoticMovementTimer = 0; // Timer para mudança de direção (10 segundos)
         
         // Poderes desativados pelo modificador "Sem Efeitos Bons"
         this.disabledPowers = [];
@@ -1211,9 +1211,9 @@ class Game {
         this.updateFragments();
         this.updatePowerUps();
         this.updateUpgradeEffects();
-        this.updateMovingBricks();
-        this.updateCountdown();
-        this.updateChaoticMovementTimer();
+        this.updateMovingBricks(deltaTime);
+        this.updateCountdown(deltaTime);
+        this.updateChaoticMovementTimer(deltaTime);
         this.checkCollisions();
         this.updateBallEffects();
         
@@ -1410,7 +1410,7 @@ class Game {
         // Eco da Bolinha - apenas efeito de destruir bloco aleatório (sem segunda bolinha)
     }
     
-    updateMovingBricks() {
+    updateMovingBricks(deltaTime = 1/60) {
         this.bricks.forEach(brick => {
             if (!brick.destroyed) {
                 // Tijolos móveis normais
@@ -1433,7 +1433,7 @@ class Game {
                     }
                     
                     // Incrementar timer de mudança de direção
-                    this.redPanicDirectionTimer += 1/60; // Usar tempo fixo para consistência
+                    this.redPanicDirectionTimer += deltaTime; // Usar tempo real baseado em deltaTime
                     
                     // Mudar direção aleatoriamente a cada 3 segundos
                     if (this.redPanicDirectionTimer >= 3) {
@@ -1470,14 +1470,14 @@ class Game {
         });
     }
     
-    updateCountdown() {
+    updateCountdown(deltaTime = 1/60) {
         if (this.countdownActive && this.countdownTimer > 0) {
-            this.countdownTimer -= 1/60; // Usar tempo fixo para consistência
+            this.countdownTimer -= deltaTime; // Usar tempo real baseado em deltaTime
             
             if (this.countdownTimer <= 0) {
                 // Tempo esgotado - perder vida
                 this.loseLife();
-                this.countdownTimer = 120; // Resetar timer para 120 segundos
+                this.countdownTimer = 60; // Resetar timer para 60 segundos
                 
                 // Se Pânico Vermelho estiver ativo, resetar também seu timer
                 if (this.phaseModifiers.redPanic) {
@@ -1487,12 +1487,12 @@ class Game {
         }
     }
     
-    updateChaoticMovementTimer() {
+    updateChaoticMovementTimer(deltaTime = 1/60) {
         if (this.phaseModifiers.chaoticMovement) {
-            this.chaoticMovementTimer += 1/60; // Usar tempo fixo para consistência
+            this.chaoticMovementTimer += deltaTime; // Usar tempo real baseado em deltaTime
             
-            // Mudar direção a cada 20 segundos
-            if (this.chaoticMovementTimer >= 20) {
+            // Mudar direção a cada 10 segundos
+            if (this.chaoticMovementTimer >= 10) {
                 this.chaoticMovementTimer = 0; // Resetar timer
                 this.changeBallDirection();
             }
@@ -1652,7 +1652,7 @@ class Game {
                 // Só aplicar timer de liberação automática se o Multi-bola estiver ativo
                 if (this.hasUpgrade('multi_ball')) {
                     // Incrementar timer de liberação automática
-                    ball.attachedTimer += 1/60; // Usar tempo fixo para consistência
+                    ball.attachedTimer += deltaTime; // Usar tempo real baseado em deltaTime
                     
                     // Liberar automaticamente após 2 segundos
                     if (ball.attachedTimer >= 2) {
@@ -1686,7 +1686,7 @@ class Game {
             let vx = ball.vx * speedMultiplier;
             let vy = ball.vy * speedMultiplier;
             
-            // Modificador "Movimento Caótico" - direção muda a cada 20 segundos
+            // Modificador "Movimento Caótico" - direção muda a cada 10 segundos
             // (a mudança de direção é feita em updateChaoticMovementTimer)
             
             // Efeito de inversão
@@ -2148,7 +2148,7 @@ class Game {
                     
                     // Resetar contador de contagem regressiva se ativo quando o bloco vermelho troca de posição
                     if (this.phaseModifiers.countdown && this.countdownActive) {
-                        this.countdownTimer = 120; // Resetar para 120 segundos
+                        this.countdownTimer = 60; // Resetar para 60 segundos
                     }
                     
                     // Pânico Vermelho - restaurar blocos quando troca de posição
@@ -3432,7 +3432,7 @@ class Game {
         
         // Configurações específicas do modificador
         if (randomModifier === 'countdown') {
-            this.countdownTimer = 120; // 120 segundos
+            this.countdownTimer = 60; // 60 segundos
             this.countdownActive = true;
         } else if (randomModifier === 'noGoodEffects') {
             // Desativar metade dos poderes aleatoriamente
@@ -5254,12 +5254,12 @@ class Game {
         const seconds = timeLeft % 60;
         const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
         
-        // Cor baseada no tempo restante
-        let color = '#2ecc71'; // Verde
-        if (timeLeft <= 30) {
-            color = '#e74c3c'; // Vermelho
-        } else if (timeLeft <= 60) {
-            color = '#f39c12'; // Laranja
+        // Cor baseada no tempo restante - Verde → Amarelo → Vermelho
+        let color = '#2ecc71'; // Verde (tempo alto)
+        if (timeLeft <= 10) {
+            color = '#e74c3c'; // Vermelho (tempo crítico)
+        } else if (timeLeft <= 30) {
+            color = '#f39c12'; // Amarelo/Laranja (tempo médio)
         }
         
         // Fundo semi-transparente
@@ -5284,16 +5284,16 @@ class Game {
     
     drawChaoticMovementIndicator() {
         // Calcular tempo restante para mudança de direção
-        const timeLeft = Math.ceil(20 - this.chaoticMovementTimer);
+        const timeLeft = Math.ceil(10 - this.chaoticMovementTimer);
         const seconds = timeLeft % 60;
         const timeString = `${seconds}s`;
         
-        // Cor baseada no tempo restante (igual ao drawCountdownTimer)
-        let color = '#2ecc71'; // Verde
-        if (timeLeft <= 5) {
-            color = '#e74c3c'; // Vermelho
-        } else if (timeLeft <= 10) {
-            color = '#f39c12'; // Laranja
+        // Cor baseada no tempo restante - Verde → Amarelo → Vermelho
+        let color = '#2ecc71'; // Verde (tempo alto)
+        if (timeLeft <= 3) {
+            color = '#e74c3c'; // Vermelho (tempo crítico)
+        } else if (timeLeft <= 6) {
+            color = '#f39c12'; // Amarelo/Laranja (tempo médio)
         }
         
         // Fundo semi-transparente (mesma posição do drawCountdownTimer)
