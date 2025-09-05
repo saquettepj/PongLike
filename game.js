@@ -775,6 +775,14 @@ class Game {
                 type: 'ball',
                 icon: this.getUpgradeIcon('shatter_glass')
             },
+            {
+                id: 'combo_power',
+                name: 'Combo Power',
+                description: 'Todos os poderes que destroem blocos ativam o combo quando destroem um bloco',
+                price: 180,
+                type: 'utility',
+                icon: this.getUpgradeIcon('combo_power')
+            },
             // Upgrades de Utilidade (21-26)
             {
                 id: 'extra_life',
@@ -1939,6 +1947,9 @@ class Game {
                         this.updateUI(); // Atualizar UI em tempo real
                         this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, this.getBrickColorValue(brick.color));
                         
+                        // Ativar combo se Combo Power estiver ativo
+                        this.activateComboFromPower(brick);
+                        
                         // Reduzir poder do projétil
                         powerUp.power -= 0.33;
                         if (powerUp.power <= 0) {
@@ -1973,6 +1984,9 @@ class Game {
                         this.money += this.getBrickReward(brick.color);
                         this.updateUI(); // Atualizar UI em tempo real
                         this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, this.getBrickColorValue(brick.color));
+                        
+                        // Ativar combo se Combo Power estiver ativo
+                        this.activateComboFromPower(brick);
                         
                         // Remover projétil
                         this.powerUps.splice(index, 1);
@@ -2173,6 +2187,9 @@ class Game {
             }
             this.money += this.getBrickReward(brick.color);
             this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, this.getBrickColorValue(brick.color));
+            
+            // Ativar combo se Combo Power estiver ativo
+            this.activateComboFromPower(brick);
             return; // Não muda direção da bolinha
         }
         
@@ -2196,6 +2213,9 @@ class Game {
                 }
                 this.money += this.getBrickReward(randomBrick.color);
                 this.createParticles(randomBrick.x + randomBrick.width / 2, randomBrick.y + randomBrick.height / 2, this.getBrickColorValue(randomBrick.color));
+                
+                // Ativar combo se Combo Power estiver ativo
+                this.activateComboFromPower(randomBrick);
             }
         }
         
@@ -2417,6 +2437,9 @@ class Game {
                 }
                 this.money += this.getBrickReward(randomBrick.color);
                 this.createParticles(randomBrick.x + randomBrick.width / 2, randomBrick.y + randomBrick.height / 2, this.getBrickColorValue(randomBrick.color));
+                
+                // Ativar combo se Combo Power estiver ativo
+                this.activateComboFromPower(randomBrick);
             }
         }
         
@@ -2441,6 +2464,9 @@ class Game {
                 }
                 this.money += this.getBrickReward(mirrorBrick.color);
                 this.createParticles(mirrorBrick.x + mirrorBrick.width / 2, mirrorBrick.y + mirrorBrick.height / 2, this.getBrickColorValue(mirrorBrick.color));
+                
+                // Ativar combo se Combo Power estiver ativo
+                this.activateComboFromPower(mirrorBrick);
             }
         }
         
@@ -2478,6 +2504,9 @@ class Game {
                 }
                 this.money += this.getBrickReward(behindBrick.color);
                 this.createParticles(behindBrick.x + behindBrick.width / 2, behindBrick.y + behindBrick.height / 2, this.getBrickColorValue(behindBrick.color));
+                
+                // Ativar combo se Combo Power estiver ativo
+                this.activateComboFromPower(behindBrick);
             }
             // Se não houver bloco na linha de cima, o upgrade não faz nada adicional
         }
@@ -2535,6 +2564,9 @@ class Game {
                     }
                     this.money += this.getBrickReward(brick.color);
                     this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, this.getBrickColorValue(brick.color));
+                    
+                    // Ativar combo se Combo Power estiver ativo
+                    this.activateComboFromPower(brick);
                 }
             }
         });
@@ -2578,6 +2610,9 @@ class Game {
                     }
                     this.money += this.getBrickReward(targetBrick.color);
                     this.createParticles(targetBrick.x + targetBrick.width / 2, targetBrick.y + targetBrick.height / 2, this.getBrickColorValue(targetBrick.color));
+                    
+                    // Ativar combo se Combo Power estiver ativo
+                    this.activateComboFromPower(targetBrick);
                 }
             }
         });
@@ -2615,6 +2650,34 @@ class Game {
                 size: Math.random() * 3 + 2
             });
         }
+    }
+    
+    activateComboFromPower(brick) {
+        // Função para ativar combo quando um poder destrói um bloco
+        if (!this.hasUpgrade('combo_power')) return;
+        
+        const currentTime = Date.now();
+        const timeSinceLastHit = currentTime - this.lastBrickHitTime;
+        
+        // Se passou mais de 2 segundos desde a última colisão, resetar combo
+        if (timeSinceLastHit > 2000) {
+            this.currentPhaseCombo = 0;
+        }
+        
+        // Incrementar combo atual da fase
+        this.currentPhaseCombo++;
+        this.lastBrickHitTime = currentTime;
+        
+        // Atualizar combo máximo da fase
+        if (this.currentPhaseCombo > this.maxPhaseCombo) {
+            this.maxPhaseCombo = this.currentPhaseCombo;
+        }
+        
+        // Sempre criar texto COMBO! quando Combo Power estiver ativo
+        this.createComboText(brick.x + brick.width / 2, brick.y + brick.height / 2);
+        
+        // Atualizar UI
+        this.updateUI();
     }
     
     updateActivatablePowers() {
@@ -3233,6 +3296,21 @@ class Game {
                 <!-- Efeito de luz no vidro central -->
                 <rect x="12" y="12" width="2" height="4" fill="#ffffff" opacity="0.6"/>
                 <rect x="18" y="12" width="2" height="4" fill="#ffffff" opacity="0.4"/>
+            </svg>`,
+            
+            'combo_power': `<svg width="32" height="32" viewBox="0 0 32 32">
+                <!-- Símbolo de combo central (estrela) -->
+                <path d="M18 4 L20 8 L24 8 L21 11 L22 15 L18 13 L14 15 L15 11 L12 8 L16 8 Z" fill="#f39c12" stroke="#e67e22" stroke-width="1"/>
+                
+                <!-- Múltiplos blocos representando combo -->
+                <rect x="4" y="14" width="6" height="4" fill="#3498db" stroke="#2980b9" stroke-width="0.5"/>
+                <rect x="11" y="14" width="6" height="4" fill="#e74c3c" stroke="#c0392b" stroke-width="0.5"/>
+                <rect x="18" y="14" width="6" height="4" fill="#2ecc71" stroke="#27ae60" stroke-width="0.5"/>
+                <rect x="25" y="14" width="6" height="4" fill="#f1c40f" stroke="#f39c12" stroke-width="0.5"/>
+                
+                <!-- Partículas de energia -->
+                <circle cx="14" cy="6" r="1" fill="#f39c12" opacity="0.8"/>
+                <circle cx="22" cy="6" r="1" fill="#f39c12" opacity="0.8"/>
             </svg>`,
             'money_saver': `<svg width="32" height="32" viewBox="0 0 32 32">
                 <rect x="6" y="8" width="20" height="16" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
@@ -4210,6 +4288,9 @@ class Game {
         // Resetar upgrades ativos
         this.activeUpgrades = [];
         
+        // Resetar upgrades do modo desenvolvedor
+        this.devUpgrades = {};
+        
         // Resetar efeitos ativos de upgrades
         this.activeUpgradeEffects = {
             superMagnet: { active: false, startTime: 0, duration: 500, cooldown: 10000 }, 
@@ -4240,6 +4321,8 @@ class Game {
         // Resetar interface do modo desenvolvedor se necessário
         if (this.developerMode) {
             this.initializeDeveloperMode();
+            // Atualizar visual dos upgrades após reset
+            this.updateDevUpgradesVisual();
         }
     }
     
@@ -4637,6 +4720,14 @@ class Game {
                 price: 200,
                 type: 'ball',
                 icon: this.getUpgradeIcon('shatter_glass')
+            },
+            {
+                id: 'combo_power',
+                name: 'Combo Power',
+                description: 'Todos os poderes que destroem blocos ativam o combo quando destroem um bloco',
+                price: 180,
+                type: 'utility',
+                icon: this.getUpgradeIcon('combo_power')
             }
         ];
         

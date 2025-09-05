@@ -131,24 +131,25 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 20. **Bolinha Fantasma** - Quando a bolinha cai pela primeira vez em cada fase, ela reaparece no topo do campo (250 🪙)
 21. **Bolinha Dimensional** - Pode atravessar tijolos sem quebrá-los (Mantenha espaço pressionado) (até 3s, cooldown 15s) (140 🪙)
 22. **Estilhaços** - 50% de chance de estilhaçar o vidro de um bloco, causando efeito explosivo (200 🪙)
+23. **Combo Power** - Todos os poderes que destroem blocos ativam o combo quando destroem um bloco (180 🪙)
 
-#### 🛡️ Upgrades de Utilidade (8 total)
-22. **Coração Extra** - Ganha uma vida a cada fase (180 🪙)
-23. **Rede de Segurança** - Barreira temporária por 5s (cooldown 15s) (300 🪙)
-24. **Amuleto da Sorte** - 25% de chance de dobrar dinheiro ao destruir blocos (80 🪙)
-25. **Seguro de Vida** - Ganha 100 moedas ao perder vida (150 🪙)
-26. **Reciclagem** - Tijolos azuis podem reaparecer (30 🪙)
-27. **Conversor de Risco** - Diminui vida do bloco vermelho para 3, muda velocidade da bolinha entre 80%-140% a cada 5s e desativa a troca de posição do bloco vermelho (100 🪙)
-28. **Visão Acelerada** - Reduz velocidade dos fragmentos brancos em 40% (120 🪙)
-29. **Estabilizador de Zigue-zague** - Reduz a curva do efeito de zigue-zague em 20% (110 🪙)
+#### 🛡️ Upgrades de Utilidade (9 total)
+24. **Coração Extra** - Ganha uma vida a cada fase (180 🪙)
+25. **Rede de Segurança** - Barreira temporária por 5s (cooldown 15s) (300 🪙)
+26. **Amuleto da Sorte** - 25% de chance de dobrar dinheiro ao destruir blocos (80 🪙)
+27. **Seguro de Vida** - Ganha 100 moedas ao perder vida (150 🪙)
+28. **Reciclagem** - Tijolos azuis podem reaparecer (30 🪙)
+29. **Conversor de Risco** - Diminui vida do bloco vermelho para 3, muda velocidade da bolinha entre 80%-140% a cada 5s e desativa a troca de posição do bloco vermelho (100 🪙)
+30. **Visão Acelerada** - Reduz velocidade dos fragmentos brancos em 40% (120 🪙)
+31. **Estabilizador de Zigue-zague** - Reduz a curva do efeito de zigue-zague em 20% (110 🪙)
 
 #### ⭐ Upgrades Especiais (6 total)
-30. **Dano Estrutural** - A primeira batida no bloco vermelho dá 3 de dano (180 🪙)
-31. **Visão de Calor** - A bolinha invisível deixa um rastro térmico muito mais visível (100 🪙)
-32. **Reversão Controlada** - Desativa completamente o efeito de Inversão do tijolo verde (120 🪙)
-33. **Bolinha Prima** - A cada número primo de batidas, destrói um bloco aleatório (não vermelho) (120 🪙)
-34. **Investidor** - Menos 1 vida máxima, mas toda fase começa com +100 moedas (50 🪙)
-35. **Poupança** - Mantém até 50 moedas para a próxima fase (80 🪙)
+32. **Dano Estrutural** - A primeira batida no bloco vermelho dá 3 de dano (180 🪙)
+33. **Visão de Calor** - A bolinha invisível deixa um rastro térmico muito mais visível (100 🪙)
+34. **Reversão Controlada** - Desativa completamente o efeito de Inversão do tijolo verde (120 🪙)
+35. **Bolinha Prima** - A cada número primo de batidas, destrói um bloco aleatório (não vermelho) (120 🪙)
+36. **Investidor** - Menos 1 vida máxima, mas toda fase começa com +100 moedas (50 🪙)
+37. **Poupança** - Mantém até 50 moedas para a próxima fase (80 🪙)
 
 ## 🎮 Regras do Jogo
 
@@ -223,7 +224,7 @@ brick-rogue/
 
 - ✅ Sistema completo de física da bolinha
 - ✅ 6 tipos de tijolos com efeitos únicos
-- ✅ Sistema de upgrades roguelike (37 upgrades)
+- ✅ Sistema de upgrades roguelike (38 upgrades)
 - ✅ Interface de usuário responsiva
 - ✅ Sistema de partículas e efeitos visuais
 - ✅ Persistência de recordes
