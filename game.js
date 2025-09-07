@@ -714,7 +714,7 @@ class Game {
             {
                 id: 'mirror_ball',
                 name: 'Bolinha Espelhada',
-                description: 'Destrói bloco simétrico ao quebrar um (apenas nos primeiros 2 minutos de cada fase)',
+                description: 'Destrói bloco simétrico ao quebrar um (apenas nos primeiros 30 segundos de cada fase)',
                 price: 250,
                 type: 'ball',
                 icon: this.getUpgradeIcon('mirror_ball')
@@ -827,7 +827,7 @@ class Game {
             {
                 id: 'recycling',
                 name: 'Reciclagem',
-                description: 'Tijolos azuis podem reaparecer',
+                description: 'Tijolos azuis podem reaparecer, concedendo 5 moedas',
                 price: 30,
                 type: 'utility',
                 icon: this.getUpgradeIcon('recycling')
@@ -1858,12 +1858,16 @@ class Game {
         this.particles.forEach((particle, index) => {
             particle.x += particle.vx * deltaTime * 60;
             particle.y += particle.vy * deltaTime * 60;
-            particle.life--;
-            particle.alpha = particle.life / particle.maxLife;
             
-            if (particle.life <= 0) {
+            // Verificar se a partícula expirou usando tempo real
+            const currentTime = Date.now();
+            const elapsedTime = currentTime - particle.startTime;
+            if (elapsedTime >= particle.life) {
                 this.particles.splice(index, 1);
+                return;
             }
+            
+            particle.alpha = 1 - (elapsedTime / particle.life);
         });
     }
     
@@ -1871,19 +1875,23 @@ class Game {
         this.comboTexts.forEach((comboText, index) => {
             comboText.x += comboText.vx;
             comboText.y += comboText.vy;
-            comboText.life--;
-            comboText.alpha = comboText.life / comboText.maxLife;
+            
+            // Verificar se o texto expirou usando tempo real
+            const currentTime = Date.now();
+            const elapsedTime = currentTime - comboText.startTime;
+            if (elapsedTime >= comboText.life) {
+                this.comboTexts.splice(index, 1);
+                return;
+            }
+            
+            comboText.alpha = 1 - (elapsedTime / comboText.life);
             
             // Efeito de escala (cresce e depois diminui)
-            const progress = 1 - (comboText.life / comboText.maxLife);
+            const progress = elapsedTime / comboText.life;
             if (progress < 0.3) {
                 comboText.scale = 1 + progress * 2; // Cresce até 1.6
             } else {
                 comboText.scale = 1.6 - (progress - 0.3) * 0.6; // Diminui até 1
-            }
-            
-            if (comboText.life <= 0) {
-                this.comboTexts.splice(index, 1);
             }
         });
     }
@@ -1898,7 +1906,14 @@ class Game {
             
             fragment.x += fragment.vx * speedMultiplier;
             fragment.y += fragment.vy * speedMultiplier;
-            fragment.life--;
+            
+            // Verificar se o fragmento expirou usando tempo real
+            const currentTime = Date.now();
+            const elapsedTime = currentTime - fragment.startTime;
+            if (elapsedTime >= fragment.life) {
+                this.fragments.splice(index, 1);
+                return;
+            }
             
             // Verificar colisão com a plataforma
             if (fragment.y + fragment.size > this.paddle.y && 
@@ -1915,8 +1930,8 @@ class Game {
                 return;
             }
             
-            // Remover se sair da tela ou vida acabar
-            if (fragment.y > this.height || fragment.life <= 0) {
+            // Remover se sair da tela
+            if (fragment.y > this.height) {
                 this.fragments.splice(index, 1);
             }
         });
@@ -1927,7 +1942,14 @@ class Game {
             // Atualizar posição baseada no tipo
             if (powerUp.type === 'charged_shot') {
                 powerUp.y += powerUp.vy;
-                powerUp.life--;
+                
+                // Verificar se o projétil expirou usando tempo real
+                const currentTime = Date.now();
+                const elapsedTime = currentTime - powerUp.startTime;
+                if (elapsedTime >= powerUp.life) {
+                    this.powerUps.splice(index, 1);
+                    return;
+                }
                 
                 // Verificar colisão com tijolos
                 this.bricks.forEach(brick => {
@@ -1962,13 +1984,20 @@ class Game {
                     }
                 });
                 
-                // Remover se sair da tela ou vida acabar
-                if (powerUp.y < 0 || powerUp.life <= 0) {
+                // Remover se sair da tela
+                if (powerUp.y < 0) {
                     this.powerUps.splice(index, 1);
                 }
             } else if (powerUp.type === 'cannon_shot') {
                 powerUp.y += powerUp.vy;
-                powerUp.life--;
+                
+                // Verificar se o projétil expirou usando tempo real
+                const currentTime = Date.now();
+                const elapsedTime = currentTime - powerUp.startTime;
+                if (elapsedTime >= powerUp.life) {
+                    this.powerUps.splice(index, 1);
+                    return;
+                }
                 
                 // Verificar colisão com tijolos
                 this.bricks.forEach(brick => {
@@ -2000,8 +2029,8 @@ class Game {
                     }
                 });
                 
-                // Remover se sair da tela ou vida acabar
-                if (powerUp.y < 0 || powerUp.life <= 0) {
+                // Remover se sair da tela
+                if (powerUp.y < 0) {
                     this.powerUps.splice(index, 1);
                 }
             } else {
@@ -2118,7 +2147,8 @@ class Game {
                     vy: -3.6, // +20% de -3.0 para -3.6
                     radius: 3,
                     type: 'cannon_shot',
-                    life: 250
+                    life: 2000, // 2 segundos em milissegundos
+                    startTime: Date.now()
                 });
                 
                 this.powerUps.push({
@@ -2128,7 +2158,8 @@ class Game {
                     vy: -3.6, // +20% de -3.0 para -3.6
                     radius: 3,
                     type: 'cannon_shot',
-                    life: 250
+                    life: 2000, // 2 segundos em milissegundos
+                    startTime: Date.now()
                 });
                 
                 this.playSound('laserShot');
@@ -2322,10 +2353,11 @@ class Game {
                     vx: (Math.random() - 0.5) * 4,
                     vy: (Math.random() - 0.5) * 4,
                     color: '#f1c40f',
-                    life: 60,
-                    maxLife: 60,
+                    life: 1000, // 1 segundo em milissegundos
+                    maxLife: 1000,
                     alpha: 1,
-                    size: Math.random() * 3 + 2
+                    size: Math.random() * 1.5 + 1, // Reduzido de 3+2 para 1.5+1
+                    startTime: Date.now()
                 });
             }
         }
@@ -2402,6 +2434,11 @@ class Game {
                 setTimeout(() => {
                     brick.destroyed = false;
                     brick.hits = 1;
+                    // Conceder 5 moedas quando o tijolo azul reaparecer
+                    this.money += 5;
+                    this.updateUI(); // Atualizar UI em tempo real
+                    // Criar efeito visual para mostrar a recompensa
+                    this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, '#f1c40f');
                 }, 1000);
             }
             
@@ -2461,8 +2498,8 @@ class Game {
             }
         }
         
-        // Bolinha Espelhada - destruir bloco simétrico (apenas nos primeiros 2 minutos da fase)
-        if (this.hasUpgrade('mirror_ball') && this.phaseTime <= 120) {
+        // Bolinha Espelhada - destruir bloco simétrico (apenas nos primeiros 30 segundos da fase)
+        if (this.hasUpgrade('mirror_ball') && this.phaseTime <= 30) {
             const centerX = this.width / 2;
             const mirrorX = centerX - (brick.x + brick.width / 2 - centerX);
             
@@ -2605,10 +2642,11 @@ class Game {
                 vx: Math.cos(angle) * speed,
                 vy: Math.sin(angle) * speed,
                 color: '#e74c3c',
-                life: 30,
-                maxLife: 30,
+                life: 500, // 0.5 segundos em milissegundos
+                maxLife: 500,
                 alpha: 1,
-                size: Math.random() * 6 + 3
+                size: Math.random() * 6 + 3, // Mantém tamanho grande para explosão
+                startTime: Date.now()
             });
         }
     }
@@ -2670,15 +2708,16 @@ class Game {
                 y: brick.y + brick.height / 2,
                 vx: Math.cos(angle) * speed,
                 vy: Math.sin(angle) * speed,
-                color: '#87ceeb', // Cor azul clara do vidro
-                life: 25,
-                maxLife: 25,
+                color: this.getBrickColorValue(brick.color), // Usa a cor do bloco que foi estilhaçado
+                life: 417, // 0.417 segundos em milissegundos (25/60 * 1000)
+                maxLife: 417,
                 alpha: 0.8,
-                size: Math.random() * 4 + 2
+                size: Math.random() * 4 + 2, // Mantém tamanho grande para estilhaço
+                startTime: Date.now()
             });
         }
         
-        // Criar partículas de explosão laranja
+        // Criar partículas de explosão laranja (efeito de impacto)
         for (let i = 0; i < 8; i++) {
             const angle = (i / 8) * Math.PI * 2;
             const speed = 2 + Math.random() * 3;
@@ -2687,11 +2726,12 @@ class Game {
                 y: brick.y + brick.height / 2,
                 vx: Math.cos(angle) * speed,
                 vy: Math.sin(angle) * speed,
-                color: '#f39c12',
-                life: 20,
-                maxLife: 20,
+                color: '#f39c12', // Mantém cor laranja para efeito de impacto
+                life: 333, // 0.333 segundos em milissegundos (20/60 * 1000)
+                maxLife: 333,
                 alpha: 0.9,
-                size: Math.random() * 3 + 2
+                size: Math.random() * 3 + 2, // Mantém tamanho grande para estilhaço
+                startTime: Date.now()
             });
         }
     }
@@ -2938,7 +2978,8 @@ class Game {
                 radius: 4,
                 power: 1,
                 type: 'charged_shot',
-                life: 350
+                life: 980, // 0.8 segundos em milissegundos
+                startTime: Date.now()
             });
             
             // Tocar som
@@ -3616,10 +3657,11 @@ class Game {
                 vx: (Math.random() - 0.5) * 19.2, // +20% de 16 para 19.2
                 vy: (Math.random() - 0.5) * 19.2, // +20% de 16 para 19.2
                 color: color,
-                life: 30,
-                maxLife: 30,
+                life: 500, // 0.5 segundos em milissegundos
+                maxLife: 500,
                 alpha: 1,
-                size: Math.random() * 4 + 2
+                size: Math.random() * 2 + 1, // Reduzido de 4+2 para 2+1
+                startTime: Date.now()
             });
         }
     }
@@ -3629,12 +3671,13 @@ class Game {
             x: x,
             y: y,
             text: 'COMBO!',
-            life: 120, // 2 segundos a 60 FPS
-            maxLife: 120,
+            life: 2000, // 2 segundos em milissegundos
+            maxLife: 2000,
             alpha: 1,
             scale: 1,
             vx: (Math.random() - 0.5) * 2, // Movimento aleatório leve
-            vy: -1 // Movimento para cima
+            vy: -1, // Movimento para cima
+            startTime: Date.now()
         });
     }
     
@@ -3688,13 +3731,14 @@ class Game {
             x: x,
             y: y,
             text: text,
-            life: 120, // 2 segundos a 60 FPS
-            maxLife: 120,
+            life: 2000, // 2 segundos em milissegundos
+            maxLife: 2000,
             alpha: 1,
             scale: 1,
             vx: (Math.random() - 0.5) * 2, // Movimento aleatório leve
             vy: -1, // Movimento para cima
-            color: color || '#ffffff' // Cor personalizada
+            color: color || '#ffffff', // Cor personalizada
+            startTime: Date.now()
         });
     }
     
@@ -3716,7 +3760,8 @@ class Game {
             vy: baseVy,
             size: 8,
             color: '#ffffff',
-            life: 300 // 5 segundos a 60fps
+            life: 4000, // 4 segundos em milissegundos
+            startTime: Date.now()
         });
     }
     
@@ -4381,7 +4426,7 @@ class Game {
         this.activeUpgradeEffects = {
             superMagnet: { active: false, startTime: 0, duration: 500, cooldown: 10000 }, 
             paddleDash: { active: false, startTime: 0, duration: 2000, cooldown: 8000 },
-            chargedShot: { active: false, startTime: 0, duration: 500, cooldown: 5000 },
+            chargedShot: { active: false, startTime: 0, duration: 2000, cooldown: 5000 },
             safetyNet: { active: false, startTime: 0, duration: 5000, cooldown: 15000 },
             effectActivator: { active: false, startTime: 0, duration: 500, cooldown: 5000 },
             cushionPaddle: { active: false, startTime: 0, duration: 3000, cooldown: 10000 },
@@ -4646,7 +4691,7 @@ class Game {
             {
                 id: 'mirror_ball',
                 name: 'Bolinha Espelhada',
-                description: 'Quando a bolinha destrói um bloco, também destrói o bloco simetricamente posicionado do outro lado da tela (apenas nos primeiros 2 minutos de cada fase)',
+                description: 'Quando a bolinha destrói um bloco, também destrói o bloco simetricamente posicionado do outro lado da tela (apenas nos primeiros 30 segundos de cada fase)',
                 price: 250,
                 type: 'ball',
                 icon: this.getUpgradeIcon('mirror_ball')
@@ -4704,7 +4749,7 @@ class Game {
             {
                 id: 'recycling',
                 name: 'Reciclagem',
-                description: 'Tijolos azuis (comuns) têm 10% de chance de reaparecer após serem quebrados',
+                description: 'Tijolos azuis podem reaparecer, concedendo 5 moedas',
                 price: 30,
                 type: 'utility',
                 icon: this.getUpgradeIcon('recycling')

@@ -124,7 +124,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 12. **Bolinha Explosiva** - Explode se atingir tijolos amarelos ou vermelho (não afeta o núcleo vermelho) (250 🪙)
 13. **Eco da Bolinha** - Destrói um bloco aleatório adicional a cada batida (apenas em fases ímpares) (250 🪙)
 14. **Ativador de Efeito** - Ativa efeito aleatório dos blocos na bolinha e ganha moedas baseadas na cor do bloco do efeito ativado (cooldown 5s) (60 🪙)
-15. **Bolinha Espelhada** - Destrói bloco simétrico ao quebrar um (apenas nos primeiros 2 minutos) (250 🪙)
+15. **Bolinha Espelhada** - Destrói bloco simétrico ao quebrar um (apenas nos primeiros 30 segundos) (250 🪙)
 16. **Bolinha da Fortuna** - Bolinha dourada que dá +1 moeda por bloco (150 🪙)
 17. **Bolinha do Tempo** - Para a bolinha por 3 segundos. (cooldown 15s) (180 🪙)
 18. **Bolinha Prima** - Destrói bloco aleatório a cada número primo de batidas (120 🪙)
@@ -140,7 +140,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 25. **Rede de Segurança** - Barreira temporária por 5s (cooldown 15s) (300 🪙)
 26. **Amuleto da Sorte** - 25% de chance de dobrar dinheiro ao destruir blocos (80 🪙)
 27. **Seguro de Vida** - Ganha 100 moedas ao perder vida (150 🪙)
-28. **Reciclagem** - Tijolos azuis podem reaparecer (30 🪙)
+28. **Reciclagem** - Tijolos azuis podem reaparecer, concedendo 5 moedas (30 🪙)
 29. **Conversor de Risco** - Diminui vida do bloco vermelho para 3, muda velocidade da bolinha entre 80%-140% a cada 5s e desativa a troca de posição do bloco vermelho (100 🪙)
 30. **Visão Acelerada** - Reduz velocidade dos fragmentos brancos em 40% (120 🪙)
 31. **Estabilizador de Zigue-zague** - Reduz a curva do efeito de zigue-zague em 20% (110 🪙)
@@ -240,6 +240,7 @@ brick-rogue/
 - ✅ Múltiplas telas (menu, jogo, upgrades, game over)
 - ✅ Controles por mouse e teclado
 - ✅ Estilo pixel art 2.5D
+- ✅ Sistema de tempo real unificado (todos os elementos temporais usam milissegundos)
 
 ## 🚀 Deploy
 
