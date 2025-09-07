@@ -35,6 +35,7 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 - **Película de Vidro** (Fase 4+): 15% de chance em qualquer tijolo
   - Adiciona +1 vida extra ao tijolo
   - Efeito visual translúcido
+  - **Proteção Especial**: Blocos com vidro são imunes a upgrades que destroem blocos (exceto Estilhaço)
 
 ### Mecânicas Especiais
 - **Tijolos Móveis** (Fase 5+): 10% de chance por fileira de se mover horizontalmente
@@ -103,7 +104,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 - **Seleção Aleatória**: Os upgrades disponíveis mudam a cada fase
 - **Promoções**: A cada 3 fases, a loja entra em promoção com descontos de 20-40%
 
-### Upgrades Disponíveis (37 total)
+### Upgrades Disponíveis (38 total)
 
 #### 🏓 Upgrades de Plataforma (8 total)
 1. **Plataforma Larga** - Aumenta tamanho em 50% (150 🪙)
@@ -115,7 +116,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 7. **Impulso de Velocidade** - Aumenta a velocidade da plataforma em 25% (120 🪙)
 8. **Tiro Carregado** - Atira projétil perfurante imediatamente (cooldown 5s) (190 🪙)
 
-#### ⚽ Upgrades de Bolinha (15 total)
+#### ⚽ Upgrades de Bolinha (16 total)
 8. **Bolinha Perfurante** - Quebra tijolos azuis sem mudar direção (220 🪙)
 9. **Campo de Fricção** - Reduz velocidade em 10% (160 🪙)
 10. **Multi-bola** - Cria uma nova bolinha grudada na plataforma. Liberada automaticamente em 2 segundos. (cooldown 20s) (200 🪙)
@@ -132,6 +133,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 21. **Bolinha Dimensional** - Pode atravessar tijolos sem quebrá-los (Mantenha espaço pressionado) (até 3s, cooldown 15s) (140 🪙)
 22. **Estilhaços** - 50% de chance de estilhaçar o vidro de um bloco, causando efeito explosivo (200 🪙)
 23. **Combo Power** - Todos os poderes que destroem blocos ativam o combo quando destroem um bloco (180 🪙)
+24. **Quebra Blindagem** - Permite que todos os upgrades que destroem blocos também quebrem blocos com vidro (300 🪙)
 
 #### 🛡️ Upgrades de Utilidade (9 total)
 24. **Coração Extra** - Ganha uma vida a cada fase (180 🪙)
@@ -172,6 +174,12 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 - **Origem**: Criados por blocos brancos quando destruídos
 - **Pânico Vermelho**: Quando ativo sozinho, metade dos blocos azuis restaurados + bloco vermelho atiram fragmentos
 - **Perigo**: Fragmentos causam perda de vida se atingirem a plataforma
+
+### 🛡️ Sistema de Vidro e Blindagem
+- **Proteção de Vidro**: Blocos com película de vidro são imunes a upgrades que destroem blocos
+- **Exceção - Estilhaço**: O upgrade Estilhaço pode quebrar vidro (50% de chance)
+- **Quebra Blindagem**: Upgrade especial que permite que TODOS os upgrades que destroem blocos também quebrem vidro
+- **Upgrades Afetados**: Bolinha Explosiva, Eco da Bolinha, Bolinha Espelhada, Bolinha Perfurante, Quebra Atrás
 
 ### 🆕 Novas Mecânicas por Fase
 - **Fase 2+**: Ao acertar o bloco vermelho, gera 2-5 novos tijolos aleatórios
@@ -225,6 +233,7 @@ brick-rogue/
 - ✅ Sistema completo de física da bolinha
 - ✅ 6 tipos de tijolos com efeitos únicos
 - ✅ Sistema de upgrades roguelike (38 upgrades)
+- ✅ Sistema de vidro e blindagem com proteção especial
 - ✅ Interface de usuário responsiva
 - ✅ Sistema de partículas e efeitos visuais
 - ✅ Persistência de recordes

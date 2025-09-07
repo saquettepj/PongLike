@@ -690,7 +690,7 @@ class Game {
             {
                 id: 'explosive_ball',
                 name: 'Bolinha Explosiva',
-                description: 'Explode se atingir bloco vermelho ou amarelo',
+                description: 'A bolinha explode sempre ao atingir blocos amarelos ou vermelhos, destruindo tijolos adjacentes em uma pequena área',
                 price: 250,
                 type: 'ball',
                 icon: this.getUpgradeIcon('explosive_ball')
@@ -782,6 +782,14 @@ class Game {
                 price: 180,
                 type: 'utility',
                 icon: this.getUpgradeIcon('combo_power')
+            },
+            {
+                id: 'shield_breaker',
+                name: 'Quebra Blindagem',
+                description: 'Permite que todos os upgrades que destroem blocos também quebrem blocos com vidro',
+                price: 300,
+                type: 'ball',
+                icon: this.getUpgradeIcon('shield_breaker')
             },
             // Upgrades de Utilidade (21-26)
             {
@@ -1474,17 +1482,7 @@ class Game {
             }
         });
         
-        // Atualizar timer da Bolinha Explosiva
-        if (this.hasUpgrade('explosive_ball')) {
-            this.upgradeTimers.explosiveBall++;
-            if (this.upgradeTimers.explosiveBall >= 600) { // 10 segundos
-                this.upgradeTimers.explosiveBall = 0;
-                // Marcar bolinha para explosão
-                this.balls.forEach(ball => {
-                    ball.explosive = true;
-                });
-            }
-        }
+        // Timer da Bolinha Explosiva removido - agora explode sempre em blocos amarelos/vermelhos
         
         // Eco da Bolinha - apenas efeito de destruir bloco aleatório (sem segunda bolinha)
     }
@@ -1939,24 +1937,27 @@ class Game {
                         powerUp.y + powerUp.radius > brick.y &&
                         powerUp.y - powerUp.radius < brick.y + brick.height) {
                         
-                        // Quebrar tijolo
-                        brick.destroyed = true;
-                        // Atualizar contador de tijolos
-                        if (this.currentBrickCount[brick.color] > 0) {
-                            this.currentBrickCount[brick.color]--;
-                        }
-                        this.money += this.getBrickReward(brick.color);
-                        this.updateUI(); // Atualizar UI em tempo real
-                        this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, this.getBrickColorValue(brick.color));
-                        
-                        // Ativar combo se Combo Power estiver ativo
-                        this.activateComboFromPower(brick);
-                        
-                        // Reduzir poder do projétil
-                        powerUp.power -= 0.33;
-                        if (powerUp.power <= 0) {
-                            this.powerUps.splice(index, 1);
-                            return;
+                        // Só quebrar se não for bloco com vidro ou se tiver upgrade para quebrar vidro
+                        if (!brick.hasGlassCoating || this.canBreakGlass('charged_shot')) {
+                            // Quebrar tijolo
+                            brick.destroyed = true;
+                            // Atualizar contador de tijolos
+                            if (this.currentBrickCount[brick.color] > 0) {
+                                this.currentBrickCount[brick.color]--;
+                            }
+                            this.money += this.getBrickReward(brick.color);
+                            this.updateUI(); // Atualizar UI em tempo real
+                            this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, this.getBrickColorValue(brick.color));
+                            
+                            // Ativar combo se Combo Power estiver ativo
+                            this.activateComboFromPower(brick);
+                            
+                            // Reduzir poder do projétil
+                            powerUp.power -= 0.33;
+                            if (powerUp.power <= 0) {
+                                this.powerUps.splice(index, 1);
+                                return;
+                            }
                         }
                     }
                 });
@@ -1977,22 +1978,25 @@ class Game {
                         powerUp.y + powerUp.radius > brick.y &&
                         powerUp.y - powerUp.radius < brick.y + brick.height) {
                         
-                        // Quebrar tijolo
-                        brick.destroyed = true;
-                        // Atualizar contador de tijolos
-                        if (this.currentBrickCount[brick.color] > 0) {
-                            this.currentBrickCount[brick.color]--;
+                        // Só quebrar se não for bloco com vidro ou se tiver upgrade para quebrar vidro
+                        if (!brick.hasGlassCoating || this.canBreakGlass('attached_cannons')) {
+                            // Quebrar tijolo
+                            brick.destroyed = true;
+                            // Atualizar contador de tijolos
+                            if (this.currentBrickCount[brick.color] > 0) {
+                                this.currentBrickCount[brick.color]--;
+                            }
+                            this.money += this.getBrickReward(brick.color);
+                            this.updateUI(); // Atualizar UI em tempo real
+                            this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, this.getBrickColorValue(brick.color));
+                            
+                            // Ativar combo se Combo Power estiver ativo
+                            this.activateComboFromPower(brick);
+                            
+                            // Remover projétil
+                            this.powerUps.splice(index, 1);
+                            return;
                         }
-                        this.money += this.getBrickReward(brick.color);
-                        this.updateUI(); // Atualizar UI em tempo real
-                        this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, this.getBrickColorValue(brick.color));
-                        
-                        // Ativar combo se Combo Power estiver ativo
-                        this.activateComboFromPower(brick);
-                        
-                        // Remover projétil
-                        this.powerUps.splice(index, 1);
-                        return;
                     }
                 });
                 
@@ -2155,11 +2159,13 @@ class Game {
         let shouldDestroy = true;
         let extraDamage = 0;
         
-        // Bolinha Explosiva - explodir apenas ao atingir bloco vermelho ou amarelo
+        // Bolinha Explosiva - explodir sempre ao atingir bloco vermelho ou amarelo
         // Verificar ANTES do cooldown para garantir que funcione mesmo com vidro
-        if (ball.explosive && (brick.color === 'red' || brick.color === 'yellow')) {
-            this.explodeBall(ball);
-            ball.explosive = false;
+        if (this.hasUpgrade('explosive_ball') && (brick.color === 'red' || brick.color === 'yellow')) {
+            // Só explodir se não for bloco com vidro ou se tiver upgrade para quebrar vidro
+            if (!brick.hasGlassCoating || this.canBreakGlass('explosive_ball')) {
+                this.explodeBall(ball);
+            }
         }
         
         // Upgrade Estilhaços - 50% de chance de estilhaçar vidro de bloco
@@ -2183,17 +2189,20 @@ class Game {
         
         // Bolinha Perfurante - quebra tijolos azuis sem mudar direção
         if (this.hasUpgrade('piercing_ball') && brick.color === 'blue') {
-            brick.destroyed = true;
-            // Atualizar contador de tijolos
-            if (this.currentBrickCount[brick.color] > 0) {
-                this.currentBrickCount[brick.color]--;
+            // Só quebrar se não for bloco com vidro ou se tiver upgrade para quebrar vidro
+            if (!brick.hasGlassCoating || this.canBreakGlass('piercing_ball')) {
+                brick.destroyed = true;
+                // Atualizar contador de tijolos
+                if (this.currentBrickCount[brick.color] > 0) {
+                    this.currentBrickCount[brick.color]--;
+                }
+                this.money += this.getBrickReward(brick.color);
+                this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, this.getBrickColorValue(brick.color));
+                
+                // Ativar combo se Combo Power estiver ativo
+                this.activateComboFromPower(brick);
+                return; // Não muda direção da bolinha
             }
-            this.money += this.getBrickReward(brick.color);
-            this.createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, this.getBrickColorValue(brick.color));
-            
-            // Ativar combo se Combo Power estiver ativo
-            this.activateComboFromPower(brick);
-            return; // Não muda direção da bolinha
         }
         
         // Aplicar efeito do tijolo (com reversão controlada)
@@ -2209,16 +2218,19 @@ class Game {
             const availableBricks = this.bricks.filter(b => !b.destroyed && b.color !== 'red');
             if (availableBricks.length > 0) {
                 const randomBrick = availableBricks[Math.floor(Math.random() * availableBricks.length)];
-                randomBrick.destroyed = true;
-                // Atualizar contador de tijolos
-                if (this.currentBrickCount[randomBrick.color] > 0) {
-                    this.currentBrickCount[randomBrick.color]--;
+                // Só quebrar se não for bloco com vidro ou se tiver upgrade para quebrar vidro
+                if (!randomBrick.hasGlassCoating || this.canBreakGlass('prime_ball')) {
+                    randomBrick.destroyed = true;
+                    // Atualizar contador de tijolos
+                    if (this.currentBrickCount[randomBrick.color] > 0) {
+                        this.currentBrickCount[randomBrick.color]--;
+                    }
+                    this.money += this.getBrickReward(randomBrick.color);
+                    this.createParticles(randomBrick.x + randomBrick.width / 2, randomBrick.y + randomBrick.height / 2, this.getBrickColorValue(randomBrick.color));
+                    
+                    // Ativar combo se Combo Power estiver ativo
+                    this.activateComboFromPower(randomBrick);
                 }
-                this.money += this.getBrickReward(randomBrick.color);
-                this.createParticles(randomBrick.x + randomBrick.width / 2, randomBrick.y + randomBrick.height / 2, this.getBrickColorValue(randomBrick.color));
-                
-                // Ativar combo se Combo Power estiver ativo
-                this.activateComboFromPower(randomBrick);
             }
         }
         
@@ -2433,16 +2445,19 @@ class Game {
             const availableBricks = this.bricks.filter(b => !b.destroyed && b.color !== 'red');
             if (availableBricks.length > 0) {
                 const randomBrick = availableBricks[Math.floor(Math.random() * availableBricks.length)];
-                randomBrick.destroyed = true;
-                // Atualizar contador de tijolos
-                if (this.currentBrickCount[randomBrick.color] > 0) {
-                    this.currentBrickCount[randomBrick.color]--;
+                // Só quebrar se não for bloco com vidro ou se tiver upgrade para quebrar vidro
+                if (!randomBrick.hasGlassCoating || this.canBreakGlass('ball_echo')) {
+                    randomBrick.destroyed = true;
+                    // Atualizar contador de tijolos
+                    if (this.currentBrickCount[randomBrick.color] > 0) {
+                        this.currentBrickCount[randomBrick.color]--;
+                    }
+                    this.money += this.getBrickReward(randomBrick.color);
+                    this.createParticles(randomBrick.x + randomBrick.width / 2, randomBrick.y + randomBrick.height / 2, this.getBrickColorValue(randomBrick.color));
+                    
+                    // Ativar combo se Combo Power estiver ativo
+                    this.activateComboFromPower(randomBrick);
                 }
-                this.money += this.getBrickReward(randomBrick.color);
-                this.createParticles(randomBrick.x + randomBrick.width / 2, randomBrick.y + randomBrick.height / 2, this.getBrickColorValue(randomBrick.color));
-                
-                // Ativar combo se Combo Power estiver ativo
-                this.activateComboFromPower(randomBrick);
             }
         }
         
@@ -2460,16 +2475,19 @@ class Game {
             );
             
             if (mirrorBrick) {
-                mirrorBrick.destroyed = true;
-                // Atualizar contador de tijolos
-                if (this.currentBrickCount[mirrorBrick.color] > 0) {
-                    this.currentBrickCount[mirrorBrick.color]--;
+                // Só quebrar se não for bloco com vidro ou se tiver upgrade para quebrar vidro
+                if (!mirrorBrick.hasGlassCoating || this.canBreakGlass('mirror_ball')) {
+                    mirrorBrick.destroyed = true;
+                    // Atualizar contador de tijolos
+                    if (this.currentBrickCount[mirrorBrick.color] > 0) {
+                        this.currentBrickCount[mirrorBrick.color]--;
+                    }
+                    this.money += this.getBrickReward(mirrorBrick.color);
+                    this.createParticles(mirrorBrick.x + mirrorBrick.width / 2, mirrorBrick.y + mirrorBrick.height / 2, this.getBrickColorValue(mirrorBrick.color));
+                    
+                    // Ativar combo se Combo Power estiver ativo
+                    this.activateComboFromPower(mirrorBrick);
                 }
-                this.money += this.getBrickReward(mirrorBrick.color);
-                this.createParticles(mirrorBrick.x + mirrorBrick.width / 2, mirrorBrick.y + mirrorBrick.height / 2, this.getBrickColorValue(mirrorBrick.color));
-                
-                // Ativar combo se Combo Power estiver ativo
-                this.activateComboFromPower(mirrorBrick);
             }
         }
         
@@ -2500,16 +2518,19 @@ class Game {
             // 2. Nem o bloco atingido nem o bloco de cima estiverem se movendo
             // Se não houver bloco na linha de cima, simplesmente ignora (não faz nada extra)
             if (behindBrick && !hitBrickIsMoving && !behindBrick.isMoving) {
-                behindBrick.destroyed = true;
-                // Atualizar contador de tijolos
-                if (this.currentBrickCount[behindBrick.color] > 0) {
-                    this.currentBrickCount[behindBrick.color]--;
+                // Só quebrar se não for bloco com vidro ou se tiver upgrade para quebrar vidro
+                if (!behindBrick.hasGlassCoating || this.canBreakGlass('behind_breaker')) {
+                    behindBrick.destroyed = true;
+                    // Atualizar contador de tijolos
+                    if (this.currentBrickCount[behindBrick.color] > 0) {
+                        this.currentBrickCount[behindBrick.color]--;
+                    }
+                    this.money += this.getBrickReward(behindBrick.color);
+                    this.createParticles(behindBrick.x + behindBrick.width / 2, behindBrick.y + behindBrick.height / 2, this.getBrickColorValue(behindBrick.color));
+                    
+                    // Ativar combo se Combo Power estiver ativo
+                    this.activateComboFromPower(behindBrick);
                 }
-                this.money += this.getBrickReward(behindBrick.color);
-                this.createParticles(behindBrick.x + behindBrick.width / 2, behindBrick.y + behindBrick.height / 2, this.getBrickColorValue(behindBrick.color));
-                
-                // Ativar combo se Combo Power estiver ativo
-                this.activateComboFromPower(behindBrick);
             }
             // Se não houver bloco na linha de cima, o upgrade não faz nada adicional
         }
@@ -2590,6 +2611,26 @@ class Game {
                 size: Math.random() * 6 + 3
             });
         }
+    }
+    
+    // Função auxiliar para verificar se um upgrade pode quebrar vidro
+    canBreakGlass(upgradeId) {
+        // Estilhaço sempre pode quebrar vidro
+        if (upgradeId === 'shatter_glass') {
+            return true;
+        }
+        
+        // Se tiver Quebra Blindagem, todos os upgrades que destroem blocos podem quebrar vidro
+        if (this.hasUpgrade('shield_breaker')) {
+            const destructionUpgrades = [
+                'explosive_ball', 'ball_echo', 'mirror_ball', 'piercing_ball', 
+                'behind_breaker', 'combo_power', 'prime_ball', 'charged_shot', 
+                'attached_cannons', 'reinforced_paddle', 'repulsor_shield'
+            ];
+            return destructionUpgrades.includes(upgradeId);
+        }
+        
+        return false;
     }
     
     shatterGlass(brick, ball) {
@@ -3304,6 +3345,43 @@ class Game {
                 <!-- Efeito de luz no vidro central -->
                 <rect x="12" y="12" width="2" height="4" fill="#ffffff" opacity="0.6"/>
                 <rect x="18" y="12" width="2" height="4" fill="#ffffff" opacity="0.4"/>
+            </svg>`,
+            
+            'shield_breaker': `<svg width="32" height="32" viewBox="0 0 32 32">
+                <!-- Escudo central com rachaduras (usando cores do Estilhaço) -->
+                <circle cx="16" cy="16" r="8" fill="#3498db" stroke="#2980b9" stroke-width="2" opacity="0.9"/>
+                <circle cx="16" cy="16" r="6" fill="#5dade2" opacity="0.7"/>
+                
+                <!-- Rachaduras no escudo -->
+                <path d="M12 12 L20 20" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+                <path d="M20 12 L12 20" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+                <path d="M16 8 L16 24" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+                <path d="M8 16 L24 16" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+                
+                <!-- Fragmentos de escudo quebrado voando -->
+                <path d="M16 2 L18 4 L16 6 L14 4 Z" fill="#3498db" opacity="0.8"/>
+                <path d="M30 16 L28 18 L26 16 L28 14 Z" fill="#3498db" opacity="0.8"/>
+                <path d="M16 30 L14 28 L16 26 L18 28 Z" fill="#3498db" opacity="0.8"/>
+                <path d="M2 16 L4 14 L6 16 L4 18 Z" fill="#3498db" opacity="0.8"/>
+                
+                <!-- Fragmentos menores (tons mais claros) -->
+                <path d="M24 4 L26 6 L24 8 L22 6 Z" fill="#5dade2" opacity="0.7"/>
+                <path d="M8 24 L10 26 L8 28 L6 26 Z" fill="#5dade2" opacity="0.7"/>
+                <path d="M24 24 L26 26 L24 28 L22 26 Z" fill="#5dade2" opacity="0.7"/>
+                <path d="M8 4 L10 6 L8 8 L6 6 Z" fill="#5dade2" opacity="0.7"/>
+                
+                <!-- Fragmentos adicionais para mais realismo -->
+                <path d="M12 2 L14 4 L12 6 L10 4 Z" fill="#85c1e9" opacity="0.6"/>
+                <path d="M20 2 L22 4 L20 6 L18 4 Z" fill="#85c1e9" opacity="0.6"/>
+                <path d="M12 26 L14 24 L12 22 L10 24 Z" fill="#85c1e9" opacity="0.6"/>
+                <path d="M20 26 L22 24 L20 22 L18 24 Z" fill="#85c1e9" opacity="0.6"/>
+                
+                <!-- Símbolo de quebra no centro -->
+                <path d="M14 14 L18 18 M18 14 L14 18" stroke="#ffffff" stroke-width="1" opacity="0.8"/>
+                
+                <!-- Efeito de luz no escudo central -->
+                <rect x="14" y="14" width="2" height="4" fill="#ffffff" opacity="0.6"/>
+                <rect x="16" y="14" width="2" height="4" fill="#ffffff" opacity="0.4"/>
             </svg>`,
             
             'combo_power': `<svg width="32" height="32" viewBox="0 0 32 32">
@@ -4544,7 +4622,7 @@ class Game {
             {
                 id: 'explosive_ball',
                 name: 'Bolinha Explosiva',
-                description: 'A bolinha explode ao atingir um tijolo, destruindo tijolos adjacentes em uma pequena área',
+                description: 'A bolinha explode sempre ao atingir blocos amarelos ou vermelhos, destruindo tijolos adjacentes em uma pequena área',
                 price: 250,
                 type: 'ball',
                 icon: this.getUpgradeIcon('explosive_ball')
