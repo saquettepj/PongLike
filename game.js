@@ -467,7 +467,7 @@ class Game {
             if (e.code === 'Space' && this.gameRunning && !this.gamePaused) {
                 if (this.hasUpgrade('dimensional_ball') && this.activeUpgradeEffects.dimensionalBall.active) {
                     this.activeUpgradeEffects.dimensionalBall.active = false;
-                    this.activeUpgradeEffects.dimensionalBall.startTime = Date.now();
+                    this.activeUpgradeEffects.dimensionalBall.startTime = Date.now(); // Iniciar cooldown
                 }
             }
             
@@ -1371,17 +1371,19 @@ class Game {
         }
         
         
-        // Efeito sonoro contínuo da Bolinha Dimensional ativa + auto-desativação após 5s
+        // Efeito sonoro contínuo da Bolinha Dimensional ativa + auto-desativação após 3s
         if (this.hasUpgrade('dimensional_ball') && this.activeUpgradeEffects.dimensionalBall.active) {
             // Tocar som a cada 30 frames (0.5 segundos) para efeito contínuo
             if (this.gameTime % 30 === 0) {
                 this.playSound('cushionPaddle');
             }
             
-            // Desativar automaticamente após 5 segundos (300 frames)
-            if (this.activeUpgradeEffects.dimensionalBall.timer <= 0) {
+            // Desativar automaticamente após 3 segundos usando tempo real
+            const currentTime = Date.now();
+            const elapsedTime = currentTime - this.activeUpgradeEffects.dimensionalBall.startTime;
+            if (elapsedTime >= this.activeUpgradeEffects.dimensionalBall.duration) {
                 this.activeUpgradeEffects.dimensionalBall.active = false;
-                this.activeUpgradeEffects.dimensionalBall.timer = this.activeUpgradeEffects.dimensionalBall.cooldown;
+                this.activeUpgradeEffects.dimensionalBall.startTime = Date.now(); // Iniciar cooldown
             }
         }
         
@@ -2134,6 +2136,7 @@ class Game {
     
     handleBrickCollision(ball, brick) {
         // Bolinha Dimensional - atravessa tijolos: ignora colisão completamente
+        // Aplicar efeito a todas as bolinhas quando o upgrade estiver ativo
         if (this.hasUpgrade('dimensional_ball') && this.activeUpgradeEffects.dimensionalBall.active) {
             return; // não interage com o tijolo
         }
@@ -2843,8 +2846,13 @@ class Game {
                 break;
                 
             case 'dimensional_ball':
-                // Ativar apenas se não estiver ativa e não estiver em cooldown
-                if (!this.activeUpgradeEffects.dimensionalBall.active && this.activeUpgradeEffects.dimensionalBall.startTime === 0) {
+                // Verificar se há bolinhas livres (não grudadas na plataforma)
+                const hasFreeBalls = this.balls.some(ball => !ball.attached);
+                
+                // Ativar apenas se não estiver ativa, não estiver em cooldown e houver bolinhas livres
+                if (!this.activeUpgradeEffects.dimensionalBall.active && 
+                    this.activeUpgradeEffects.dimensionalBall.startTime === 0 && 
+                    hasFreeBalls) {
                     // Ativar e iniciar contador de 3 segundos
                     this.activeUpgradeEffects.dimensionalBall.active = true;
                     this.activeUpgradeEffects.dimensionalBall.startTime = Date.now();
