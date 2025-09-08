@@ -3274,7 +3274,7 @@ class Game {
             </svg>`,
             
             'risk_converter': `<svg width="32" height="32" viewBox="0 0 32 32">
-                <circle cx="16" cy="16" r="8" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+                <circle cx="16" cy="16" r="8" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
                 <path d="M12 12 L20 20 M20 12 L12 20" stroke="#ffffff" stroke-width="2"/>
                 <circle cx="16" cy="16" r="2" fill="#ffffff"/>
             </svg>`,
