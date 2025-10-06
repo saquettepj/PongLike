@@ -104,7 +104,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 - **Seleção Aleatória**: Os upgrades disponíveis mudam a cada fase
 - **Promoções**: A cada 3 fases, a loja entra em promoção com descontos de 20-40%
 
-### Upgrades Disponíveis (38 total)
+### Upgrades Disponíveis (39 total)
 
 #### 🏓 Upgrades de Plataforma (8 total)
 1. **Plataforma Larga** - Aumenta tamanho em 50% (150 🪙)
@@ -116,42 +116,43 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 7. **Impulso de Velocidade** - Aumenta a velocidade da plataforma em 25% (120 🪙)
 8. **Tiro Carregado** - Atira projétil perfurante imediatamente (cooldown 5s) (190 🪙)
 
-#### ⚽ Upgrades de Bolinha (16 total)
+#### ⚽ Upgrades de Bolinha (17 total)
 8. **Bolinha Perfurante** - Quebra tijolos azuis sem mudar direção (220 🪙)
 9. **Campo de Fricção** - Reduz velocidade em 10% (160 🪙)
 10. **Multi-bola** - Cria uma nova bolinha grudada na plataforma. Liberada automaticamente em 2 segundos. (cooldown 20s) (200 🪙)
 11. **Bolinha Combo** - A cada 5 combos consecutivos, duplica a bolinha atual uma vez (150 🪙)
-12. **Bolinha Explosiva** - Explode se atingir tijolos amarelos ou vermelho (não afeta o núcleo vermelho) (250 🪙)
-13. **Eco da Bolinha** - Destrói um bloco aleatório adicional a cada batida (apenas em fases ímpares) (250 🪙)
-14. **Ativador de Efeito** - Ativa efeito aleatório dos blocos na bolinha e ganha moedas baseadas na cor do bloco do efeito ativado (cooldown 5s) (60 🪙)
-15. **Bolinha Espelhada** - Destrói bloco simétrico ao quebrar um (apenas nos primeiros 30 segundos) (250 🪙)
-16. **Bolinha da Fortuna** - Bolinha dourada que dá +1 moeda por bloco (150 🪙)
-17. **Bolinha do Tempo** - Para a bolinha por 3 segundos. (cooldown 15s) (180 🪙)
-18. **Bolinha Prima** - Destrói bloco aleatório a cada número primo de batidas (120 🪙)
-19. **Bolinha Wombo Combo**: Com esta upgrade, cada bloco em combo dá +2 moedas (ao invés de +1) e a recompensa do combo máximo na loja é dobrada (120 🪙)
-20. **Bolinha Fantasma** - Quando a bolinha cai pela primeira vez em cada fase, ela reaparece no topo do campo (250 🪙)
-21. **Bolinha Dimensional** - Pode atravessar tijolos sem quebrá-los (Mantenha espaço pressionado) (até 3s, cooldown 15s) (140 🪙)
-22. **Estilhaços** - 50% de chance de estilhaçar o vidro de um bloco, causando efeito explosivo (200 🪙)
-23. **Combo Power** - Todos os poderes que destroem blocos ativam o combo quando destroem um bloco (180 🪙)
-24. **Quebra Blindagem** - Permite que todos os upgrades que destroem blocos também quebrem blocos com vidro (300 🪙)
+12. **Bolinha Pesada** - A bolinha se move 15% mais devagar, facilitando o controle (240 🪙)
+13. **Bolinha Explosiva** - Explode se atingir tijolos amarelos ou vermelho (não afeta o núcleo vermelho) (250 🪙)
+14. **Eco da Bolinha** - Destrói um bloco aleatório adicional a cada batida (apenas em fases ímpares) (250 🪙)
+15. **Ativador de Efeito** - Ativa efeito aleatório dos blocos na bolinha e ganha moedas baseadas na cor do bloco do efeito ativado (cooldown 5s) (60 🪙)
+16. **Bolinha Espelhada** - Destrói bloco simétrico ao quebrar um (apenas nos primeiros 30 segundos) (250 🪙)
+17. **Bolinha da Fortuna** - Bolinha dourada que dá +1 moeda por bloco (150 🪙)
+18. **Bolinha do Tempo** - Para a bolinha por 3 segundos. (cooldown 15s) (180 🪙)
+19. **Bolinha Prima** - Destrói bloco aleatório a cada número primo de batidas (120 🪙)
+20. **Bolinha Wombo Combo**: Com esta upgrade, cada bloco em combo dá +2 moedas (ao invés de +1) e a recompensa do combo máximo na loja é dobrada (120 🪙)
+21. **Bolinha Fantasma** - Quando a bolinha cai pela primeira vez em cada fase, ela reaparece no topo do campo (250 🪙)
+22. **Bolinha Dimensional** - Pode atravessar tijolos sem quebrá-los (Mantenha espaço pressionado) (até 3s, cooldown 15s) (140 🪙)
+23. **Estilhaços** - 50% de chance de estilhaçar o vidro de um bloco, causando efeito explosivo (200 🪙)
+24. **Combo Power** - Todos os poderes que destroem blocos ativam o combo quando destroem um bloco (180 🪙)
+25. **Quebra Blindagem** - Permite que todos os upgrades que destroem blocos também quebrem blocos com vidro (300 🪙)
 
 #### 🛡️ Upgrades de Utilidade (9 total)
-24. **Coração Extra** - Ganha uma vida a cada fase (180 🪙)
-25. **Rede de Segurança** - Barreira temporária por 5s (cooldown 15s) (300 🪙)
-26. **Amuleto da Sorte** - 25% de chance de dobrar dinheiro ao destruir blocos (80 🪙)
-27. **Seguro de Vida** - Ganha 100 moedas ao perder vida (150 🪙)
-28. **Reciclagem** - Tijolos azuis podem reaparecer, concedendo 5 moedas (30 🪙)
-29. **Conversor de Risco** - Diminui vida do bloco vermelho para 3, muda velocidade da bolinha entre 80%-140% a cada 5s e desativa a troca de posição do bloco vermelho (100 🪙)
-30. **Visão Acelerada** - Reduz velocidade dos fragmentos brancos em 40% (120 🪙)
-31. **Estabilizador de Zigue-zague** - Reduz a curva do efeito de zigue-zague em 20% (110 🪙)
+26. **Coração Extra** - Ganha uma vida a cada fase (180 🪙)
+27. **Rede de Segurança** - Barreira temporária por 5s (cooldown 15s) (300 🪙)
+28. **Amuleto da Sorte** - 25% de chance de dobrar dinheiro ao destruir blocos (80 🪙)
+29. **Seguro de Vida** - Ganha 100 moedas ao perder vida (150 🪙)
+30. **Reciclagem** - Tijolos azuis podem reaparecer, concedendo 5 moedas (30 🪙)
+31. **Conversor de Risco** - Diminui vida do bloco vermelho para 3, muda velocidade da bolinha entre 80%-140% a cada 5s e desativa a troca de posição do bloco vermelho (100 🪙)
+32. **Visão Acelerada** - Reduz velocidade dos fragmentos brancos em 40% (120 🪙)
+33. **Estabilizador de Zigue-zague** - Reduz a curva do efeito de zigue-zague em 20% (110 🪙)
 
 #### ⭐ Upgrades Especiais (6 total)
-32. **Dano Estrutural** - A primeira batida no bloco vermelho dá 3 de dano (180 🪙)
-33. **Visão de Calor** - A bolinha invisível deixa um rastro térmico muito mais visível (100 🪙)
-34. **Reversão Controlada** - Desativa completamente o efeito de Inversão do tijolo verde (120 🪙)
-35. **Bolinha Prima** - A cada número primo de batidas, destrói um bloco aleatório (não vermelho) (120 🪙)
-36. **Investidor** - Menos 1 vida máxima, mas toda fase começa com +100 moedas (50 🪙)
-37. **Poupança** - Mantém até 50 moedas para a próxima fase (80 🪙)
+34. **Dano Estrutural** - A primeira batida no bloco vermelho dá 3 de dano (180 🪙)
+35. **Visão de Calor** - A bolinha invisível deixa um rastro térmico muito mais visível (100 🪙)
+36. **Reversão Controlada** - Desativa completamente o efeito de Inversão do tijolo verde (120 🪙)
+37. **Bolinha Prima** - A cada número primo de batidas, destrói um bloco aleatório (não vermelho) (120 🪙)
+38. **Investidor** - Menos 1 vida máxima, mas toda fase começa com +100 moedas (50 🪙)
+39. **Poupança** - Mantém até 50 moedas para a próxima fase (80 🪙)
 
 ## 🎮 Regras do Jogo
 
@@ -232,7 +233,7 @@ brick-rogue/
 
 - ✅ Sistema completo de física da bolinha
 - ✅ 6 tipos de tijolos com efeitos únicos
-- ✅ Sistema de upgrades roguelike (38 upgrades)
+- ✅ Sistema de upgrades roguelike (39 upgrades)
 - ✅ Sistema de vidro e blindagem com proteção especial
 - ✅ Interface de usuário responsiva
 - ✅ Sistema de partículas e efeitos visuais

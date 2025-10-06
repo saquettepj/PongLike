@@ -125,7 +125,7 @@ class Game {
         // - Botões para pular fase e adicionar dinheiro
         // - Ferramentas de debug
         // ========================================
-        this.developerMode = false;
+        this.developerMode = true;
         this.gameRunning = false;
         this.gamePaused = false;
         this.ballHitCount = 0; // Contador de batidas da bolinha para Bolinha Prima
@@ -596,7 +596,7 @@ class Game {
                 description: 'Aumenta o tamanho da plataforma em 50%',
                 price: 150,
                 type: 'paddle',
-                icon: this.getUpgradeIcon('wide_paddle')
+                icon: this.getUpgradeSVG('wide_paddle')
             },
             {
                 id: 'attached_cannons',
@@ -604,7 +604,7 @@ class Game {
                 description: 'Atira projéteis apenas em batidas ímpares',
                 price: 170,
                 type: 'paddle',
-                icon: this.getUpgradeIcon('attached_cannons')
+                icon: this.getUpgradeSVG('attached_cannons')
             },
             {
                 id: 'super_magnet',
@@ -612,7 +612,7 @@ class Game {
                 description: 'Campo magnético para puxar bolinha por 1s (cooldown 10s)',
                 price: 180,
                 type: 'paddle',
-                icon: this.getUpgradeIcon('super_magnet')
+                icon: this.getUpgradeSVG('super_magnet')
             },
             {
                 id: 'paddle_dash',
@@ -620,7 +620,7 @@ class Game {
                 description: 'Movimento rápido lateral por 2s (cooldown 8s)',
                 price: 140,
                 type: 'paddle',
-                icon: this.getUpgradeIcon('paddle_dash')
+                icon: this.getUpgradeSVG('paddle_dash')
             },
             {
                 id: 'cushion_paddle',
@@ -628,7 +628,7 @@ class Game {
                 description: 'Diminui em 50% a velocidade de todas as bolinhas por 3s (cooldown 10s)',
                 price: 80,
                 type: 'paddle',
-                icon: this.getUpgradeIcon('cushion_paddle')
+                icon: this.getUpgradeSVG('cushion_paddle')
             },
             {
                 id: 'reinforced_paddle',
@@ -636,7 +636,7 @@ class Game {
                 description: 'Plataforma 2x mais alta e destrói bloco da linha de cima',
                 price: 220,
                 type: 'paddle',
-                icon: this.getUpgradeIcon('reinforced_paddle')
+                icon: this.getUpgradeSVG('reinforced_paddle')
             },
             {
                 id: 'speed_boost',
@@ -644,7 +644,7 @@ class Game {
                 description: 'Aumenta a velocidade da plataforma em 25%',
                 price: 120,
                 type: 'paddle',
-                icon: this.getUpgradeIcon('speed_boost')
+                icon: this.getUpgradeSVG('speed_boost')
             },
             {
                 id: 'charged_shot',
@@ -652,7 +652,7 @@ class Game {
                 description: 'Atira projétil perfurante imediatamente',
                 price: 190,
                 type: 'paddle',
-                icon: this.getUpgradeIcon('charged_shot')
+                icon: this.getUpgradeSVG('charged_shot')
             },
             // Upgrades de Bolinha (8-20)
             {
@@ -661,7 +661,7 @@ class Game {
                 description: 'Quebra tijolos azuis sem mudar direção',
                 price: 220,
                 type: 'ball',
-                icon: this.getUpgradeIcon('piercing_ball')
+                icon: this.getUpgradeSVG('piercing_ball')
             },
             {
                 id: 'friction_field',
@@ -669,7 +669,7 @@ class Game {
                 description: 'Reduz velocidade em 10%',
                 price: 160,
                 type: 'ball',
-                icon: this.getUpgradeIcon('friction_field')
+                icon: this.getUpgradeSVG('friction_field')
             },
             {
                 id: 'multi_ball',
@@ -677,7 +677,7 @@ class Game {
                 description: 'Cria uma nova bolinha grudada na plataforma. Liberada automaticamente em 2 segundos (cooldown 20s)',
                 price: 200,
                 type: 'ball',
-                icon: this.getUpgradeIcon('multi_ball')
+                icon: this.getUpgradeSVG('multi_ball')
             },
             {
                 id: 'combo_ball',
@@ -685,7 +685,15 @@ class Game {
                 description: 'A cada 5 combos consecutivos, duplica a bolinha atual uma vez',
                 price: 150,
                 type: 'ball',
-                icon: this.getUpgradeIcon('combo_ball')
+                icon: this.getUpgradeSVG('combo_ball')
+            },
+            {
+                id: 'heavy_ball',
+                name: 'Bolinha Pesada',
+                description: 'A bolinha se move 15% mais devagar, facilitando o controle',
+                price: 240,
+                type: 'ball',
+                icon: this.getUpgradeSVG('heavy_ball')
             },
             {
                 id: 'explosive_ball',
@@ -693,7 +701,7 @@ class Game {
                 description: 'A bolinha explode sempre ao atingir blocos amarelos ou vermelhos, destruindo tijolos adjacentes em uma pequena área',
                 price: 250,
                 type: 'ball',
-                icon: this.getUpgradeIcon('explosive_ball')
+                icon: this.getUpgradeSVG('explosive_ball')
             },
             {
                 id: 'ball_echo',
@@ -701,7 +709,7 @@ class Game {
                 description: 'Destrói um bloco aleatório adicional a cada batida (apenas em fases ímpares)',
                 price: 250,
                 type: 'ball',
-                icon: this.getUpgradeIcon('ball_echo')
+                icon: this.getUpgradeSVG('ball_echo')
             },
             {
                 id: 'effect_activator',
@@ -709,7 +717,7 @@ class Game {
                 description: 'Ativa efeito aleatório dos blocos na bolinha e ganha moedas baseadas na cor do bloco do efeito ativado (cooldown 5s)',
                 price: 60,
                 type: 'ball',
-                icon: this.getUpgradeIcon('effect_activator')
+                icon: this.getUpgradeSVG('effect_activator')
             },
             {
                 id: 'mirror_ball',
@@ -717,7 +725,7 @@ class Game {
                 description: 'Destrói bloco simétrico ao quebrar um (apenas nos primeiros 30 segundos de cada fase)',
                 price: 250,
                 type: 'ball',
-                icon: this.getUpgradeIcon('mirror_ball')
+                icon: this.getUpgradeSVG('mirror_ball')
             },
             {
                 id: 'lucky_ball',
@@ -725,7 +733,7 @@ class Game {
                 description: 'Bolinha dourada que dá +1 moeda por bloco',
                 price: 150,
                 type: 'ball',
-                icon: this.getUpgradeIcon('lucky_ball')
+                icon: this.getUpgradeSVG('lucky_ball')
             },
             {
                 id: 'time_ball',
@@ -733,7 +741,7 @@ class Game {
                 description: 'Para a bolinha por 3 segundos (cooldown 15s)',
                 price: 180,
                 type: 'ball',
-                icon: this.getUpgradeIcon('time_ball')
+                icon: this.getUpgradeSVG('time_ball')
             },
             {
                 id: 'prime_ball',
@@ -741,7 +749,7 @@ class Game {
                 description: 'Destrói bloco aleatório a cada número primo de batidas',
                 price: 120,
                 type: 'ball',
-                icon: this.getUpgradeIcon('prime_ball')
+                icon: this.getUpgradeSVG('prime_ball')
             },
             {
                 id: 'wombo_combo_ball',
@@ -749,7 +757,7 @@ class Game {
                 description: 'Cada bloco em combo dá +2 moedas (ao invés de +1) e a recompensa do combo máximo na loja é dobrada',
                 price: 120,
                 type: 'ball',
-                icon: this.getUpgradeIcon('wombo_combo_ball')
+                icon: this.getUpgradeSVG('wombo_combo_ball')
             },
             {
                 id: 'ghost_ball',
@@ -757,7 +765,7 @@ class Game {
                 description: 'Quando a bolinha cai pela primeira vez em cada fase, ela reaparece no topo do campo',
                 price: 250,
                 type: 'ball',
-                icon: this.getUpgradeIcon('ghost_ball')
+                icon: this.getUpgradeSVG('ghost_ball')
             },
             {
                 id: 'dimensional_ball',
@@ -765,7 +773,7 @@ class Game {
                 description: 'Pode atravessar tijolos sem quebrá-los (Mantenha espaço pressionado) (até 3s, cooldown 15s)',
                 price: 140,
                 type: 'ball',
-                icon: this.getUpgradeIcon('dimensional_ball')
+                icon: this.getUpgradeSVG('dimensional_ball')
             },
             {
                 id: 'shatter_glass',
@@ -773,7 +781,7 @@ class Game {
                 description: '50% de chance de estilhaçar o vidro de um bloco, causando efeito explosivo',
                 price: 200,
                 type: 'ball',
-                icon: this.getUpgradeIcon('shatter_glass')
+                icon: this.getUpgradeSVG('shatter_glass')
             },
             {
                 id: 'combo_power',
@@ -781,7 +789,7 @@ class Game {
                 description: 'Todos os poderes que destroem blocos ativam o combo quando destroem um bloco',
                 price: 180,
                 type: 'utility',
-                icon: this.getUpgradeIcon('combo_power')
+                icon: this.getUpgradeSVG('combo_power')
             },
             {
                 id: 'shield_breaker',
@@ -789,7 +797,7 @@ class Game {
                 description: 'Permite que todos os upgrades que destroem blocos também quebrem blocos com vidro',
                 price: 300,
                 type: 'ball',
-                icon: this.getUpgradeIcon('shield_breaker')
+                icon: this.getUpgradeSVG('shield_breaker')
             },
             // Upgrades de Utilidade (21-26)
             {
@@ -798,7 +806,7 @@ class Game {
                 description: 'Ganha uma vida a cada fase',
                 price: 180,
                 type: 'utility',
-                icon: this.getUpgradeIcon('extra_life')
+                icon: this.getUpgradeSVG('extra_life')
             },
             {
                 id: 'safety_net',
@@ -806,7 +814,7 @@ class Game {
                 description: 'Barreira temporária por 5s (cooldown 15s)',
                 price: 300,
                 type: 'utility',
-                icon: this.getUpgradeIcon('safety_net')
+                icon: this.getUpgradeSVG('safety_net')
             },
             {
                 id: 'lucky_amulet',
@@ -814,7 +822,7 @@ class Game {
                 description: '25% de chance de dobrar dinheiro ao destruir blocos',
                 price: 30,
                 type: 'utility',
-                icon: this.getUpgradeIcon('lucky_amulet')
+                icon: this.getUpgradeSVG('lucky_amulet')
             },
             {
                 id: 'life_insurance',
@@ -822,7 +830,7 @@ class Game {
                 description: 'Ganha 100 moedas ao perder vida',
                 price: 150,
                 type: 'utility',
-                icon: this.getUpgradeIcon('life_insurance')
+                icon: this.getUpgradeSVG('life_insurance')
             },
             {
                 id: 'recycling',
@@ -830,7 +838,7 @@ class Game {
                 description: 'Tijolos azuis podem reaparecer, concedendo 5 moedas',
                 price: 30,
                 type: 'utility',
-                icon: this.getUpgradeIcon('recycling')
+                icon: this.getUpgradeSVG('recycling')
             },
             {
                 id: 'risk_converter',
@@ -838,7 +846,7 @@ class Game {
                 description: 'Diminui vida do bloco vermelho para 2, muda velocidade da bolinha entre 80%-140% a cada 5s e desativa a troca de posição do bloco vermelho',
                 price: 100,
                 type: 'utility',
-                icon: this.getUpgradeIcon('risk_converter')
+                icon: this.getUpgradeSVG('risk_converter')
             },
             {
                 id: 'accelerated_vision',
@@ -846,7 +854,7 @@ class Game {
                 description: 'Reduz velocidade dos fragmentos brancos em 40%',
                 price: 120,
                 type: 'utility',
-                icon: this.getUpgradeIcon('accelerated_vision')
+                icon: this.getUpgradeSVG('accelerated_vision')
             },
             {
                 id: 'zigzag_stabilizer',
@@ -854,7 +862,7 @@ class Game {
                 description: 'Reduz a curva do efeito de zigue-zague em 20%',
                 price: 110,
                 type: 'utility',
-                icon: this.getUpgradeIcon('zigzag_stabilizer')
+                icon: this.getUpgradeSVG('zigzag_stabilizer')
             },
             
             // Upgrades "Especiais" (21-25)
@@ -864,7 +872,7 @@ class Game {
                 description: 'A primeira batida no bloco vermelho dá 3 de dano',
                 price: 180,
                 type: 'special',
-                icon: this.getUpgradeIcon('structural_damage')
+                icon: this.getUpgradeSVG('structural_damage')
             },
             {
                 id: 'heat_vision',
@@ -872,7 +880,7 @@ class Game {
                 description: 'A bolinha invisível deixa um rastro térmico muito mais visível',
                 price: 100,
                 type: 'special',
-                icon: this.getUpgradeIcon('heat_vision')
+                icon: this.getUpgradeSVG('heat_vision')
             },
             {
                 id: 'controlled_reversal',
@@ -880,7 +888,7 @@ class Game {
                 description: 'Desativa completamente o efeito de Inversão do tijolo verde',
                 price: 120,
                 type: 'special',
-                icon: this.getUpgradeIcon('controlled_reversal')
+                icon: this.getUpgradeSVG('controlled_reversal')
             },
             {
                 id: 'investor',
@@ -888,7 +896,7 @@ class Game {
                 description: 'Menos 1 vida máxima, mas toda fase começa com +100 moedas',
                 price: 50,
                 type: 'special',
-                icon: this.getUpgradeIcon('investor')
+                icon: this.getUpgradeSVG('investor')
             },
             {
                 id: 'money_saver',
@@ -896,7 +904,7 @@ class Game {
                 description: 'Mantém até 50 moedas para a próxima fase',
                 price: 80,
                 type: 'passive',
-                icon: this.getUpgradeIcon('money_saver')
+                icon: this.getUpgradeSVG('money_saver')
             },
         ];
     }
@@ -1074,7 +1082,7 @@ class Game {
             // Ícone
             const icon = document.createElement('div');
             icon.className = 'purchased-power-icon';
-            icon.innerHTML = this.getUpgradeIcon(upgrade.id);
+            icon.innerHTML = this.getUpgradeSVG(upgrade.id);
             powerItem.appendChild(icon);
             
             // Nome
@@ -1762,6 +1770,10 @@ class Game {
             // Aplicar efeito de desaceleração da Plataforma de Desaceleração
             if (this.activeUpgradeEffects.cushionPaddle.active) {
                 speedMultiplier *= 0.5; // Reduz velocidade em 50%
+            }
+            // Aplicar efeito da Bolinha Pesada (15% menos velocidade)
+            if (this.hasUpgrade('heavy_ball')) {
+                speedMultiplier *= 0.85; // Reduz velocidade em 15%
             }
             // Aplicar multiplicador de dificuldade progressiva
             speedMultiplier *= this.difficultySettings.ballSpeedMultiplier;
@@ -2990,7 +3002,7 @@ class Game {
         }
     }
     
-    getUpgradeIcon(upgradeId) {
+    getUpgradeSVG(upgradeId) {
         const icons = {
             // Upgrades de Plataforma
             'wide_paddle': `<svg width="32" height="32" viewBox="0 0 32 32">
@@ -3233,6 +3245,20 @@ class Game {
                 <circle cx="8" cy="24" r="2" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
                 <circle cx="24" cy="24" r="2" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
                 <path d="M16 4 L16 12 M16 20 L16 28 M4 16 L12 16 M20 16 L28 16" stroke="#e74c3c" stroke-width="1.5"/>
+            </svg>`,
+            
+            'heavy_ball': `<svg width="32" height="32" viewBox="0 0 32 32">
+                <!-- Bolinha principal mais escura e maior -->
+                <circle cx="16" cy="16" r="7" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+                <!-- Efeito de peso (linhas de sombra) -->
+                <circle cx="16" cy="16" r="5" fill="#2c3e50" stroke="#1a252f" stroke-width="1" opacity="0.8"/>
+                <!-- Símbolo de peso (âncora ou martelo) -->
+                <rect x="14" y="8" width="4" height="8" fill="#95a5a6" stroke="#7f8c8d" stroke-width="1"/>
+                <rect x="13" y="10" width="6" height="2" fill="#7f8c8d" stroke="#6c7b7d" stroke-width="1"/>
+                <rect x="15" y="6" width="2" height="4" fill="#95a5a6" stroke="#7f8c8d" stroke-width="1"/>
+                <!-- Efeito de impacto (ondas) -->
+                <circle cx="16" cy="16" r="9" fill="none" stroke="#34495e" stroke-width="1" opacity="0.3"/>
+                <circle cx="16" cy="16" r="11" fill="none" stroke="#34495e" stroke-width="1" opacity="0.2"/>
             </svg>`,
             
             // Upgrades de Utilidade
@@ -4579,7 +4605,7 @@ class Game {
                 description: 'Aumenta o tamanho da plataforma em 50%',
                 price: 150,
                 type: 'paddle',
-                icon: this.getUpgradeIcon('wide_paddle')
+                icon: this.getUpgradeSVG('wide_paddle')
             },
             {
                 id: 'attached_cannons',
@@ -4587,7 +4613,7 @@ class Game {
                 description: 'A plataforma atira 2 projéteis apenas em batidas ímpares',
                 price: 170,
                 type: 'paddle',
-                icon: this.getUpgradeIcon('attached_cannons')
+                icon: this.getUpgradeSVG('attached_cannons')
             },
             {
                 id: 'super_magnet',
@@ -4595,7 +4621,7 @@ class Game {
                 description: 'Campo magnético que puxa a bolinha por 2 segundos (Mantenha espaço pressionado)',
                 price: 180,
                 type: 'paddle',
-                icon: this.getUpgradeIcon('super_magnet')
+                icon: this.getUpgradeSVG('super_magnet')
             },
             {
                 id: 'paddle_dash',
@@ -4603,7 +4629,7 @@ class Game {
                 description: 'Permite um movimento rápido (dash) para a esquerda ou direita por 3 segundos.',
                 price: 140,
                 type: 'paddle',
-                icon: this.getUpgradeIcon('paddle_dash')
+                icon: this.getUpgradeSVG('paddle_dash')
             },
             {
                 id: 'cushion_paddle',
@@ -4611,7 +4637,7 @@ class Game {
                 description: 'Diminui em 50% a velocidade de todas as bolinhas por 10 segundos. Cooldown de 60 segundos.',
                 price: 80,
                 type: 'paddle',
-                icon: this.getUpgradeIcon('cushion_paddle')
+                icon: this.getUpgradeSVG('cushion_paddle')
             },
             {
                 id: 'repulsor_shield',
@@ -4619,7 +4645,7 @@ class Game {
                 description: 'A plataforma fica 2x mais alta e a bolinha destrói o bloco atingido e o bloco de trás',
                 price: 220,
                 type: 'paddle',
-                icon: this.getUpgradeIcon('repulsor_shield')
+                icon: this.getUpgradeSVG('repulsor_shield')
             },
             {
                 id: 'charged_shot',
@@ -4627,7 +4653,7 @@ class Game {
                 description: 'Atira um projétil perfurante imediatamente.',
                 price: 190,
                 type: 'paddle',
-                icon: this.getUpgradeIcon('charged_shot')
+                icon: this.getUpgradeSVG('charged_shot')
             },
             
             // Upgrades de Bolinha (8-14)
@@ -4637,7 +4663,7 @@ class Game {
                 description: 'A bolinha quebra 1 tijolo comum (azul) sem mudar de direção',
                 price: 220,
                 type: 'ball',
-                icon: this.getUpgradeIcon('piercing_ball')
+                icon: this.getUpgradeSVG('piercing_ball')
             },
             {
                 id: 'friction_field',
@@ -4645,7 +4671,7 @@ class Game {
                 description: 'Deixa a bolinha 10% mais lenta',
                 price: 160,
                 type: 'ball',
-                icon: this.getUpgradeIcon('friction_field')
+                icon: this.getUpgradeSVG('friction_field')
             },
 
             {
@@ -4654,7 +4680,7 @@ class Game {
                 description: 'Cria uma nova bolinha grudada na plataforma. Liberada automaticamente em 2 segundos.',
                 price: 200,
                 type: 'ball',
-                icon: this.getUpgradeIcon('multi_ball')
+                icon: this.getUpgradeSVG('multi_ball')
             },
             {
                 id: 'combo_ball',
@@ -4662,7 +4688,15 @@ class Game {
                 description: 'A cada 5 combos consecutivos, duplica a bolinha atual uma vez',
                 price: 150,
                 type: 'ball',
-                icon: this.getUpgradeIcon('combo_ball')
+                icon: this.getUpgradeSVG('combo_ball')
+            },
+            {
+                id: 'heavy_ball',
+                name: 'Bolinha Pesada',
+                description: 'A bolinha se move 15% mais devagar, facilitando o controle',
+                price: 240,
+                type: 'ball',
+                icon: this.getUpgradeSVG('heavy_ball')
             },
             {
                 id: 'explosive_ball',
@@ -4670,7 +4704,7 @@ class Game {
                 description: 'A bolinha explode sempre ao atingir blocos amarelos ou vermelhos, destruindo tijolos adjacentes em uma pequena área',
                 price: 250,
                 type: 'ball',
-                icon: this.getUpgradeIcon('explosive_ball')
+                icon: this.getUpgradeSVG('explosive_ball')
             },
             {
                 id: 'ball_echo',
@@ -4678,7 +4712,7 @@ class Game {
                 description: 'Destrói um bloco aleatório adicional a cada batida (apenas em fases ímpares)',
                 price: 250,
                 type: 'ball',
-                icon: this.getUpgradeIcon('ball_echo')
+                icon: this.getUpgradeSVG('ball_echo')
             },
             {
                 id: 'effect_activator',
@@ -4686,7 +4720,7 @@ class Game {
                 description: 'Ativa efeito aleatório dos blocos na bolinha e ganha moedas baseadas na cor do efeito ativado',
                 price: 60,
                 type: 'ball',
-                icon: this.getUpgradeIcon('effect_activator')
+                icon: this.getUpgradeSVG('effect_activator')
             },
             {
                 id: 'mirror_ball',
@@ -4694,7 +4728,7 @@ class Game {
                 description: 'Quando a bolinha destrói um bloco, também destrói o bloco simetricamente posicionado do outro lado da tela (apenas nos primeiros 30 segundos de cada fase)',
                 price: 250,
                 type: 'ball',
-                icon: this.getUpgradeIcon('mirror_ball')
+                icon: this.getUpgradeSVG('mirror_ball')
             },
             {
                 id: 'lucky_ball',
@@ -4702,7 +4736,7 @@ class Game {
                 description: 'A bolinha fica dourada e ganha +1 moeda extra por cada bloco quebrado',
                 price: 150,
                 type: 'ball',
-                icon: this.getUpgradeIcon('lucky_ball')
+                icon: this.getUpgradeSVG('lucky_ball')
             },
             {
                 id: 'wombo_combo_ball',
@@ -4710,7 +4744,7 @@ class Game {
                 description: 'Adiciona +1 moeda por bloco quebrado em combos e dobra a recompensa do combo máximo na loja',
                 price: 200,
                 type: 'ball',
-                icon: this.getUpgradeIcon('wombo_combo_ball')
+                icon: this.getUpgradeSVG('wombo_combo_ball')
             },
             
             // Upgrades de Utilidade e Defesa (15-20)
@@ -4720,7 +4754,7 @@ class Game {
                 description: 'Ganha uma vida a cada fase',
                 price: 180,
                 type: 'utility',
-                icon: this.getUpgradeIcon('extra_life')
+                icon: this.getUpgradeSVG('extra_life')
             },
             {
                 id: 'safety_net',
@@ -4728,7 +4762,7 @@ class Game {
                 description: 'Uma barreira de energia temporária aparece na parte inferior da tela por 15 segundos',
                 price: 300,
                 type: 'utility',
-                icon: this.getUpgradeIcon('safety_net')
+                icon: this.getUpgradeSVG('safety_net')
             },
             {
                 id: 'lucky_amulet',
@@ -4736,7 +4770,7 @@ class Game {
                 description: '25% de chance de dobrar dinheiro ao destruir blocos',
                 price: 80,
                 type: 'utility',
-                icon: this.getUpgradeIcon('lucky_amulet')
+                icon: this.getUpgradeSVG('lucky_amulet')
             },
             {
                 id: 'life_insurance',
@@ -4744,7 +4778,7 @@ class Game {
                 description: 'Ao perder uma vida, ganha 100 moedas ao invés de perder 10',
                 price: 150,
                 type: 'utility',
-                icon: this.getUpgradeIcon('life_insurance')
+                icon: this.getUpgradeSVG('life_insurance')
             },
             {
                 id: 'recycling',
@@ -4752,7 +4786,7 @@ class Game {
                 description: 'Tijolos azuis podem reaparecer, concedendo 5 moedas',
                 price: 30,
                 type: 'utility',
-                icon: this.getUpgradeIcon('recycling')
+                icon: this.getUpgradeSVG('recycling')
             },
             {
                 id: 'risk_converter',
@@ -4760,7 +4794,7 @@ class Game {
                 description: 'Diminui vida do bloco vermelho para 2, muda velocidade da bolinha entre 80%-140% a cada 5s e desativa a troca de posição do bloco vermelho',
                 price: 100,
                 type: 'utility',
-                icon: this.getUpgradeIcon('risk_converter')
+                icon: this.getUpgradeSVG('risk_converter')
             },
             {
                 id: 'accelerated_vision',
@@ -4768,7 +4802,7 @@ class Game {
                 description: 'Reduz velocidade dos fragmentos brancos em 40%',
                 price: 120,
                 type: 'utility',
-                icon: this.getUpgradeIcon('accelerated_vision')
+                icon: this.getUpgradeSVG('accelerated_vision')
             },
             
             // Upgrades "Especiais" (21-25)
@@ -4778,7 +4812,7 @@ class Game {
                 description: 'A primeira batida no bloco vermelho dá 3 de dano',
                 price: 180,
                 type: 'special',
-                icon: this.getUpgradeIcon('structural_damage')
+                icon: this.getUpgradeSVG('structural_damage')
             },
             {
                 id: 'heat_vision',
@@ -4786,7 +4820,7 @@ class Game {
                 description: 'A bolinha invisível deixa um rastro térmico muito mais visível',
                 price: 100,
                 type: 'special',
-                icon: this.getUpgradeIcon('heat_vision')
+                icon: this.getUpgradeSVG('heat_vision')
             },
             {
                 id: 'controlled_reversal',
@@ -4794,7 +4828,7 @@ class Game {
                 description: 'Desativa completamente o efeito de Inversão do tijolo verde',
                 price: 120,
                 type: 'special',
-                icon: this.getUpgradeIcon('controlled_reversal')
+                icon: this.getUpgradeSVG('controlled_reversal')
             },
             {
                 id: 'prime_ball',
@@ -4802,7 +4836,7 @@ class Game {
                 description: 'A cada número primo de batidas, destrói um bloco aleatório (não vermelho)',
                 price: 120,
                 type: 'special',
-                icon: this.getUpgradeIcon('prime_ball')
+                icon: this.getUpgradeSVG('prime_ball')
             },
             {
                 id: 'investor',
@@ -4810,7 +4844,7 @@ class Game {
                 description: 'Menos 1 vida máxima, mas toda fase começa com +100 moedas',
                 price: 50,
                 type: 'special',
-                icon: this.getUpgradeIcon('investor')
+                icon: this.getUpgradeSVG('investor')
             },
             {
                 id: 'money_saver',
@@ -4818,7 +4852,7 @@ class Game {
                 description: 'Mantém até 50 moedas para a próxima fase',
                 price: 80,
                 type: 'passive',
-                icon: this.getUpgradeIcon('money_saver')
+                icon: this.getUpgradeSVG('money_saver')
             },
             {
                 id: 'time_ball',
@@ -4826,7 +4860,7 @@ class Game {
                 description: 'Pausa todas as bolinhas por 3 segundos. Cooldown de 40 segundos.',
                 price: 180,
                 type: 'ball',
-                icon: this.getUpgradeIcon('time_ball')
+                icon: this.getUpgradeSVG('time_ball')
             },
             {
                 id: 'ghost_ball',
@@ -4834,7 +4868,7 @@ class Game {
                 description: 'Quando a bolinha cai pela primeira vez em cada fase, ela reaparece no topo do campo.',
                 price: 250,
                 type: 'ball',
-                icon: this.getUpgradeIcon('ghost_ball')
+                icon: this.getUpgradeSVG('ghost_ball')
             },
             {
                 id: 'dimensional_ball',
@@ -4842,7 +4876,7 @@ class Game {
                 description: 'Mantenha espaço pressionado (até 5s) para atravessar tijolos sem quebrá-los. Cooldown 60s.',
                 price: 140,
                 type: 'ball',
-                icon: this.getUpgradeIcon('dimensional_ball')
+                icon: this.getUpgradeSVG('dimensional_ball')
             },
             {
                 id: 'shatter_glass',
@@ -4850,7 +4884,7 @@ class Game {
                 description: '50% de chance de estilhaçar o vidro de um bloco, causando efeito explosivo',
                 price: 200,
                 type: 'ball',
-                icon: this.getUpgradeIcon('shatter_glass')
+                icon: this.getUpgradeSVG('shatter_glass')
             },
             {
                 id: 'combo_power',
@@ -4858,7 +4892,7 @@ class Game {
                 description: 'Todos os poderes que destroem blocos ativam o combo quando destroem um bloco',
                 price: 180,
                 type: 'utility',
-                icon: this.getUpgradeIcon('combo_power')
+                icon: this.getUpgradeSVG('combo_power')
             }
         ];
         
@@ -5396,7 +5430,7 @@ class Game {
             // Adicionar ícone
             const icon = document.createElement('div');
             icon.className = 'power-icon';
-            icon.innerHTML = this.getUpgradeIcon(upgrade.id);
+            icon.innerHTML = this.getUpgradeSVG(upgrade.id);
             powerItem.appendChild(icon);
             
             // Adicionar cooldown apenas se o upgrade tiver cooldown
@@ -5485,7 +5519,7 @@ class Game {
         
         modal.innerHTML = `
             <div class="power-modal-header">
-                <div class="power-modal-icon">${this.getUpgradeIcon(upgrade.id)}</div>
+                <div class="power-modal-icon">${this.getUpgradeSVG(upgrade.id)}</div>
                 <h3 class="power-modal-title">${upgrade.name}</h3>
             </div>
             <div class="power-modal-description">${upgrade.description}</div>
@@ -5834,7 +5868,7 @@ class Game {
                 
                 const icon = document.createElement('div');
                 icon.className = 'power-selection-icon';
-                icon.innerHTML = this.getUpgradeIcon(powerId);
+                icon.innerHTML = this.getUpgradeSVG(powerId);
                 powerItem.appendChild(icon);
                 
                 const name = document.createElement('div');
