@@ -251,6 +251,11 @@ Este jogo está preparado para ser hospedado no **GitHub Pages**:
 2. Ative o GitHub Pages nas configurações do repositório
 3. Acesse o jogo através da URL gerada
 
+## 💻 Local
+
+Rode o script: ``` python -m http.server 8000 ``` e acesse [http://localhost:8000/](http://localhost:8000/)
+
+
 ## 🎮 Jogar Online
 
 [Clique aqui para jogar](https://saquettepj.github.io/PongLike)
