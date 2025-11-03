@@ -19,7 +19,7 @@
             <div class="instructions-container">
                 <div class="controls-section">
                     <h3>Controles</h3>
-                    <div class="controls-grid">
+                        <div class="controls-grid controls-desktop">
                         <div class="control-item">
                             <div class="control-icon">A/D ou ← →</div>
                             <div class="control-text">Controlar a plataforma</div>
@@ -41,6 +41,28 @@
                             <div class="control-text">Navegar / Comprar upgrades</div>
                         </div>
                     </div>
+                        <div class="controls-grid controls-mobile" style="display: none;">
+                            <div class="control-item">
+                                <div class="control-icon">⟵ / ⟶</div>
+                                <div class="control-text">Mover a plataforma</div>
+                            </div>
+                            <div class="control-item">
+                                <div class="control-icon">⮝ / ⮟</div>
+                                <div class="control-text">Trocar poder selecionado</div>
+                            </div>
+                            <div class="control-item">
+                                <div class="control-icon">●</div>
+                                <div class="control-text">Ativar poder / Soltar bola</div>
+                            </div>
+                            <div class="control-item">
+                                <div class="control-icon">Ⅱ</div>
+                                <div class="control-text">Pausar / Continuar</div>
+                            </div>
+                            <div class="control-item">
+                                <div class="control-icon">👆</div>
+                                <div class="control-text">Toque nos cards para comprar upgrades</div>
+                            </div>
+                        </div>
                 </div>
                 
                 <div class="bricks-effects-section">
@@ -171,6 +193,17 @@
                         <div id="powersContainer"></div>
                     </div>
                 </div>
+
+                <!-- Controles Mobile -->
+                <div id="mobileControls" class="mobile-controls" aria-label="Controles Mobile" style="display: none;">
+                    <button id="btnPowerPrev" class="mobile-btn" aria-label="Poder anterior">⮝</button>
+                    <button id="btnActivate" class="mobile-btn activate" aria-label="Ativar poder">●</button>
+                    <button id="btnPowerNext" class="mobile-btn" aria-label="Próximo poder">⮟</button>
+                    <div class="spacer"></div>
+                    <button id="btnLeft" class="mobile-btn wide" aria-label="Mover esquerda">⟵</button>
+                    <button id="btnRight" class="mobile-btn wide" aria-label="Mover direita">⟶</button>
+                    <button id="btnPause" class="mobile-btn" aria-label="Pausar">Ⅱ</button>
+                </div>
                 
                 <!-- Container de UI -->
                 <div class="ui-container">
@@ -214,6 +247,13 @@
 
         <!-- Tela de Seleção de Poderes Inicial -->
         <div id="powerSelectionScreen" class="screen">
+            <!-- Cabeçalho Mobile (exibido só no mobile) -->
+            <div class="mobile-header power-selection-mobile-header" style="display:none;">
+                <h2 class="mobile-title">Escolha seu Poder</h2>
+                <p class="mobile-subtitle">Selecione um poder para começar</p>
+                <div class="mobile-warning">Dura apenas 1 fase</div>
+            </div>
+
             <div class="power-selection-container">
                 <h2>Escolha seu Poder Inicial</h2>
                 <p class="power-selection-subtitle">Selecione um dos poderes abaixo para começar sua jornada</p>
@@ -223,14 +263,28 @@
                 <div class="power-selection-grid" id="powerSelectionGrid">
                     <!-- Poderes serão gerados dinamicamente -->
                 </div>
-                <div class="power-selection-actions">
-                    <button id="confirmPowerButton" class="confirm-power-button" disabled>Confirmar Poder</button>
+                <div class="power-selection-actions" style="width: 100%;">
+                    <button id="confirmPowerButton" class="confirm-power-button" style="width: 100%;" disabled>Confirmar Poder</button>
                 </div>
+            </div>
+            <!-- Ação fixa no mobile (fora do container rolável) -->
+            <div class="power-selection-mobile-actions" style="display:none; width: 100%;">
+                <button id="confirmPowerButtonMobile" class="confirm-power-button" style="width: 100%;" disabled>Confirmar Poder</button>
             </div>
         </div>
 
         <!-- Tela de Upgrades -->
         <div id="upgradeScreen" class="screen">
+            <!-- Cabeçalho Mobile (exibido só no mobile) -->
+            <div class="mobile-header shop-mobile-header" style="display:none;">
+                <h2 class="mobile-title">Loja</h2>
+                <div class="mobile-money">
+                    <span class="mobile-money-label">Dinheiro:</span>
+                    <span id="shopMoneyMobile">0</span> 🪙
+                </div>
+                <p class="mobile-subtitle" id="upgradeSubtitleMobile">Escolha seus upgrades</p>
+            </div>
+
             <div class="upgrade-container">
                 <h2>Escolha seus Upgrades</h2>
                 <div class="money-display">
@@ -243,6 +297,9 @@
                 </div>
                 <div class="upgrade-actions">
                     <button id="continueButton" class="continue-button">Continuar</button>
+                </div>
+                <div class="upgrade-actions-mobile" style="display:none; width: 100%;">
+                    <button id="continueButtonMobile" class="continue-button" style="width: 100%;">Continuar</button>
                 </div>
             </div>
         </div>
@@ -266,7 +323,7 @@
                         <div class="pause-column">
                             <div class="controls-section">
                                 <h3>Controles</h3>
-                                <div class="controls-grid">
+                                <div class="controls-grid controls-desktop">
                                     <div class="control-item">
                                         <div class="control-icon">A/D ou ← →</div>
                                         <div class="control-text">Controlar a plataforma</div>
@@ -286,6 +343,28 @@
                                     <div class="control-item">
                                         <div class="control-icon">🖱️ Clique</div>
                                         <div class="control-text">Navegar / Comprar upgrades</div>
+                                    </div>
+                                </div>
+                                <div class="controls-grid controls-mobile" style="display: none;">
+                                    <div class="control-item">
+                                        <div class="control-icon">⟵ / ⟶</div>
+                                        <div class="control-text">Mover a plataforma</div>
+                                    </div>
+                                    <div class="control-item">
+                                        <div class="control-icon">⮝ / ⮟</div>
+                                        <div class="control-text">Trocar poder selecionado</div>
+                                    </div>
+                                    <div class="control-item">
+                                        <div class="control-icon">●</div>
+                                        <div class="control-text">Ativar poder / Soltar bola</div>
+                                    </div>
+                                    <div class="control-item">
+                                        <div class="control-icon">Ⅱ</div>
+                                        <div class="control-text">Pausar / Continuar</div>
+                                    </div>
+                                    <div class="control-item">
+                                        <div class="control-icon">👆</div>
+                                        <div class="control-text">Toque nos cards para comprar upgrades</div>
                                     </div>
                                 </div>
                             </div>

@@ -7,6 +7,7 @@ class Game {
         this.ctx = this.canvas.getContext('2d');
         this.width = this.canvas.width;
         this.height = this.canvas.height;
+        this.isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
         
         // Otimizações do contexto 2D
         this.ctx.imageSmoothingEnabled = false; // Desabilitar suavização para melhor performance
@@ -501,6 +502,75 @@ class Game {
         document.getElementById('confirmPowerButton').addEventListener('click', () => {
             this.confirmInitialPower();
         });
+        const confirmPowerButtonMobile = document.getElementById('confirmPowerButtonMobile');
+        if (confirmPowerButtonMobile) {
+            confirmPowerButtonMobile.addEventListener('click', () => {
+                this.confirmInitialPower();
+            });
+        }
+
+        const continueButtonMobile = document.getElementById('continueButtonMobile');
+        if (continueButtonMobile) {
+            continueButtonMobile.addEventListener('click', () => {
+                this.continueToNextPhase();
+            });
+        }
+
+        // Controles Mobile (simulam teclas/ações)
+        const mobileControls = document.getElementById('mobileControls');
+        const bindHold = (el, onStart, onEnd) => {
+            if (!el) return;
+            const start = (e) => { e.preventDefault(); onStart && onStart(); };
+            const end = () => { onEnd && onEnd(); };
+            el.addEventListener('touchstart', start, { passive: false });
+            el.addEventListener('touchend', end);
+            el.addEventListener('touchcancel', end);
+        };
+        if (mobileControls) {
+            // Mover esquerda/direita segurando
+            bindHold(document.getElementById('btnLeft'),
+                () => { this.keys['KeyA'] = true; this.keys['ArrowLeft'] = true; },
+                () => { this.keys['KeyA'] = false; this.keys['ArrowLeft'] = false; }
+            );
+            bindHold(document.getElementById('btnRight'),
+                () => { this.keys['KeyD'] = true; this.keys['ArrowRight'] = true; },
+                () => { this.keys['KeyD'] = false; this.keys['ArrowRight'] = false; }
+            );
+
+            // Seleção de poder
+            const btnPrev = document.getElementById('btnPowerPrev');
+            const btnNext = document.getElementById('btnPowerNext');
+            if (btnPrev) btnPrev.addEventListener('touchstart', (e) => { e.preventDefault(); if (this.gameRunning && !this.gamePaused) this.selectPreviousPower(); });
+            if (btnNext) btnNext.addEventListener('touchstart', (e) => { e.preventDefault(); if (this.gameRunning && !this.gamePaused) this.selectNextPower(); });
+
+            // Ativar (mesma lógica do espaço)
+            const btnActivate = document.getElementById('btnActivate');
+            if (btnActivate) btnActivate.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (this.gameRunning && !this.gamePaused) {
+                    const attachedBalls = this.balls.filter(ball => ball.attached);
+                    if (attachedBalls.length > 0) {
+                        attachedBalls.forEach(ball => {
+                            ball.attached = false;
+                            const angle = (Math.random() * (Math.PI / 2)) - (Math.PI / 4);
+                            const baseSpeed = this.config.ballSpeed;
+                            ball.vx = Math.sin(angle) * baseSpeed;
+                            ball.vy = -Math.abs(Math.cos(angle) * baseSpeed);
+                        });
+                    } else {
+                        this.activateSelectedUpgrade();
+                    }
+                }
+            });
+
+            // Pause
+            const btnPause = document.getElementById('btnPause');
+            if (btnPause) btnPause.addEventListener('touchstart', (e) => { e.preventDefault(); if (this.gameRunning) this.togglePause(); });
+
+            // Evitar zoom por duplo toque/gestos
+            document.addEventListener('gesturestart', (e) => e.preventDefault());
+            document.addEventListener('dblclick', (e) => e.preventDefault());
+        }
     }
     
     showScreen(screenName) {
@@ -512,6 +582,15 @@ class Game {
         // Mostrar tela selecionada
         document.getElementById(screenName).classList.add('active');
         this.currentScreen = screenName;
+        // Alternar visibilidade dos controles mobile somente na tela do jogo
+        const mobileControls = document.getElementById('mobileControls');
+        if (mobileControls) {
+            if (this.isTouchDevice && screenName === 'gameScreen') {
+                mobileControls.style.display = '';
+            } else {
+                mobileControls.style.display = 'none';
+            }
+        }
     }
     
     showInitialPowerSelection() {
@@ -5130,9 +5209,9 @@ class Game {
         
         // Atualizar dinheiro na loja
         const shopMoneyElement = document.getElementById('shopMoney');
-        if (shopMoneyElement) {
-            shopMoneyElement.textContent = this.money;
-        }
+        if (shopMoneyElement) shopMoneyElement.textContent = this.money;
+        const shopMoneyMobileElement = document.getElementById('shopMoneyMobile');
+        if (shopMoneyMobileElement) shopMoneyMobileElement.textContent = this.money;
         
         // Atualizar subtitle da loja
         const upgradeSubtitle = document.getElementById('upgradeSubtitle');

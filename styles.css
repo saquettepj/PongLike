@@ -180,6 +180,15 @@ body {
     flex: 1;
 }
 
+/* Mostrar instruções corretas por plataforma */
+.controls-mobile { display: none; }
+.controls-desktop { display: grid; }
+
+@media (hover: none), (pointer: coarse) {
+    .controls-mobile { display: grid !important; }
+    .controls-desktop { display: none !important; }
+}
+
 .control-item {
     display: flex;
     flex-direction: column;
@@ -288,6 +297,301 @@ body {
     background: #000000;
     box-shadow: 0 0 30px rgba(255, 107, 53, 0.3);
     margin: 0 auto;
+}
+
+/* Controles Mobile */
+.mobile-controls {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 12px env(safe-area-inset-right) calc(12px + env(safe-area-inset-bottom)) env(safe-area-inset-left);
+    display: grid;
+    grid-template-columns: repeat(3, 60px) 1fr repeat(2, minmax(88px, 1fr)) 60px;
+    gap: 12px;
+    align-items: center;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.35);
+    border-top: 2px solid #ff6b35;
+    box-shadow: 0 -8px 30px rgba(255, 107, 53, 0.25);
+    backdrop-filter: blur(6px);
+}
+
+.mobile-controls .spacer { width: 100%; }
+
+.mobile-btn {
+    height: 60px;
+    min-width: 60px;
+    border: 2px solid #ff6b35;
+    border-radius: 12px;
+    background: linear-gradient(45deg, rgba(255,107,53,0.15), rgba(253,203,110,0.15));
+    color: #fdcb6e;
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 1px 1px 0px #2c1810;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.25);
+    backdrop-filter: blur(4px);
+}
+
+.mobile-btn.activate {
+    border-width: 3px;
+    border-color: #fdcb6e;
+    background: linear-gradient(45deg, #ff6b35, #fdcb6e);
+    color: #2c1810;
+}
+
+.mobile-btn.wide { font-size: 24px; }
+
+/* Esconde controles mobile por padrão (desktop) */
+@media (hover: none), (pointer: coarse) {
+    .mobile-controls { display: grid !important; }
+}
+
+/* Layout responsivo para telas pequenas */
+@media (max-width: 900px) {
+    /* Cabeçalhos mobile para Seleção e Loja */
+    .mobile-header { width: 100%; max-width: 100vw; text-align: center; margin-top: auto; margin-bottom: auto; }
+    .mobile-header .mobile-title { font-size: 1.35rem; color: #ff6b35; text-shadow: none; margin: 0 0 4px 0; }
+    .mobile-header .mobile-subtitle { font-size: 0.95rem; color: #fdcb6e; margin: 0 0 6px 0; }
+    .mobile-header .mobile-warning { font-size: 0.9rem; color: #e74c3c; border: 1px solid #e74c3c; display: inline-block; padding: 6px 10px; border-radius: 8px; margin-top: 8px; }
+
+    /* Esconder cabeçalhos antigos no mobile */
+    #powerSelectionScreen .power-selection-container > h2,
+    #powerSelectionScreen .power-selection-container > .power-selection-subtitle,
+    #powerSelectionScreen .power-selection-container > .power-duration-warning,
+    #upgradeScreen .upgrade-container > h2,
+    #upgradeScreen .upgrade-container > .money-display,
+    #upgradeScreen .upgrade-container > .upgrade-subtitle { display: none; }
+
+    /* Mostrar cabeçalhos novos no mobile */
+    .power-selection-mobile-header { display: block !important; }
+    .shop-mobile-header { display: block !important; }
+
+    /* Ajustar grids para uma coluna com boa leitura */
+    #powerSelectionScreen .power-selection-grid { grid-template-columns: 1fr; gap: 12px; }
+    #upgradeScreen .upgrades-grid { grid-template-columns: 1fr; gap: 12px; }
+
+    /* Sincronizar o dinheiro no cabeçalho mobile (estilo) */
+    .shop-mobile-header .mobile-money { color: #fdcb6e; font-weight: bold; margin: 4px 0 6px; }
+    .shop-mobile-header .mobile-money-label { opacity: 0.85; margin-right: 6px; }
+
+    /* Layout: header no topo e conteúdo centralizado embaixo (seleção de poder) */
+    #powerSelectionScreen {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px;
+    }
+    #powerSelectionScreen .power-selection-mobile-header {
+        align-self: stretch;
+        text-align: center;
+    }
+    #powerSelectionScreen .power-selection-container {
+        align-self: center;
+        margin-top: auto;
+        width: 100%;
+        max-width: 520px;
+    }
+    #powerSelectionScreen .power-selection-mobile-actions {
+        align-self: center;
+        margin-top: 10px;
+        display: none !important;
+    }
+
+    /* Evitar "pulo" do card ao tocar (desabilita animação de hover em touch) */
+    #powerSelectionScreen .power-selection-card,
+    #powerSelectionScreen .power-selection-card:hover,
+    #powerSelectionScreen .power-selection-card.selected,
+    #upgradeScreen .upgrade-card,
+    #upgradeScreen .upgrade-card:hover,
+    #upgradeScreen .upgrade-card.selected { transform: none !important; box-shadow: none !important; }
+
+    /* Espaço de segurança para foco/seleção no topo do grid */
+    #powerSelectionScreen .power-selection-grid { scroll-padding-top: 12px; }
+    #upgradeScreen .upgrades-grid { scroll-padding-top: 12px; }
+    .power-selection-card { scroll-margin-top: 12px; }
+    .game-container {
+        flex-direction: column;
+        gap: 12px;
+        padding-bottom: 130px; /* espaço para botões maiores */
+    }
+
+    .sidebar-left, #powerSelectionUI, .dev-upgrades-container {
+        display: none;
+    }
+
+    .ui-container {
+        align-items: center;
+        align-self: center;
+        width: 100%;
+    }
+
+    #gameUI { width: auto; max-width: 95vw; }
+
+    .canvas-container { width: 100vw; }
+    #gameCanvas { width: 100vw; height: auto; }
+
+    /* Títulos menores para caber melhor */
+    .game-title { font-size: 2rem; }
+    .game-subtitle { font-size: 0.95rem; }
+    .pause-container h2 { font-size: 1.6rem; }
+
+    /* Tornar telas roláveis e alinhadas no topo no mobile */
+    .screen {
+        justify-content: flex-start;
+        align-items: center;
+        padding: 12px 10px;
+        overflow-y: auto;
+    }
+
+    /* Tela Inicial - quebrar colunas e limitar largura */
+    #mainMenu .instructions-container {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        max-width: 95vw;
+    }
+    .title-container { margin-bottom: 1rem; }
+    .game-title { font-size: 1.8rem; }
+    .game-subtitle { font-size: 0.9rem; }
+    .controls-section { padding: 0.75rem; border-radius: 8px; }
+    .control-item { padding: 0.6rem; }
+    .control-icon { font-size: 1.1rem; }
+    .control-text { font-size: 0.75rem; }
+    .bricks-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 0.5rem; }
+    .brick-block { width: 24px; height: 8px; }
+    .brick-text { font-size: 0.7rem; line-height: 1.1; }
+
+    /* Tela de Pause - empilhar colunas e permitir scroll */
+    .pause-container {
+        padding: 0.8rem;
+        width: 95%;
+        max-height: calc(100vh - 24px);
+        overflow-y: auto;
+    }
+    .pause-layout { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 0.8rem; }
+    .pause-column { max-width: 100%; }
+    .purchased-powers-section {
+        max-height: 40vh;
+        min-height: auto;
+    }
+    #pauseScreen .controls-section h3 { font-size: 1.1rem; }
+    #pauseScreen .control-item { padding: 0.5rem; min-height: 34px; }
+    #pauseScreen .control-icon { font-size: 1rem; }
+    #pauseScreen .control-text { font-size: 0.75rem; }
+
+    /* Tela Seleção de Poder Inicial - ocupar tela e rolar */
+    .power-selection-container {
+        padding: 0.6rem;
+        border-width: 2px;
+        width: 95%;
+        max-height: calc(100vh - 24px);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .power-selection-container h2 { font-size: 1.35rem; line-height: 1.2; margin-bottom: 6px; text-shadow: none; letter-spacing: 0; }
+    .power-selection-subtitle { font-size: 0.95rem; line-height: 1.3; margin-bottom: 10px; text-shadow: none; }
+    .warning-text { font-size: 0.9rem; }
+    .power-duration-warning { padding: 8px; }
+    .power-selection-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        flex: 1;
+        overflow-y: auto;
+    }
+    .power-selection-actions { display: block; }
+    .power-selection-card { padding: 12px; border-radius: 14px; }
+    .initial-power-selection-icon { margin-bottom: 10px; }
+    .initial-power-selection-icon svg { width: 32px; height: 32px; }
+    .initial-power-selection-name { font-size: 1rem; line-height: 1.25; margin-bottom: 6px; }
+    .initial-power-selection-description { font-size: 0.95rem; line-height: 1.4; margin-bottom: 6px; white-space: normal; overflow-wrap: anywhere; hyphens: auto; }
+    .confirm-power-button { font-size: 1.2rem; padding: 0.8rem 1.2rem; }
+
+    /* Loja: cards mais compactos e grid em 2 colunas */
+    .upgrade-container {
+        padding: 12px;
+        width: 100%;
+        max-width: 100vw;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .upgrade-container h2 { font-size: 1.35rem; line-height: 1.2; margin-bottom: 6px; text-shadow: none; }
+    .money-display { margin: 8px 0; padding: 8px; }
+    .money-label { font-size: 1rem; }
+    #shopMoney { font-size: 1.2rem; }
+    .upgrade-subtitle { font-size: 0.95rem; margin-bottom: 10px; }
+    .upgrades-grid { grid-template-columns: 1fr; gap: 12px; flex: 1; overflow-y: auto; }
+    .upgrade-actions { display: none; }
+    .upgrade-actions-mobile { display: block !important; margin-top: 10px; }
+    .upgrade-card { padding: 12px; border-radius: 14px; }
+    .upgrade-icon svg { width: 32px; height: 32px; }
+    .upgrade-name { font-size: 1rem; line-height: 1.25; }
+    .upgrade-description { font-size: 0.95rem; line-height: 1.4; overflow-wrap: anywhere; hyphens: auto; }
+    .upgrade-price { font-size: 0.95rem; }
+    .continue-button { font-size: 1.1rem; padding: 0.7rem 1.1rem; }
+
+    /* Botões principais menores para caber sem rolar */
+    .start-button, .resume-button, .confirm-power-button, .continue-button, .restart-button {
+        padding: 0.7rem 1rem;
+        border-radius: 10px;
+    }
+}
+
+/* Ultra compacto para telas muito pequenas (largura ou altura reduzidas) */
+@media (max-width: 380px), (max-height: 640px) {
+    /* Tela inicial ainda menor */
+    .game-title { font-size: 1.6rem; }
+    .game-subtitle { font-size: 0.85rem; }
+    #mainMenu .instructions-container { gap: 6px; }
+    .control-icon { font-size: 1rem; }
+    .control-text { font-size: 0.7rem; }
+    .start-button { font-size: 1.4rem; padding: 0.6rem 0.9rem; }
+
+    /* Seleção de poder inicial ainda mais compacta */
+    .power-selection-container { padding: 0.5rem; }
+    .power-selection-container h2 { font-size: 1.1rem; }
+    .power-selection-subtitle { display: none; }
+    .power-duration-warning { display: none; }
+    .power-selection-grid { gap: 0.45rem; }
+    .power-selection-card { padding: 0.45rem; border-radius: 10px; }
+    .initial-power-selection-icon { margin-bottom: 0.5rem; }
+    .initial-power-selection-icon svg { width: 16px; height: 16px; }
+    .initial-power-selection-name { font-size: 0.68rem; }
+    .initial-power-selection-description { font-size: 0.54rem; line-height: 1.2; min-height: 0; white-space: normal; overflow: visible; }
+    .confirm-power-button { font-size: 1.2rem; padding: 0.8rem 1.2rem; width: 100%; }
+
+    /* Loja ultra compacta */
+    .upgrade-container { padding: 0.6rem; }
+    .upgrade-container h2 { font-size: 1.4rem; }
+    .upgrades-grid { gap: 0.6rem; }
+    .upgrade-card { padding: 0.6rem; }
+    .upgrade-icon svg { width: 18px; height: 18px; }
+    .upgrade-name { font-size: 0.7rem; }
+    .upgrade-description { font-size: 0.56rem; line-height: 1.2; }
+    .upgrade-price { font-size: 0.8rem; }
+    .continue-button { font-size: 0.95rem; padding: 0.55rem 0.9rem; }
+
+    /* Pause compacto */
+    .pause-container { padding: 0.6rem; }
+    .pause-container h2 { font-size: 1.4rem; }
+    .pause-layout { gap: 0.6rem; }
+    #pauseScreen .control-icon { font-size: 0.95rem; }
+    #pauseScreen .control-text { font-size: 0.7rem; }
+    .purchased-powers-section { max-height: 36vh; }
+}
+
+/* Paisagem em telas pequenas: usar 3 colunas para reduzir altura */
+@media (max-height: 520px) and (orientation: landscape) {
+    #powerSelectionScreen .power-selection-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.5rem;
+    }
+    #powerSelectionScreen .power-selection-card { padding: 0.45rem; }
+    #powerSelectionScreen .initial-power-selection-icon svg { width: 22px; height: 22px; }
+    #powerSelectionScreen .initial-power-selection-name { font-size: 0.8rem; }
+    #powerSelectionScreen .initial-power-selection-description { font-size: 0.64rem; min-height: 2em; }
 }
 
 /* Interface Lateral Esquerda */
