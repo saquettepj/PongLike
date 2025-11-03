@@ -127,7 +127,7 @@ class Game {
     // - Botões para pular fase e adicionar dinheiro
     // - Ferramentas de debug
     // ========================================
-    this.developerMode = false;
+    this.developerMode = true;
     this.gameRunning = false;
     this.gamePaused = false;
     this.ballHitCount = 0; // Contador de batidas da bolinha para Bolinha Prima
@@ -178,6 +178,13 @@ class Game {
     this.keys = {};
     this.mouseX = 0;
     this.mousePressed = false;
+
+    // Controles de toque
+    this.touchStartX = 0;
+    this.touchStartY = 0;
+    this.touchMoving = false;
+    this.isMovingLeft = false;
+    this.isMovingRight = false;
 
     // Upgrades com ativação manual (agora usando tempo real)
     this.activeUpgradeEffects = {
@@ -472,25 +479,7 @@ class Game {
       // Ativar upgrades com barra de espaço ou soltar bolinha presa
       if (e.code === "Space" && this.gameRunning && !this.gamePaused) {
         e.preventDefault();
-
-        // Verificar se há bolinhas presas para soltar
-        const attachedBalls = this.balls.filter((ball) => ball.attached);
-        if (attachedBalls.length > 0) {
-          // Soltar todas as bolinhas presas
-          attachedBalls.forEach((ball) => {
-            ball.attached = false;
-
-            // Escolher um ângulo inicial suave, similar ao cálculo de colisão com a plataforma
-            // Ângulo entre -45° e 45°
-            const angle = Math.random() * (Math.PI / 2) - Math.PI / 4;
-            const baseSpeed = this.config.ballSpeed; // velocidade base; multiplicadores são aplicados no passo de movimento
-            ball.vx = Math.sin(angle) * baseSpeed;
-            ball.vy = -Math.abs(Math.cos(angle) * baseSpeed);
-          });
-        } else {
-          // Se não há bolinhas presas, ativar upgrade selecionado
-          this.activateSelectedUpgrade();
-        }
+        this.handlePrimaryAction();
       }
 
       // Seleção de poderes com W/S ou setas
@@ -547,7 +536,34 @@ class Game {
       .getElementById("addMoneyBtn")
       .addEventListener("click", () => this.addDeveloperMoney());
 
+    // Event listeners para modo desenvolvedor móvel
+    document
+      .getElementById("skipPhaseBtnMobile")
+      .addEventListener("click", () => this.skipPhase());
+    document
+      .getElementById("addMoneyBtnMobile")
+      .addEventListener("click", () => this.addDeveloperMoney());
+
     // Controles do mouse (removidos - apenas teclado)
+
+    if (this.isTouchDevice) {
+      const touchOverlay = document.getElementById("touchOverlay");
+      touchOverlay.addEventListener(
+        "touchstart",
+        this.handleTouchStart.bind(this),
+        { passive: false },
+      );
+      touchOverlay.addEventListener(
+        "touchend",
+        this.handleTouchEnd.bind(this),
+        { passive: false },
+      );
+      touchOverlay.addEventListener(
+        "touchmove",
+        this.handleTouchMove.bind(this),
+        { passive: false },
+      );
+    }
 
     // Botões da interface
     document.getElementById("startButton").addEventListener("click", () => {
@@ -591,6 +607,86 @@ class Game {
     }
   }
 
+  setTouchControls(active) {
+    if (this.isTouchDevice) {
+      document.body.classList.toggle("touch-controls-active", active);
+    }
+  }
+
+  handleTouchStart(e) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const touchX = touch.clientX;
+    const screenWidth = window.innerWidth;
+
+    // Dividir a tela em 3 partes
+    if (touchX < screenWidth / 3) {
+      this.isMovingLeft = true;
+    } else if (touchX > (screenWidth * 2) / 3) {
+      this.isMovingRight = true;
+    } else {
+      // Centro
+      this.touchStartX = touch.clientX;
+      this.touchStartY = touch.clientY;
+      this.touchMoving = false;
+    }
+  }
+
+  handleTouchMove(e) {
+    e.preventDefault();
+    if (this.touchStartX === 0) return;
+
+    const touch = e.touches[0];
+    const deltaY = touch.clientY - this.touchStartY;
+
+    if (Math.abs(deltaY) > 20) {
+      // Movimento vertical significativo
+      if (deltaY < 0) {
+        this.selectPreviousPower();
+      } else {
+        this.selectNextPower();
+      }
+      this.touchMoving = true;
+      this.touchStartX = 0;
+      this.touchStartY = 0;
+    }
+  }
+
+  handleTouchEnd(e) {
+    e.preventDefault();
+    if (!this.touchMoving && this.touchStartX !== 0) {
+      // Foi um toque no centro
+      this.handlePrimaryAction();
+    }
+
+    this.isMovingLeft = false;
+    this.isMovingRight = false;
+    this.touchStartX = 0;
+    this.touchStartY = 0;
+    this.touchMoving = false;
+  }
+
+  handlePrimaryAction() {
+    // Verificar se há bolinhas presas para soltar
+    const attachedBalls = this.balls.filter((ball) => ball.attached);
+    if (attachedBalls.length > 0) {
+      // Soltar todas as bolinhas presas
+      attachedBalls.forEach((ball) => {
+        ball.attached = false;
+
+        // Escolher um ângulo inicial suave, similar ao cálculo de colisão com a plataforma
+        // Ângulo entre -45° e 45°
+        const angle = Math.random() * (Math.PI / 2) - Math.PI / 4;
+        const baseSpeed = this.config.ballSpeed; // velocidade base; multiplicadores são aplicados no passo de movimento
+        ball.vx = Math.sin(angle) * baseSpeed;
+        ball.vy = -Math.abs(Math.cos(angle) * baseSpeed);
+      });
+    } else {
+      // Se não há bolinhas presas, ativar upgrade selecionado
+      this.activateSelectedUpgrade();
+    }
+  }
+
   showScreen(screenName) {
     // Esconder todas as telas
     document.querySelectorAll(".screen").forEach((screen) => {
@@ -600,6 +696,9 @@ class Game {
     // Mostrar tela selecionada
     document.getElementById(screenName).classList.add("active");
     this.currentScreen = screenName;
+
+    // Ativar/desativar controles de toque
+    this.setTouchControls(screenName === "gameScreen");
   }
 
   showInitialPowerSelection() {
@@ -1457,10 +1556,10 @@ class Game {
     }
 
     // Controle apenas por teclado (A/D ou setas)
-    if (this.keys["KeyA"] || this.keys["ArrowLeft"]) {
+    if (this.keys["KeyA"] || this.keys["ArrowLeft"] || this.isMovingLeft) {
       this.paddle.x -= speed * deltaTime * 60; // Ajustar para manter velocidade original
     }
-    if (this.keys["KeyD"] || this.keys["ArrowRight"]) {
+    if (this.keys["KeyD"] || this.keys["ArrowRight"] || this.isMovingRight) {
       this.paddle.x += speed * deltaTime * 60; // Ajustar para manter velocidade original
     }
 
@@ -4752,30 +4851,33 @@ class Game {
   }
 
   initializeDeveloperMode() {
-    // Inicializar estado do modo desenvolvedor baseado na variável
-    const developerPanel = document.getElementById("developerPanel");
-    const controls = document.getElementById("developerControls");
-    const infoPanel = document.getElementById("gameInfoPanel");
+    const devPanel = document.getElementById("developerPanel");
+    const gameInfoPanel = document.getElementById("gameInfoPanel");
     const brickCounterPanel = document.getElementById("brickCounterPanel");
     const devUpgradesContainer = document.getElementById(
       "devUpgradesContainer",
     );
+    const mobileDevPanel = document.getElementById("mobileDeveloperPanel");
+
+    // Esconde todos primeiro para garantir um estado limpo
+    mobileDevPanel.style.display = "none";
+    devPanel.style.display = "none";
+    gameInfoPanel.style.display = "none";
+    brickCounterPanel.style.display = "none";
+    devUpgradesContainer.style.display = "none";
 
     if (this.developerMode) {
-      developerPanel.style.display = "block";
-      controls.style.display = "flex";
-      infoPanel.style.display = "block";
-      brickCounterPanel.style.display = "block";
-      devUpgradesContainer.style.display = "block";
-
-      // Inicializar upgrades do desenvolvedor
-      this.initializeDevUpgrades();
-    } else {
-      developerPanel.style.display = "none";
-      controls.style.display = "none";
-      infoPanel.style.display = "none";
-      brickCounterPanel.style.display = "none";
-      devUpgradesContainer.style.display = "none";
+      if (this.isTouchDevice) {
+        // Mostra apenas o painel mobile em dispositivos de toque
+        mobileDevPanel.style.display = "flex";
+      } else {
+        // Mostra os painéis de desktop em outros dispositivos
+        devPanel.style.display = "block";
+        gameInfoPanel.style.display = "block";
+        brickCounterPanel.style.display = "block";
+        devUpgradesContainer.style.display = "block";
+        this.generateDevUpgrades();
+      }
     }
   }
 
