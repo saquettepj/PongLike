@@ -1,428 +1,429 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Brick Rogue: O Desafio dos Efeitos</title>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
     <div id="gameContainer">
-        <!-- Tela Inicial -->
-        <div id="mainMenu" class="screen active">
-            <div class="title-container">
-                <h1 class="game-title">Brick Rogue</h1>
-                <h2 class="game-subtitle">O Desafio dos Efeitos</h2>
+      <!-- Tela Inicial -->
+      <div id="mainMenu" class="screen active">
+        <div class="title-container">
+          <h1 class="game-title">Brick Rogue</h1>
+          <h2 class="game-subtitle">O Desafio dos Efeitos</h2>
+        </div>
+
+        <div class="instructions-container">
+          <div class="controls-section">
+            <h3>Controles</h3>
+            <div class="controls-grid controls-desktop">
+              <div class="control-item">
+                <div class="control-icon">A/D ou ← →</div>
+                <div class="control-text">Controlar a plataforma</div>
+              </div>
+              <div class="control-item">
+                <div class="control-icon">W/S ou ↑/↓</div>
+                <div class="control-text">Selecionar poder</div>
+              </div>
+              <div class="control-item">
+                <div class="control-icon">⎵ Espaço</div>
+                <div class="control-text">Ativar poder selecionado</div>
+              </div>
+              <div class="control-item">
+                <div class="control-icon">P</div>
+                <div class="control-text">Pausar/Despausar</div>
+              </div>
+              <div class="control-item">
+                <div class="control-icon">🖱️ Clique</div>
+                <div class="control-text">Navegar / Comprar upgrades</div>
+              </div>
             </div>
-            
-            <div class="instructions-container">
+          </div>
+
+          <div class="bricks-effects-section">
+            <h3>Efeitos dos Blocos</h3>
+            <div class="bricks-grid">
+              <div class="brick-effect-item">
+                <div class="brick-block blue"></div>
+                <div class="brick-text">Física Padrão</div>
+              </div>
+              <div class="brick-effect-item">
+                <div class="brick-block yellow"></div>
+                <div class="brick-text">Velocidade (+40%)</div>
+              </div>
+              <div class="brick-effect-item">
+                <div class="brick-block green"></div>
+                <div class="brick-text">Inversão Horizontal</div>
+              </div>
+              <div class="brick-effect-item">
+                <div class="brick-block purple"></div>
+                <div class="brick-text">Zigue-zague</div>
+              </div>
+              <div class="brick-effect-item">
+                <div class="brick-block gray"></div>
+                <div class="brick-text">
+                  Invisibilidade (0.5s invisível / 1s visível)
+                </div>
+              </div>
+              <div class="brick-effect-item">
+                <div class="brick-block white"></div>
+                <div class="brick-text">Fragmento perigoso que tira vida</div>
+              </div>
+              <div class="brick-effect-item">
+                <div class="brick-block red"></div>
+                <div class="brick-text">
+                  Objetivo da Fase + Acelera 4% por hit + Troca posição
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button id="startButton" class="start-button">INICIAR</button>
+      </div>
+
+      <!-- Tela do Jogo -->
+      <div id="gameScreen" class="screen">
+        <div class="game-container">
+          <!-- Overlay de Contagem Regressiva -->
+          <div
+            id="countdownOverlay"
+            class="countdown-overlay"
+            style="display: none"
+          >
+            <div class="countdown-number" id="countdownNumber">3</div>
+          </div>
+          <!-- Interface Lateral Esquerda -->
+          <div class="sidebar-left">
+            <div class="game-info" id="gameInfoPanel" style="display: none">
+              <h3>Informações do Jogo</h3>
+              <div class="info-item">
+                <span class="info-label">Velocidade da Bolinha:</span>
+                <span class="info-value" id="ballSpeedDisplay">100%</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Multiplicador Base:</span>
+                <span class="info-value" id="baseSpeedDisplay">100%</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Multiplicador Efeitos:</span>
+                <span class="info-value" id="effectsSpeedDisplay">100%</span>
+              </div>
+            </div>
+
+            <div
+              class="brick-counter"
+              id="brickCounterPanel"
+              style="display: none"
+            >
+              <h3>Contador de Tijolos</h3>
+              <div class="brick-count-item">
+                <span class="brick-color blue">🔵</span>
+                <span class="brick-label">Azul:</span>
+                <span class="brick-count" id="blueCount">0</span>
+              </div>
+              <div class="brick-count-item">
+                <span class="brick-color yellow">🟡</span>
+                <span class="brick-label">Amarelo:</span>
+                <span class="brick-count" id="yellowCount">0</span>
+              </div>
+              <div class="brick-count-item">
+                <span class="brick-color green">🟢</span>
+                <span class="brick-label">Verde:</span>
+                <span class="brick-count" id="greenCount">0</span>
+              </div>
+              <div class="brick-count-item">
+                <span class="brick-color purple">🟣</span>
+                <span class="brick-label">Roxo:</span>
+                <span class="brick-count" id="purpleCount">0</span>
+              </div>
+              <div class="brick-count-item">
+                <span class="brick-color gray">⚫</span>
+                <span class="brick-label">Cinza:</span>
+                <span class="brick-count" id="grayCount">0</span>
+              </div>
+              <div class="brick-count-item">
+                <span class="brick-color white">⚪</span>
+                <span class="brick-label">Branco:</span>
+                <span class="brick-count" id="whiteCount">0</span>
+              </div>
+              <div class="brick-count-item">
+                <span class="brick-color red">🔴</span>
+                <span class="brick-label">Vermelho:</span>
+                <span class="brick-count" id="redCount">0</span>
+              </div>
+            </div>
+
+            <div
+              class="developer-panel"
+              id="developerPanel"
+              style="display: none"
+            >
+              <h3>Modo Desenvolvedor</h3>
+              <div class="developer-controls" id="developerControls">
+                <button id="skipPhaseBtn" class="dev-btn">Pular Fase</button>
+                <button id="addMoneyBtn" class="dev-btn">+200 Moedas</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Container de Upgrades do Desenvolvedor -->
+          <div
+            class="dev-upgrades-container"
+            id="devUpgradesContainer"
+            style="display: none"
+          >
+            <h3>Upgrades Dev</h3>
+            <div class="dev-upgrades-scroll" id="devUpgradesScroll">
+              <div class="dev-upgrades-grid" id="devUpgradesGrid">
+                <!-- Upgrades serão gerados dinamicamente -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Canvas do Jogo -->
+          <div class="canvas-container">
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+            <div id="powersUI">
+              <div id="powersContainer"></div>
+            </div>
+          </div>
+
+          <!-- Container de UI -->
+          <div class="ui-container">
+            <!-- Interface do Jogo -->
+            <div id="gameUI">
+              <div class="ui-panel">
+                <div class="ui-item">
+                  <span class="ui-label">FASE:</span>
+                  <span id="currentPhase">1</span>
+                </div>
+                <div class="ui-item">
+                  <span class="ui-label">RECORDE:</span>
+                  <span id="highScore">1</span>
+                </div>
+                <div class="ui-item">
+                  <span class="ui-label">COMBO:</span>
+                  <span id="maxCombo">0</span>
+                </div>
+                <div class="ui-item">
+                  <span class="ui-label">DINHEIRO:</span>
+                  <span id="money">0</span> 🪙
+                </div>
+                <div class="ui-item">
+                  <span class="ui-label">VIDAS:</span>
+                  <span id="lives">♥️♥️♥️</span>
+                </div>
+                <div class="ui-item" id="primeCounter" style="display: none">
+                  <span class="ui-label">BATIDAS:</span>
+                  <span id="hitCount">0</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Interface de Seleção de Poderes -->
+            <div id="powerSelectionUI">
+              <div id="powerSelectionContainer"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tela de Seleção de Poderes Inicial -->
+      <div id="powerSelectionScreen" class="screen">
+        <div class="power-selection-container">
+          <h2>Poder Inicial</h2>
+          <p class="power-selection-subtitle">Selecione um para começar</p>
+          <div class="power-duration-warning">
+            <span class="warning-text">Este poder durará apenas 1 fase</span>
+          </div>
+          <div class="power-selection-grid" id="powerSelectionGrid">
+            <!-- Poderes serão gerados dinamicamente -->
+          </div>
+          <div class="power-selection-actions" style="width: 100%">
+            <button
+              id="confirmPowerButton"
+              class="confirm-power-button"
+              style="width: 100%"
+              disabled
+            >
+              Confirmar Poder
+            </button>
+          </div>
+        </div>
+        <!-- Ação fixa no mobile (fora do container rolável) -->
+        <div
+          class="power-selection-mobile-actions"
+          style="display: none; width: 100%"
+        >
+          <button
+            id="confirmPowerButtonMobile"
+            class="confirm-power-button"
+            style="width: 100%"
+            disabled
+          >
+            Confirmar Poder
+          </button>
+        </div>
+      </div>
+
+      <!-- Tela de Upgrades -->
+      <div id="upgradeScreen" class="screen">
+        <!-- Cabeçalho Mobile (exibido só no mobile) -->
+        <div class="mobile-header shop-mobile-header" style="display: none">
+          <h2 class="mobile-title">Loja</h2>
+          <div class="mobile-money">
+            <span class="mobile-money-label">Dinheiro:</span>
+            <span id="shopMoneyMobile">0</span> 🪙
+          </div>
+          <p class="mobile-subtitle" id="upgradeSubtitleMobile">
+            Escolha seus upgrades
+          </p>
+        </div>
+
+        <div class="upgrade-container">
+          <h2>Escolha seus Upgrades</h2>
+          <div class="money-display">
+            <span class="money-label">DINHEIRO ATUAL:</span>
+            <span id="shopMoney">0</span> 🪙
+          </div>
+          <p class="upgrade-subtitle" id="upgradeSubtitle">
+            Escolha seus upgrades
+          </p>
+          <div class="upgrades-grid" id="upgradesGrid">
+            <!-- Upgrades serão gerados dinamicamente -->
+          </div>
+          <div class="upgrade-actions">
+            <button id="continueButton" class="continue-button">
+              Continuar
+            </button>
+          </div>
+          <div
+            class="upgrade-actions-mobile"
+            style="display: none; width: 100%"
+          >
+            <button
+              id="continueButtonMobile"
+              class="continue-button"
+              style="width: 100%"
+            >
+              Continuar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tela de Pause -->
+      <div id="pauseScreen" class="screen">
+        <div class="pause-container">
+          <h2>PAUSE</h2>
+
+          <div class="instructions-container">
+            <div class="pause-layout">
+              <div class="pause-column">
+                <div class="purchased-powers-section">
+                  <h3>Poderes Comprados</h3>
+                  <div
+                    id="purchasedPowersContainer"
+                    class="purchased-powers-grid"
+                  >
+                    <!-- Poderes comprados serão inseridos aqui dinamicamente -->
+                  </div>
+                </div>
+              </div>
+
+              <div class="pause-column">
                 <div class="controls-section">
-                    <h3>Controles</h3>
-                        <div class="controls-grid controls-desktop">
-                        <div class="control-item">
-                            <div class="control-icon">A/D ou ← →</div>
-                            <div class="control-text">Controlar a plataforma</div>
-                        </div>
-                        <div class="control-item">
-                            <div class="control-icon">W/S ou ↑/↓</div>
-                            <div class="control-text">Selecionar poder</div>
-                        </div>
-                        <div class="control-item">
-                            <div class="control-icon">⎵ Espaço</div>
-                            <div class="control-text">Ativar poder selecionado</div>
-                        </div>
-                        <div class="control-item">
-                            <div class="control-icon">P</div>
-                            <div class="control-text">Pausar/Despausar</div>
-                        </div>
-                        <div class="control-item">
-                            <div class="control-icon">🖱️ Clique</div>
-                            <div class="control-text">Navegar / Comprar upgrades</div>
-                        </div>
+                  <h3>Controles</h3>
+                  <div class="controls-grid controls-desktop">
+                    <div class="control-item">
+                      <div class="control-icon">A/D ou ← →</div>
+                      <div class="control-text">Controlar a plataforma</div>
                     </div>
-                        <div class="controls-grid controls-mobile" style="display: none;">
-                            <div class="control-item">
-                                <div class="control-icon">⟵ / ⟶</div>
-                                <div class="control-text">Mover a plataforma</div>
-                            </div>
-                            <div class="control-item">
-                                <div class="control-icon">⮝ / ⮟</div>
-                                <div class="control-text">Trocar poder selecionado</div>
-                            </div>
-                            <div class="control-item">
-                                <div class="control-icon">●</div>
-                                <div class="control-text">Ativar poder / Soltar bola</div>
-                            </div>
-                            <div class="control-item">
-                                <div class="control-icon">Ⅱ</div>
-                                <div class="control-text">Pausar / Continuar</div>
-                            </div>
-                            <div class="control-item">
-                                <div class="control-icon">👆</div>
-                                <div class="control-text">Toque nos cards para comprar upgrades</div>
-                            </div>
-                        </div>
+                    <div class="control-item">
+                      <div class="control-icon">W/S ou ↑/↓</div>
+                      <div class="control-text">Selecionar poder</div>
+                    </div>
+                    <div class="control-item">
+                      <div class="control-icon">⎵ Espaço</div>
+                      <div class="control-text">Ativar poder selecionado</div>
+                    </div>
+                    <div class="control-item">
+                      <div class="control-icon">P</div>
+                      <div class="control-text">Pausar/Despausar</div>
+                    </div>
+                    <div class="control-item">
+                      <div class="control-icon">🖱️ Clique</div>
+                      <div class="control-text">Navegar / Comprar upgrades</div>
+                    </div>
+                  </div>
                 </div>
-                
+              </div>
+
+              <div class="pause-column">
                 <div class="bricks-effects-section">
-                    <h3>Efeitos dos Blocos</h3>
-                    <div class="bricks-grid">
-                        <div class="brick-effect-item">
-                            <div class="brick-block blue"></div>
-                            <div class="brick-text">Física Padrão</div>
-                        </div>
-                        <div class="brick-effect-item">
-                            <div class="brick-block yellow"></div>
-                            <div class="brick-text">Velocidade (+40%)</div>
-                        </div>
-                        <div class="brick-effect-item">
-                            <div class="brick-block green"></div>
-                            <div class="brick-text">Inversão Horizontal</div>
-                        </div>
-                        <div class="brick-effect-item">
-                            <div class="brick-block purple"></div>
-                            <div class="brick-text">Zigue-zague</div>
-                        </div>
-                        <div class="brick-effect-item">
-                            <div class="brick-block gray"></div>
-                            <div class="brick-text">Invisibilidade (0.5s invisível / 1s visível)</div>
-                        </div>
-                        <div class="brick-effect-item">
-                            <div class="brick-block white"></div>
-                            <div class="brick-text">Fragmento perigoso que tira vida</div>
-                        </div>
-                                                            <div class="brick-effect-item">
-                                        <div class="brick-block red"></div>
-                                        <div class="brick-text">Objetivo da Fase + Acelera 4% por hit + Troca posição</div>
-                                    </div>
+                  <h3>Efeitos dos Blocos</h3>
+                  <div class="bricks-grid">
+                    <div class="brick-effect-item">
+                      <div class="brick-block blue"></div>
+                      <div class="brick-text">Física Padrão</div>
                     </div>
+                    <div class="brick-effect-item">
+                      <div class="brick-block yellow"></div>
+                      <div class="brick-text">Velocidade (+40%)</div>
+                    </div>
+                    <div class="brick-effect-item">
+                      <div class="brick-block green"></div>
+                      <div class="brick-text">Inversão Horizontal</div>
+                    </div>
+                    <div class="brick-effect-item">
+                      <div class="brick-block purple"></div>
+                      <div class="brick-text">Zigue-zague</div>
+                    </div>
+                    <div class="brick-effect-item">
+                      <div class="brick-block gray"></div>
+                      <div class="brick-text">
+                        Invisibilidade (0.5s invisível / 1s visível)
+                      </div>
+                    </div>
+                    <div class="brick-effect-item">
+                      <div class="brick-block white"></div>
+                      <div class="brick-text">
+                        Fragmento perigoso que tira vida
+                      </div>
+                    </div>
+                    <div class="brick-effect-item">
+                      <div class="brick-block red"></div>
+                      <div class="brick-text">
+                        Objetivo da Fase + Acelera 4% por hit + Troca posição
+                      </div>
+                    </div>
+                  </div>
                 </div>
+              </div>
             </div>
-            
-            <button id="startButton" class="start-button">INICIAR</button>
+          </div>
+
+          <button id="resumeButton" class="resume-button">Continuar</button>
         </div>
+      </div>
 
-        <!-- Tela do Jogo -->
-        <div id="gameScreen" class="screen">
-            <div class="game-container">
-                <!-- Overlay de Contagem Regressiva -->
-                <div id="countdownOverlay" class="countdown-overlay" style="display: none;">
-                    <div class="countdown-number" id="countdownNumber">3</div>
-                </div>
-                <!-- Interface Lateral Esquerda -->
-                <div class="sidebar-left">
-                    <div class="game-info" id="gameInfoPanel" style="display: none;">
-                        <h3>Informações do Jogo</h3>
-                        <div class="info-item">
-                            <span class="info-label">Velocidade da Bolinha:</span>
-                            <span class="info-value" id="ballSpeedDisplay">100%</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Multiplicador Base:</span>
-                            <span class="info-value" id="baseSpeedDisplay">100%</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Multiplicador Efeitos:</span>
-                            <span class="info-value" id="effectsSpeedDisplay">100%</span>
-                        </div>
-                    </div>
-                    
-                    <div class="brick-counter" id="brickCounterPanel" style="display: none;">
-                        <h3>Contador de Tijolos</h3>
-                        <div class="brick-count-item">
-                            <span class="brick-color blue">🔵</span>
-                            <span class="brick-label">Azul:</span>
-                            <span class="brick-count" id="blueCount">0</span>
-                        </div>
-                        <div class="brick-count-item">
-                            <span class="brick-color yellow">🟡</span>
-                            <span class="brick-label">Amarelo:</span>
-                            <span class="brick-count" id="yellowCount">0</span>
-                        </div>
-                        <div class="brick-count-item">
-                            <span class="brick-color green">🟢</span>
-                            <span class="brick-label">Verde:</span>
-                            <span class="brick-count" id="greenCount">0</span>
-                        </div>
-                        <div class="brick-count-item">
-                            <span class="brick-color purple">🟣</span>
-                            <span class="brick-label">Roxo:</span>
-                            <span class="brick-count" id="purpleCount">0</span>
-                        </div>
-                        <div class="brick-count-item">
-                            <span class="brick-color gray">⚫</span>
-                            <span class="brick-label">Cinza:</span>
-                            <span class="brick-count" id="grayCount">0</span>
-                        </div>
-                        <div class="brick-count-item">
-                            <span class="brick-color white">⚪</span>
-                            <span class="brick-label">Branco:</span>
-                            <span class="brick-count" id="whiteCount">0</span>
-                        </div>
-                        <div class="brick-count-item">
-                            <span class="brick-color red">🔴</span>
-                            <span class="brick-label">Vermelho:</span>
-                            <span class="brick-count" id="redCount">0</span>
-                        </div>
-                    </div>
-                    
-                    <div class="developer-panel" id="developerPanel" style="display: none;">
-                        <h3>Modo Desenvolvedor</h3>
-                        <div class="developer-controls" id="developerControls">
-                            <button id="skipPhaseBtn" class="dev-btn">Pular Fase</button>
-                            <button id="addMoneyBtn" class="dev-btn">+200 Moedas</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Container de Upgrades do Desenvolvedor -->
-                <div class="dev-upgrades-container" id="devUpgradesContainer" style="display: none;">
-                    <h3>Upgrades Dev</h3>
-                    <div class="dev-upgrades-scroll" id="devUpgradesScroll">
-                        <div class="dev-upgrades-grid" id="devUpgradesGrid">
-                            <!-- Upgrades serão gerados dinamicamente -->
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Canvas do Jogo -->
-                <div class="canvas-container">
-                    <canvas id="gameCanvas" width="800" height="600"></canvas>
-                    <div id="powersUI">
-                        <div id="powersContainer"></div>
-                    </div>
-                </div>
-
-                <!-- Controles Mobile -->
-                <div id="mobileControls" class="mobile-controls" aria-label="Controles Mobile" style="display: none;">
-                    <button id="btnPowerPrev" class="mobile-btn" aria-label="Poder anterior">⮝</button>
-                    <button id="btnActivate" class="mobile-btn activate" aria-label="Ativar poder">●</button>
-                    <button id="btnPowerNext" class="mobile-btn" aria-label="Próximo poder">⮟</button>
-                    <div class="spacer"></div>
-                    <button id="btnLeft" class="mobile-btn wide" aria-label="Mover esquerda">⟵</button>
-                    <button id="btnRight" class="mobile-btn wide" aria-label="Mover direita">⟶</button>
-                    <button id="btnPause" class="mobile-btn" aria-label="Pausar">Ⅱ</button>
-                </div>
-                
-                <!-- Container de UI -->
-                <div class="ui-container">
-                    <!-- Interface do Jogo -->
-                    <div id="gameUI">
-                        <div class="ui-panel">
-                            <div class="ui-item">
-                                <span class="ui-label">FASE:</span>
-                                <span id="currentPhase">1</span>
-                            </div>
-                            <div class="ui-item">
-                                <span class="ui-label">RECORDE:</span>
-                                <span id="highScore">1</span>
-                            </div>
-                            <div class="ui-item">
-                                <span class="ui-label">COMBO:</span>
-                                <span id="maxCombo">0</span>
-                            </div>
-                            <div class="ui-item">
-                                <span class="ui-label">DINHEIRO:</span>
-                                <span id="money">0</span> 🪙
-                            </div>
-                            <div class="ui-item">
-                                <span class="ui-label">VIDAS:</span>
-                                <span id="lives">♥️♥️♥️</span>
-                            </div>
-                            <div class="ui-item" id="primeCounter" style="display: none;">
-                                <span class="ui-label">BATIDAS:</span>
-                                <span id="hitCount">0</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Interface de Seleção de Poderes -->
-                    <div id="powerSelectionUI">
-                        <div id="powerSelectionContainer"></div>
-                    </div>
-                </div>
-            </div>
+      <!-- Tela de Game Over -->
+      <div id="gameOverScreen" class="screen">
+        <div class="game-over-container">
+          <h2>Game Over</h2>
+          <p>Você chegou até a fase <span id="finalPhase">1</span></p>
+          <p>Seu recorde: <span id="finalRecord">1</span></p>
+          <button id="restartButton" class="restart-button">
+            Jogar Novamente
+          </button>
         </div>
-
-        <!-- Tela de Seleção de Poderes Inicial -->
-        <div id="powerSelectionScreen" class="screen">
-            <!-- Cabeçalho Mobile (exibido só no mobile) -->
-            <div class="mobile-header power-selection-mobile-header" style="display:none;">
-                <h2 class="mobile-title">Escolha seu Poder</h2>
-                <p class="mobile-subtitle">Selecione um poder para começar</p>
-                <div class="mobile-warning">Dura apenas 1 fase</div>
-            </div>
-
-            <div class="power-selection-container">
-                <h2>Escolha seu Poder Inicial</h2>
-                <p class="power-selection-subtitle">Selecione um dos poderes abaixo para começar sua jornada</p>
-                <div class="power-duration-warning">
-                    <span class="warning-text">Este poder durará apenas 1 fase</span>
-                </div>
-                <div class="power-selection-grid" id="powerSelectionGrid">
-                    <!-- Poderes serão gerados dinamicamente -->
-                </div>
-                <div class="power-selection-actions" style="width: 100%;">
-                    <button id="confirmPowerButton" class="confirm-power-button" style="width: 100%;" disabled>Confirmar Poder</button>
-                </div>
-            </div>
-            <!-- Ação fixa no mobile (fora do container rolável) -->
-            <div class="power-selection-mobile-actions" style="display:none; width: 100%;">
-                <button id="confirmPowerButtonMobile" class="confirm-power-button" style="width: 100%;" disabled>Confirmar Poder</button>
-            </div>
-        </div>
-
-        <!-- Tela de Upgrades -->
-        <div id="upgradeScreen" class="screen">
-            <!-- Cabeçalho Mobile (exibido só no mobile) -->
-            <div class="mobile-header shop-mobile-header" style="display:none;">
-                <h2 class="mobile-title">Loja</h2>
-                <div class="mobile-money">
-                    <span class="mobile-money-label">Dinheiro:</span>
-                    <span id="shopMoneyMobile">0</span> 🪙
-                </div>
-                <p class="mobile-subtitle" id="upgradeSubtitleMobile">Escolha seus upgrades</p>
-            </div>
-
-            <div class="upgrade-container">
-                <h2>Escolha seus Upgrades</h2>
-                <div class="money-display">
-                    <span class="money-label">DINHEIRO ATUAL:</span>
-                    <span id="shopMoney">0</span> 🪙
-                </div>
-                <p class="upgrade-subtitle" id="upgradeSubtitle">Escolha seus upgrades</p>
-                <div class="upgrades-grid" id="upgradesGrid">
-                    <!-- Upgrades serão gerados dinamicamente -->
-                </div>
-                <div class="upgrade-actions">
-                    <button id="continueButton" class="continue-button">Continuar</button>
-                </div>
-                <div class="upgrade-actions-mobile" style="display:none; width: 100%;">
-                    <button id="continueButtonMobile" class="continue-button" style="width: 100%;">Continuar</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tela de Pause -->
-        <div id="pauseScreen" class="screen">
-            <div class="pause-container">
-                <h2>PAUSE</h2>
-                
-                <div class="instructions-container">
-                    <div class="pause-layout">
-                        <div class="pause-column">
-                            <div class="purchased-powers-section">
-                                <h3>Poderes Comprados</h3>
-                                <div id="purchasedPowersContainer" class="purchased-powers-grid">
-                                    <!-- Poderes comprados serão inseridos aqui dinamicamente -->
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="pause-column">
-                            <div class="controls-section">
-                                <h3>Controles</h3>
-                                <div class="controls-grid controls-desktop">
-                                    <div class="control-item">
-                                        <div class="control-icon">A/D ou ← →</div>
-                                        <div class="control-text">Controlar a plataforma</div>
-                                    </div>
-                                    <div class="control-item">
-                                        <div class="control-icon">W/S ou ↑/↓</div>
-                                        <div class="control-text">Selecionar poder</div>
-                                    </div>
-                                    <div class="control-item">
-                                        <div class="control-icon">⎵ Espaço</div>
-                                        <div class="control-text">Ativar poder selecionado</div>
-                                    </div>
-                                    <div class="control-item">
-                                        <div class="control-icon">P</div>
-                                        <div class="control-text">Pausar/Despausar</div>
-                                    </div>
-                                    <div class="control-item">
-                                        <div class="control-icon">🖱️ Clique</div>
-                                        <div class="control-text">Navegar / Comprar upgrades</div>
-                                    </div>
-                                </div>
-                                <div class="controls-grid controls-mobile" style="display: none;">
-                                    <div class="control-item">
-                                        <div class="control-icon">⟵ / ⟶</div>
-                                        <div class="control-text">Mover a plataforma</div>
-                                    </div>
-                                    <div class="control-item">
-                                        <div class="control-icon">⮝ / ⮟</div>
-                                        <div class="control-text">Trocar poder selecionado</div>
-                                    </div>
-                                    <div class="control-item">
-                                        <div class="control-icon">●</div>
-                                        <div class="control-text">Ativar poder / Soltar bola</div>
-                                    </div>
-                                    <div class="control-item">
-                                        <div class="control-icon">Ⅱ</div>
-                                        <div class="control-text">Pausar / Continuar</div>
-                                    </div>
-                                    <div class="control-item">
-                                        <div class="control-icon">👆</div>
-                                        <div class="control-text">Toque nos cards para comprar upgrades</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="pause-column">
-                            <div class="bricks-effects-section">
-                                <h3>Efeitos dos Blocos</h3>
-                                <div class="bricks-grid">
-                                    <div class="brick-effect-item">
-                                        <div class="brick-block blue"></div>
-                                        <div class="brick-text">Física Padrão</div>
-                                    </div>
-                                    <div class="brick-effect-item">
-                                        <div class="brick-block yellow"></div>
-                                        <div class="brick-text">Velocidade (+40%)</div>
-                                    </div>
-                                    <div class="brick-effect-item">
-                                        <div class="brick-block green"></div>
-                                        <div class="brick-text">Inversão Horizontal</div>
-                                    </div>
-                                    <div class="brick-effect-item">
-                                        <div class="brick-block purple"></div>
-                                        <div class="brick-text">Zigue-zague</div>
-                                    </div>
-                                    <div class="brick-effect-item">
-                                        <div class="brick-block gray"></div>
-                                        <div class="brick-text">Invisibilidade (0.5s invisível / 1s visível)</div>
-                                    </div>
-                                    <div class="brick-effect-item">
-                                        <div class="brick-block white"></div>
-                                        <div class="brick-text">Fragmento perigoso que tira vida</div>
-                                    </div>
-                                    <div class="brick-effect-item">
-                                        <div class="brick-block red"></div>
-                                        <div class="brick-text">Objetivo da Fase + Acelera 4% por hit + Troca posição</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <button id="resumeButton" class="resume-button">Continuar</button>
-            </div>
-        </div>
-
-        <!-- Tela de Game Over -->
-        <div id="gameOverScreen" class="screen">
-            <div class="game-over-container">
-                <h2>Game Over</h2>
-                <p>Você chegou até a fase <span id="finalPhase">1</span></p>
-                <p>Seu recorde: <span id="finalRecord">1</span></p>
-                <button id="restartButton" class="restart-button">Jogar Novamente</button>
-            </div>
-        </div>
+      </div>
     </div>
 
     <script src="game.js"></script>
-</body>
+  </body>
 </html>
