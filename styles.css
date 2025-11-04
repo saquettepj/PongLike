@@ -1668,8 +1668,9 @@ body.touch-controls-active .mobile-controls {
   background: linear-gradient(135deg, #2c1810, #3d2317);
   overflow-y: auto; /* permitir rolagem na Loja */
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-y; /* permitir gestos verticais padrão do navegador */
+  touch-action: auto; /* permitir gestos verticais e horizontais do navegador */
   overscroll-behavior: auto;
+  pointer-events: auto;
 }
 
 .upgrade-container {
