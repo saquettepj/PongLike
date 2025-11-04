@@ -276,7 +276,20 @@
           </div>
         </div>
         <div id="touchOverlay">
-          <div id="touchZone"></div>
+          <div id="touchZone">
+            <!-- Zonas de ajuda visual (mostradas antes do primeiro toque) -->
+            <div id="touchHelpOverlay" class="touch-help-overlay">
+              <div class="touch-zone-left touch-zone-help">
+                <div class="touch-zone-text">Mover<br>Plataforma<br>←</div>
+              </div>
+              <div class="touch-zone-center touch-zone-help">
+                <div class="touch-zone-text">Soltar Bolinha<br>ou Ativar Poder</div>
+              </div>
+              <div class="touch-zone-right touch-zone-help">
+                <div class="touch-zone-text">Mover<br>Plataforma<br>→</div>
+              </div>
+            </div>
+          </div>
           <div id="mobileDeveloperPanel" class="mobile-dev-panel" style="display: none">
             <button id="skipPhaseBtnMobile" class="dev-btn">Pular Fase</button>
             <button id="addMoneyBtnMobile" class="dev-btn">+200 Moedas</button>

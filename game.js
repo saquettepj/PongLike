@@ -127,7 +127,7 @@ class Game {
     // - Botões para pular fase e adicionar dinheiro
     // - Ferramentas de debug
     // ========================================
-    this.developerMode = true;
+    this.developerMode = false;
     this.gameRunning = false;
     this.gamePaused = false;
     this.ballHitCount = 0; // Contador de batidas da bolinha para Bolinha Prima
@@ -185,6 +185,7 @@ class Game {
     this.touchMoving = false;
     this.isMovingLeft = false;
     this.isMovingRight = false;
+    this.hasTouchedOnce = false; // Flag para controle da ajuda visual
 
     // Upgrades com ativação manual (agora usando tempo real)
     this.activeUpgradeEffects = {
@@ -617,6 +618,21 @@ class Game {
 
   handleTouchStart(e) {
     e.preventDefault();
+    
+    // Esconder ajuda visual no primeiro toque
+    if (!this.hasTouchedOnce) {
+      this.hasTouchedOnce = true;
+      const helpOverlay = document.getElementById("touchHelpOverlay");
+      if (helpOverlay) {
+        helpOverlay.classList.add("hidden");
+      }
+      // Mostrar UI panel após o primeiro toque
+      const gameUI = document.getElementById("gameUI");
+      if (gameUI) {
+        gameUI.style.display = "";
+      }
+    }
+    
     const touch = e.touches[0];
     const touchX = touch.clientX;
     const screenWidth = window.innerWidth;
@@ -745,6 +761,25 @@ class Game {
 
     // Ativar/desativar controles de toque
     this.setTouchControls(screenName === "gameScreen");
+
+    // Resetar ajuda visual quando entrar na tela do jogo
+    const gameUI = document.getElementById("gameUI");
+    if (screenName === "gameScreen" && this.isTouchDevice) {
+      this.hasTouchedOnce = false;
+      const helpOverlay = document.getElementById("touchHelpOverlay");
+      if (helpOverlay) {
+        helpOverlay.classList.remove("hidden");
+      }
+      // Esconder UI panel quando a ajuda está visível (antes do primeiro toque)
+      if (gameUI) {
+        gameUI.style.display = "none";
+      }
+    } else {
+      // Mostrar UI panel em outras telas ou quando não é touch device
+      if (gameUI) {
+        gameUI.style.display = "";
+      }
+    }
 
     // Atualizar overlay do poder selecionado conforme a tela
     const overlay = document.getElementById("selectedPowerOverlay");
@@ -4993,6 +5028,12 @@ class Game {
     gameInfoPanel.style.display = "none";
     brickCounterPanel.style.display = "none";
     devUpgradesContainer.style.display = "none";
+    
+    // Remover classe de dev panel ativo
+    const touchOverlay = document.getElementById("touchOverlay");
+    if (touchOverlay) {
+      touchOverlay.classList.remove("dev-panel-active");
+    }
 
     if (this.developerMode) {
       // Inicializar upgrades do desenvolvedor
@@ -5001,12 +5042,23 @@ class Game {
       if (this.isTouchDevice) {
         // Mostra apenas o painel mobile em dispositivos de toque
         mobileDevPanel.style.display = "flex";
+        // Adicionar classe para ajustar a zona de toque
+        const touchOverlay = document.getElementById("touchOverlay");
+        if (touchOverlay) {
+          touchOverlay.classList.add("dev-panel-active");
+        }
       } else {
         // Mostra os painéis de desktop em outros dispositivos
         devPanel.style.display = "block";
         gameInfoPanel.style.display = "block";
         brickCounterPanel.style.display = "block";
         devUpgradesContainer.style.display = "block";
+      }
+    } else {
+      // Remover classe quando modo dev está desativado
+      const touchOverlay = document.getElementById("touchOverlay");
+      if (touchOverlay) {
+        touchOverlay.classList.remove("dev-panel-active");
       }
     }
   }
