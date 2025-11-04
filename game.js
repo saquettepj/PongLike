@@ -1126,9 +1126,7 @@ class Game {
       {
         id: "dimensional_ball",
         name: getUpgradeText("dimensional_ball", "name") || "Bolinha Dimensional",
-        description: getUpgradeText("dimensional_ball", "description") || (this.isTouchDevice
-          ? "Pode atravessar tijolos sem quebrá-los (Toque para ativar) (2s, cooldown 15s)"
-          : "Pode atravessar tijolos sem quebrá-los (Mantenha espaço pressionado) (até 3s, cooldown 15s)"),
+        description: this.getDimensionalBallDescription(),
         price: 140,
         type: "ball",
         icon: this.getUpgradeSVG("dimensional_ball"),
@@ -6888,6 +6886,41 @@ class Game {
       dimensional_ball: "Bolinha Dimensional",
     };
     return names[upgradeId] || upgradeId;
+  }
+
+  // Função para obter descrição da bolinha dimensional baseada no idioma e dispositivo
+  getDimensionalBallDescription() {
+    const getUpgradeText = (id, field) => {
+      if (typeof i18n !== 'undefined' && i18n.t) {
+        const trans = i18n.t(`upgrades.${id}.${field}`);
+        if (trans && !trans.includes('upgrades.')) return trans;
+      }
+      return null;
+    };
+
+    // Tentar obter tradução do i18n
+    const translatedDesc = getUpgradeText("dimensional_ball", "description");
+    if (translatedDesc) {
+      // Se a tradução existe mas não diferencia mobile/desktop, adicionar informação baseada no dispositivo
+      const isEnglish = typeof i18n !== 'undefined' && i18n.currentLanguage === 'en';
+      
+      if (this.isTouchDevice) {
+        // Mobile: Toque para ativar, 2s
+        return isEnglish 
+          ? "Can pass through bricks without breaking them (Touch to activate) (2s, cooldown 15s)"
+          : "Pode atravessar tijolos sem quebrá-los (Toque para ativar) (2s, cooldown 15s)";
+      } else {
+        // Desktop: Mantenha espaço pressionado, até 3s
+        return isEnglish
+          ? "Can pass through bricks without breaking them (Hold space to activate) (up to 3s, cooldown 15s)"
+          : "Pode atravessar tijolos sem quebrá-los (Mantenha espaço pressionado) (até 3s, cooldown 15s)";
+      }
+    }
+
+    // Fallback caso não haja tradução
+    return this.isTouchDevice
+      ? "Pode atravessar tijolos sem quebrá-los (Toque para ativar) (2s, cooldown 15s)"
+      : "Pode atravessar tijolos sem quebrá-los (Mantenha espaço pressionado) (até 3s, cooldown 15s)";
   }
 
   render() {

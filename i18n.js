@@ -276,11 +276,7 @@ class I18n {
       return saved;
     }
     
-    // Detectar idioma do navegador
-    const browserLang = navigator.language || navigator.userLanguage;
-    if (browserLang.startsWith('pt')) {
-      return 'pt-BR';
-    }
+    // Idioma padrão: Inglês
     return 'en';
   }
   
