@@ -182,9 +182,11 @@ class Game {
     // Controles de toque
     this.touchStartX = 0;
     this.touchStartY = 0;
+    this.centerTouchId = null; // ID do toque que começou no centro para rastrear swipe
     this.touchMoving = false;
     this.isMovingLeft = false;
     this.isMovingRight = false;
+    this.lastPowerSwapTime = 0; // Timestamp da última troca de poder para cooldown
     this.hasTouchedOnce = false; // Flag para controle da ajuda visual
     this.activeTouches = new Map(); // Rastrear toques ativos: touchId -> 'left' | 'right' | 'center'
 
@@ -660,8 +662,9 @@ class Game {
       } else {
         // Centro
         this.activeTouches.set(touchId, 'center');
-        // Se é o primeiro toque no centro, definir coordenadas
-        if (this.touchStartX === 0) {
+        // Se é o primeiro toque no centro, definir coordenadas e rastrear o ID
+        if (this.centerTouchId === null) {
+          this.centerTouchId = touchId;
           this.touchStartX = touch.clientX;
           this.touchStartY = touch.clientY;
           this.touchMoving = false;
@@ -672,28 +675,47 @@ class Game {
 
   handleTouchMove(e) {
     e.preventDefault();
-    if (this.touchStartX === 0) return;
+    
+    // Verificar se há poderes ativáveis antes de processar swipe
+    if (!this.gameRunning || this.gamePaused || this.activatablePowers.length <= 1) {
+      return;
+    }
 
-    // Encontrar o toque no centro
-    const centerTouchId = Array.from(this.activeTouches.entries())
-      .find(([id, zone]) => zone === 'center')?.[0];
+    // Se não há um toque no centro sendo rastreado, não processar
+    if (this.centerTouchId === null || this.touchStartX === 0 || this.touchStartY === 0) {
+      return;
+    }
+
+    // Encontrar o toque que começou no centro
+    const centerTouch = Array.from(e.touches).find(t => t.identifier === this.centerTouchId);
     
-    if (!centerTouchId) return;
-    
-    const centerTouch = Array.from(e.touches).find(t => t.identifier === centerTouchId);
     if (!centerTouch) return;
 
+    const deltaX = Math.abs(centerTouch.clientX - this.touchStartX);
     const deltaY = centerTouch.clientY - this.touchStartY;
 
-    if (Math.abs(deltaY) > 20) {
+    // Verificar se é um movimento predominantemente vertical (swipe vertical)
+    // e se o movimento vertical é significativo (threshold de 60px para evitar trocas muito rápidas)
+    // Verificar cooldown de 300ms entre trocas
+    const currentTime = Date.now();
+    const timeSinceLastSwap = currentTime - this.lastPowerSwapTime;
+    
+    if (Math.abs(deltaY) > 60 && Math.abs(deltaY) > deltaX * 1.5 && timeSinceLastSwap > 300) {
       // Movimento vertical significativo
       if (deltaY < 0) {
-        this.selectPreviousPower();
-      } else {
+        // Swipe para cima - próximo poder
         this.selectNextPower();
+      } else {
+        // Swipe para baixo - poder anterior
+        this.selectPreviousPower();
       }
       this.touchMoving = true;
-      // Não resetar touchStartX aqui, pois pode haver outros toques ativos
+      // Atualizar timestamp da última troca
+      this.lastPowerSwapTime = currentTime;
+      // Atualizar touchStartY para permitir múltiplos swipes no mesmo gesto
+      // mas com um threshold maior para evitar trocas muito próximas
+      this.touchStartY = centerTouch.clientY;
+      this.touchStartX = centerTouch.clientX; // Também atualizar X para recalcular deltaX
     }
   }
 
@@ -753,6 +775,17 @@ class Game {
       this.touchStartX = 0;
       this.touchStartY = 0;
       this.touchMoving = false;
+      this.centerTouchId = null;
+      this.lastPowerSwapTime = 0; // Resetar cooldown quando terminar o toque
+    }
+    
+    // Se o toque do centro terminou, resetar
+    if (this.centerTouchId !== null && !Array.from(e.touches).find(t => t.identifier === this.centerTouchId)) {
+      this.touchStartX = 0;
+      this.touchStartY = 0;
+      this.touchMoving = false;
+      this.centerTouchId = null;
+      this.lastPowerSwapTime = 0; // Resetar cooldown quando terminar o toque
     }
   }
 
@@ -5149,6 +5182,7 @@ class Game {
     this.isMovingRight = false;
     this.touchStartX = 0;
     this.touchStartY = 0;
+    this.centerTouchId = null;
     this.touchMoving = false;
 
     // Resetar multiplicador do conversor de risco
