@@ -6511,6 +6511,7 @@ class Game {
         }
       });
     }
+
   }
 
   getUpgradeName(upgradeId) {
@@ -6535,9 +6536,11 @@ class Game {
       return;
     }
 
-    // Limpar canvas
+    // Limpar canvas (fundo)
     this.ctx.fillStyle = "#000000";
     this.ctx.fillRect(0, 0, this.width, this.height);
+
+    // (removido) Não desenhamos mais o SVG dentro do canvas; usamos overlay CSS.
 
     // Desenhar tijolos
     this.bricks.forEach((brick) => {
