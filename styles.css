@@ -346,9 +346,40 @@ body {
   display: none; /* Escondido por padrão */
 }
 
+/* Área de gestos (não cobre a barra inferior) */
+#touchZone {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 84px; /* altura reservada para os botões de dev mobile */
+}
+
 /* Exibir overlay apenas em modo de toque ativo */
 body.touch-controls-active #touchOverlay {
   display: block;
+}
+
+/* Barra de botões dev no overlay (mobile) */
+.mobile-dev-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px env(safe-area-inset-right) calc(10px + env(safe-area-inset-bottom)) env(safe-area-inset-left);
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  z-index: 201; /* acima da zona de toque */
+  background: rgba(0, 0, 0, 0.35);
+  border-top: 2px solid #ff6b35;
+  box-shadow: 0 -8px 30px rgba(255, 107, 53, 0.25);
+  backdrop-filter: blur(6px);
+}
+
+.mobile-dev-panel .dev-btn {
+  flex: 1 1 0;
+  min-width: 140px;
 }
 
 /* Controles Mobile */
@@ -540,10 +571,29 @@ body.touch-controls-active .mobile-controls {
   .power-selection-card {
     scroll-margin-top: 12px;
   }
+  /* Grudar o canvas no topo no mobile sem usar position absolute */
+  #gameScreen {
+    padding-top: 0; /* remove o padding-top herdado de .screen */
+    justify-content: flex-start; /* força conteúdo a iniciar no topo */
+  }
   .game-container {
     flex-direction: column;
     gap: 12px;
-    padding-bottom: 130px; /* espaço para botões maiores */
+    padding-bottom: 0; /* sem espaço extra para evitar rolagem */
+    margin-top: 0; /* garante que não haja deslocamento inicial */
+    justify-content: flex-start; /* conteúdo começa no topo */
+    flex: 1 0 auto; /* ocupa a altura disponível para empurrar o restante */
+    min-height: 100vh; /* altura da viewport sem exceder */
+    width: 100%;
+  }
+  /* Bloquear rolagem quando o overlay de toque (jogo) está ativo */
+  body.touch-controls-active #gameScreen {
+    overflow: hidden !important;
+    height: 100vh;
+  }
+  .canvas-container {
+    align-self: center; /* ocupar o topo centralizado */
+    margin-top: 0;
   }
 
   .sidebar-left,

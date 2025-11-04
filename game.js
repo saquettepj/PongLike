@@ -547,18 +547,18 @@ class Game {
     // Controles do mouse (removidos - apenas teclado)
 
     if (this.isTouchDevice) {
-      const touchOverlay = document.getElementById("touchOverlay");
-      touchOverlay.addEventListener(
+      const touchZone = document.getElementById("touchZone") || document.getElementById("touchOverlay");
+      touchZone.addEventListener(
         "touchstart",
         this.handleTouchStart.bind(this),
         { passive: false },
       );
-      touchOverlay.addEventListener(
+      touchZone.addEventListener(
         "touchend",
         this.handleTouchEnd.bind(this),
         { passive: false },
       );
-      touchOverlay.addEventListener(
+      touchZone.addEventListener(
         "touchmove",
         this.handleTouchMove.bind(this),
         { passive: false },
