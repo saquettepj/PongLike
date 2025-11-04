@@ -30,39 +30,45 @@
     
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="stylesheet" href="styles.css" />
+    <script src="i18n.js"></script>
   </head>
   <body>
     <div id="gameContainer">
       <!-- Tela Inicial -->
       <div id="mainMenu" class="screen active">
+        <!-- Botão de Troca de Idioma -->
+        <button id="languageToggle" class="language-toggle" title="Toggle Language / Trocar Idioma">
+          <span id="languageText">EN</span>
+        </button>
+        
         <div class="title-container">
-          <h1 class="game-title">Brick Rogue</h1>
-          <h2 class="game-subtitle">O Desafio dos Efeitos</h2>
+          <h1 class="game-title" data-i18n="gameTitle">Brick Rogue</h1>
+          <h2 class="game-subtitle" data-i18n="gameSubtitle">O Desafio dos Efeitos</h2>
         </div>
 
         <div class="instructions-container">
           <div class="controls-section">
-            <h3>Controles</h3>
+            <h3 data-i18n="controls">Controles</h3>
             <div class="controls-grid controls-desktop">
               <div class="control-item">
                 <div class="control-icon">A/D ou ← →</div>
-                <div class="control-text">Controlar a plataforma</div>
+                <div class="control-text" data-i18n="controlPaddle">Controlar a plataforma</div>
               </div>
               <div class="control-item">
                 <div class="control-icon">W/S ou ↑/↓</div>
-                <div class="control-text">Selecionar poder</div>
+                <div class="control-text" data-i18n="selectPower">Selecionar poder</div>
               </div>
               <div class="control-item">
                 <div class="control-icon">⎵ Espaço</div>
-                <div class="control-text">Ativar poder selecionado</div>
+                <div class="control-text" data-i18n="activatePower">Ativar poder selecionado</div>
               </div>
               <div class="control-item">
                 <div class="control-icon">P</div>
-                <div class="control-text">Pausar/Despausar</div>
+                <div class="control-text" data-i18n="pauseResume">Pausar/Despausar</div>
               </div>
               <div class="control-item">
                 <div class="control-icon">🖱️ Clique</div>
-                <div class="control-text">Navegar / Comprar upgrades</div>
+                <div class="control-text" data-i18n="navigateShop">Navegar / Comprar upgrades</div>
               </div>
             </div>
             <div class="controls-grid controls-mobile">
@@ -79,7 +85,7 @@
                     <circle cx="100" cy="40" r="10" fill="#fdcb6e"/>
                   </svg>
                 </div>
-                <div class="control-text">Toque nas <strong>laterais</strong> da <strong>tela</strong> para mover a plataforma</div>
+                <div class="control-text" data-i18n="touchSidesMove" data-i18n-html="true">Toque nas <strong>laterais</strong> da <strong>tela</strong> para mover a plataforma</div>
               </div>
               <div class="control-item">
                 <div class="control-icon" aria-hidden="true">
@@ -89,7 +95,7 @@
                     <circle cx="60" cy="60" r="38" fill="none" stroke="#ff6b35" stroke-width="3" opacity="0.5"/>
                   </svg>
                 </div>
-                <div class="control-text">Toque no <strong>centro</strong> da <strong>tela</strong> para soltar a bolinha ou ativar o poder</div>
+                <div class="control-text" data-i18n="touchCenterRelease" data-i18n-html="true">Toque no <strong>centro</strong> da <strong>tela</strong> para soltar a bolinha ou ativar o poder</div>
               </div>
               <div class="control-item">
                 <div class="control-icon" aria-hidden="true">
@@ -104,43 +110,43 @@
                     <circle cx="60" cy="80" r="10" fill="#fdcb6e"/>
                   </svg>
                 </div>
-                <div class="control-text">Deslize para cima/baixo no <strong>centro</strong> da <strong>tela</strong> para trocar o poder</div>
+                <div class="control-text" data-i18n="swipeChangePower" data-i18n-html="true">Deslize para cima/baixo no <strong>centro</strong> da <strong>tela</strong> para trocar o poder</div>
               </div>
             </div>
           </div>
 
           <div class="bricks-effects-section">
-            <h3>Efeitos dos Blocos</h3>
+            <h3 data-i18n="blockEffects">Efeitos dos Blocos</h3>
             <div class="bricks-grid">
               <div class="brick-effect-item">
                 <div class="brick-block blue"></div>
-                <div class="brick-text">Física Padrão</div>
+                <div class="brick-text" data-i18n="standardPhysics">Física Padrão</div>
               </div>
               <div class="brick-effect-item">
                 <div class="brick-block yellow"></div>
-                <div class="brick-text">Velocidade (+40%)</div>
+                <div class="brick-text" data-i18n="speed">Velocidade (+40%)</div>
               </div>
               <div class="brick-effect-item">
                 <div class="brick-block green"></div>
-                <div class="brick-text">Inversão Horizontal</div>
+                <div class="brick-text" data-i18n="horizontalInversion">Inversão Horizontal</div>
               </div>
               <div class="brick-effect-item">
                 <div class="brick-block purple"></div>
-                <div class="brick-text">Zigue-zague</div>
+                <div class="brick-text" data-i18n="zigzag">Zigue-zague</div>
               </div>
               <div class="brick-effect-item">
                 <div class="brick-block gray"></div>
-                <div class="brick-text">
+                <div class="brick-text" data-i18n="invisibility">
                   Invisibilidade (0.5s invisível / 1s visível)
                 </div>
               </div>
               <div class="brick-effect-item">
                 <div class="brick-block white"></div>
-                <div class="brick-text">Fragmento perigoso que tira vida</div>
+                <div class="brick-text" data-i18n="dangerousFragment">Fragmento perigoso que tira vida</div>
               </div>
               <div class="brick-effect-item">
                 <div class="brick-block red"></div>
-                <div class="brick-text">
+                <div class="brick-text" data-i18n="objective">
                   Objetivo da Fase + Acelera 4% por hit + Troca posição
                 </div>
               </div>
@@ -148,7 +154,7 @@
           </div>
         </div>
 
-        <button id="startButton" class="start-button">INICIAR</button>
+        <button id="startButton" class="start-button" data-i18n="startButton">INICIAR</button>
       </div>
 
       <!-- Tela do Jogo -->
@@ -230,7 +236,7 @@
             >
               <h3>Modo Desenvolvedor</h3>
               <div class="developer-controls" id="developerControls">
-                <button id="skipPhaseBtn" class="dev-btn">Pular Fase</button>
+                <button id="skipPhaseBtn" class="dev-btn" data-i18n="skipLevel">Pular Nível</button>
                 <button id="addMoneyBtn" class="dev-btn">+200 Moedas</button>
               </div>
             </div>
@@ -265,27 +271,27 @@
             <div id="gameUI">
               <div class="ui-panel">
                 <div class="ui-item">
-                  <span class="ui-label">FASE:</span>
+                  <span class="ui-label" data-i18n="level">FASE:</span>
                   <span id="currentPhase">1</span>
                 </div>
                 <div class="ui-item">
-                  <span class="ui-label">RECORDE:</span>
+                  <span class="ui-label" data-i18n="record">RECORDE:</span>
                   <span id="highScore">1</span>
                 </div>
                 <div class="ui-item">
-                  <span class="ui-label">COMBO:</span>
+                  <span class="ui-label" data-i18n="combo">COMBO:</span>
                   <span id="maxCombo">0</span>
                 </div>
                 <div class="ui-item">
-                  <span class="ui-label">DINHEIRO:</span>
+                  <span class="ui-label" data-i18n="money">DINHEIRO:</span>
                   <span id="money">0</span> 🪙
                 </div>
                 <div class="ui-item">
-                  <span class="ui-label">VIDAS:</span>
+                  <span class="ui-label" data-i18n="lives">VIDAS:</span>
                   <span id="lives">♥️♥️♥️</span>
                 </div>
                 <div class="ui-item" id="primeCounter" style="display: none">
-                  <span class="ui-label">BATIDAS:</span>
+                  <span class="ui-label" data-i18n="hits">BATIDAS:</span>
                   <span id="hitCount">0</span>
                 </div>
               </div>
@@ -304,18 +310,18 @@
             <!-- Zonas de ajuda visual (mostradas antes do primeiro toque) -->
             <div id="touchHelpOverlay" class="touch-help-overlay">
               <div class="touch-zone-left touch-zone-help">
-                <div class="touch-zone-text">Mover<br>Plataforma<br>←</div>
+                <div class="touch-zone-text" data-i18n="movePaddleLeft" data-i18n-html="true">Mover<br>Paddle<br>←</div>
               </div>
               <div class="touch-zone-center touch-zone-help">
-                <div class="touch-zone-text">Soltar Bolinha<br>ou Ativar Poder</div>
+                <div class="touch-zone-text" data-i18n="releaseBallOrActivate" data-i18n-html="true">Soltar Bolinha<br>ou Ativar Poder</div>
               </div>
               <div class="touch-zone-right touch-zone-help">
-                <div class="touch-zone-text">Mover<br>Plataforma<br>→</div>
+                <div class="touch-zone-text" data-i18n="movePaddleRight" data-i18n-html="true">Mover<br>Paddle<br>→</div>
               </div>
             </div>
           </div>
           <div id="mobileDeveloperPanel" class="mobile-dev-panel" style="display: none">
-            <button id="skipPhaseBtnMobile" class="dev-btn">Pular Fase</button>
+            <button id="skipPhaseBtnMobile" class="dev-btn" data-i18n="skipLevel">Pular Nível</button>
             <button id="addMoneyBtnMobile" class="dev-btn">+200 Moedas</button>
           </div>
         </div>
@@ -324,10 +330,10 @@
       <!-- Tela de Seleção de Poderes Inicial -->
       <div id="powerSelectionScreen" class="screen">
         <div class="power-selection-container">
-          <h2>Poder Inicial</h2>
-          <p class="power-selection-subtitle">Selecione um para começar</p>
+          <h2 data-i18n="initialPower">Poder Inicial</h2>
+          <p class="power-selection-subtitle" data-i18n="selectOneToStart">Selecione um para começar</p>
           <div class="power-duration-warning">
-            <span class="warning-text">Este poder durará apenas 1 fase</span>
+            <span class="warning-text" data-i18n="powerDurationWarning">Este poder durará apenas 1 fase</span>
           </div>
           <div class="power-selection-grid" id="powerSelectionGrid">
             <!-- Poderes serão gerados dinamicamente -->
@@ -338,6 +344,7 @@
               class="confirm-power-button"
               style="width: 100%"
               disabled
+              data-i18n="confirmPower"
             >
               Confirmar Poder
             </button>
@@ -353,6 +360,7 @@
             class="confirm-power-button"
             style="width: 100%"
             disabled
+            data-i18n="confirmPower"
           >
             Confirmar Poder
           </button>
@@ -363,30 +371,30 @@
       <div id="upgradeScreen" class="screen">
         <!-- Cabeçalho Mobile (exibido só no mobile) -->
         <div class="mobile-header shop-mobile-header" style="display: none">
-          <h2 class="mobile-title">Loja</h2>
+          <h2 class="mobile-title" data-i18n="shop">Loja</h2>
           <div class="mobile-money">
-            <span class="mobile-money-label">Dinheiro:</span>
+            <span class="mobile-money-label" data-i18n="money">Dinheiro:</span>
             <span id="shopMoneyMobile">0</span> 🪙
           </div>
-          <p class="mobile-subtitle" id="upgradeSubtitleMobile">
+          <p class="mobile-subtitle" id="upgradeSubtitleMobile" data-i18n="chooseUpgrades">
             Escolha seus upgrades
           </p>
         </div>
 
         <div class="upgrade-container">
-          <h2>Escolha seus Upgrades</h2>
+          <h2 data-i18n="chooseUpgrades">Escolha seus Upgrades</h2>
           <div class="money-display">
-            <span class="money-label">DINHEIRO ATUAL:</span>
+            <span class="money-label" data-i18n="currentMoney">DINHEIRO ATUAL:</span>
             <span id="shopMoney">0</span> 🪙
           </div>
-          <p class="upgrade-subtitle" id="upgradeSubtitle">
+          <p class="upgrade-subtitle" id="upgradeSubtitle" data-i18n="chooseUpgrades">
             Escolha seus upgrades
           </p>
           <div class="upgrades-grid" id="upgradesGrid">
             <!-- Upgrades serão gerados dinamicamente -->
           </div>
           <div class="upgrade-actions">
-            <button id="continueButton" class="continue-button">
+            <button id="continueButton" class="continue-button" data-i18n="continue">
               Continuar
             </button>
           </div>
@@ -398,6 +406,7 @@
               id="continueButtonMobile"
               class="continue-button"
               style="width: 100%"
+              data-i18n="continue"
             >
               Continuar
             </button>
@@ -408,13 +417,13 @@
       <!-- Tela de Pause -->
       <div id="pauseScreen" class="screen">
         <div class="pause-container">
-          <h2>PAUSE</h2>
+          <h2 data-i18n="pause">PAUSE</h2>
 
           <div class="instructions-container">
             <div class="pause-layout">
               <div class="pause-column">
                 <div class="purchased-powers-section">
-                  <h3>Poderes Comprados</h3>
+                  <h3 data-i18n="purchasedPowers">Poderes Comprados</h3>
                   <div
                     id="purchasedPowersContainer"
                     class="purchased-powers-grid"
@@ -426,27 +435,27 @@
 
               <div class="pause-column">
                 <div class="controls-section">
-                  <h3>Controles</h3>
+                  <h3 data-i18n="controls">Controles</h3>
                   <div class="controls-grid controls-desktop">
                     <div class="control-item">
                       <div class="control-icon">A/D ou ← →</div>
-                      <div class="control-text">Controlar a plataforma</div>
+                      <div class="control-text" data-i18n="controlPaddle">Controlar a plataforma</div>
                     </div>
                     <div class="control-item">
                       <div class="control-icon">W/S ou ↑/↓</div>
-                      <div class="control-text">Selecionar poder</div>
+                      <div class="control-text" data-i18n="selectPower">Selecionar poder</div>
                     </div>
                     <div class="control-item">
                       <div class="control-icon">⎵ Espaço</div>
-                      <div class="control-text">Ativar poder selecionado</div>
+                      <div class="control-text" data-i18n="activatePower">Ativar poder selecionado</div>
                     </div>
                     <div class="control-item">
                       <div class="control-icon">P</div>
-                      <div class="control-text">Pausar/Despausar</div>
+                      <div class="control-text" data-i18n="pauseResume">Pausar/Despausar</div>
                     </div>
                     <div class="control-item">
                       <div class="control-icon">🖱️ Clique</div>
-                      <div class="control-text">Navegar / Comprar upgrades</div>
+                      <div class="control-text" data-i18n="navigateShop">Navegar / Comprar upgrades</div>
                     </div>
                   </div>
                 </div>
@@ -454,39 +463,39 @@
 
               <div class="pause-column">
                 <div class="bricks-effects-section">
-                  <h3>Efeitos dos Blocos</h3>
+                  <h3 data-i18n="blockEffects">Efeitos dos Blocos</h3>
                   <div class="bricks-grid">
                     <div class="brick-effect-item">
                       <div class="brick-block blue"></div>
-                      <div class="brick-text">Física Padrão</div>
+                      <div class="brick-text" data-i18n="standardPhysics">Física Padrão</div>
                     </div>
                     <div class="brick-effect-item">
                       <div class="brick-block yellow"></div>
-                      <div class="brick-text">Velocidade (+40%)</div>
+                      <div class="brick-text" data-i18n="speed">Velocidade (+40%)</div>
                     </div>
                     <div class="brick-effect-item">
                       <div class="brick-block green"></div>
-                      <div class="brick-text">Inversão Horizontal</div>
+                      <div class="brick-text" data-i18n="horizontalInversion">Inversão Horizontal</div>
                     </div>
                     <div class="brick-effect-item">
                       <div class="brick-block purple"></div>
-                      <div class="brick-text">Zigue-zague</div>
+                      <div class="brick-text" data-i18n="zigzag">Zigue-zague</div>
                     </div>
                     <div class="brick-effect-item">
                       <div class="brick-block gray"></div>
-                      <div class="brick-text">
+                      <div class="brick-text" data-i18n="invisibility">
                         Invisibilidade (0.5s invisível / 1s visível)
                       </div>
                     </div>
                     <div class="brick-effect-item">
                       <div class="brick-block white"></div>
-                      <div class="brick-text">
+                      <div class="brick-text" data-i18n="dangerousFragment">
                         Fragmento perigoso que tira vida
                       </div>
                     </div>
                     <div class="brick-effect-item">
                       <div class="brick-block red"></div>
-                      <div class="brick-text">
+                      <div class="brick-text" data-i18n="objective">
                         Objetivo da Fase + Acelera 4% por hit + Troca posição
                       </div>
                     </div>
@@ -496,17 +505,17 @@
             </div>
           </div>
 
-          <button id="resumeButton" class="resume-button">Continuar</button>
+          <button id="resumeButton" class="resume-button" data-i18n="continue">Continuar</button>
         </div>
       </div>
 
       <!-- Tela de Game Over -->
       <div id="gameOverScreen" class="screen">
         <div class="game-over-container">
-          <h2>Game Over</h2>
-          <p>Você chegou até a fase <span id="finalPhase">1</span></p>
-          <p>Seu recorde: <span id="finalRecord">1</span></p>
-          <button id="restartButton" class="restart-button">
+          <h2 data-i18n="gameOver">Game Over</h2>
+          <p><span data-i18n="reachedLevel">Você chegou até a fase</span> <span id="finalPhase">1</span></p>
+          <p><span data-i18n="yourRecord">Seu recorde:</span> <span id="finalRecord">1</span></p>
+          <button id="restartButton" class="restart-button" data-i18n="playAgain">
             Jogar Novamente
           </button>
         </div>

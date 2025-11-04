@@ -46,6 +46,35 @@ body {
 #mainMenu {
   background: linear-gradient(45deg, #2c1810, #3d2317, #4a2c1a);
   text-align: center;
+  position: relative;
+}
+
+/* Botão de Troca de Idioma */
+.language-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 107, 53, 0.2);
+  border: 2px solid #ff6b35;
+  border-radius: 8px;
+  color: #fdcb6e;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  font-family: "Courier New", monospace;
+}
+
+.language-toggle:hover {
+  background: rgba(255, 107, 53, 0.4);
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(255, 107, 53, 0.5);
+}
+
+.language-toggle:active {
+  transform: scale(0.95);
 }
 
 .title-container {

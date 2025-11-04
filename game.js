@@ -869,69 +869,77 @@ class Game {
 
   getAllUpgrades() {
     // Lista completa de todos os upgrades (copiada do método getAvailableUpgrades)
+    // Usar traduções do i18n se disponível
+    const getUpgradeText = (id, field) => {
+      if (typeof i18n !== 'undefined' && i18n.t) {
+        const trans = i18n.t(`upgrades.${id}.${field}`);
+        if (trans && !trans.includes('upgrades.')) return trans;
+      }
+      return null;
+    };
+    
     return [
       // Upgrades de Plataforma (1-7)
       {
         id: "wide_paddle",
-        name: "Plataforma Larga",
-        description: "Aumenta o tamanho da plataforma em 50%",
+        name: getUpgradeText("wide_paddle", "name") || "Plataforma Larga",
+        description: getUpgradeText("wide_paddle", "description") || "Aumenta o tamanho da plataforma em 50%",
         price: 150,
         type: "paddle",
         icon: this.getUpgradeSVG("wide_paddle"),
       },
       {
         id: "attached_cannons",
-        name: "Canhões Acoplados",
-        description: "Atira projéteis apenas em batidas ímpares",
+        name: getUpgradeText("attached_cannons", "name") || "Canhões Acoplados",
+        description: getUpgradeText("attached_cannons", "description") || "Atira projéteis apenas em batidas ímpares",
         price: 170,
         type: "paddle",
         icon: this.getUpgradeSVG("attached_cannons"),
       },
       {
         id: "super_magnet",
-        name: "Super Ímã",
-        description: "Campo magnético para puxar bolinha por 1s (cooldown 10s)",
+        name: getUpgradeText("super_magnet", "name") || "Super Ímã",
+        description: getUpgradeText("super_magnet", "description") || "Campo magnético para puxar bolinha por 1s (cooldown 10s)",
         price: 180,
         type: "paddle",
         icon: this.getUpgradeSVG("super_magnet"),
       },
       {
         id: "paddle_dash",
-        name: "Dash de Plataforma",
-        description: "Movimento rápido lateral por 2s (cooldown 8s)",
+        name: getUpgradeText("paddle_dash", "name") || "Dash de Plataforma",
+        description: getUpgradeText("paddle_dash", "description") || "Movimento rápido lateral por 2s (cooldown 8s)",
         price: 140,
         type: "paddle",
         icon: this.getUpgradeSVG("paddle_dash"),
       },
       {
         id: "cushion_paddle",
-        name: "Plataforma de Desaceleração",
-        description:
-          "Diminui em 50% a velocidade de todas as bolinhas por 3s (cooldown 10s)",
+        name: getUpgradeText("cushion_paddle", "name") || "Plataforma de Desaceleração",
+        description: getUpgradeText("cushion_paddle", "description") || "Diminui em 50% a velocidade de todas as bolinhas por 3s (cooldown 10s)",
         price: 80,
         type: "paddle",
         icon: this.getUpgradeSVG("cushion_paddle"),
       },
       {
         id: "reinforced_paddle",
-        name: "Reforço",
-        description: "Plataforma 2x mais alta e destrói bloco da linha de cima",
+        name: getUpgradeText("reinforced_paddle", "name") || "Reforço",
+        description: getUpgradeText("reinforced_paddle", "description") || "Plataforma 2x mais alta e destrói bloco da linha de cima",
         price: 220,
         type: "paddle",
         icon: this.getUpgradeSVG("reinforced_paddle"),
       },
       {
         id: "speed_boost",
-        name: "Impulso de Velocidade",
-        description: "Aumenta a velocidade da plataforma em 25%",
+        name: getUpgradeText("speed_boost", "name") || "Impulso de Velocidade",
+        description: getUpgradeText("speed_boost", "description") || "Aumenta a velocidade da plataforma em 25%",
         price: 120,
         type: "paddle",
         icon: this.getUpgradeSVG("speed_boost"),
       },
       {
         id: "charged_shot",
-        name: "Tiro Carregado",
-        description: "Atira projétil perfurante imediatamente",
+        name: getUpgradeText("charged_shot", "name") || "Tiro Carregado",
+        description: getUpgradeText("charged_shot", "description") || "Atira projétil perfurante imediatamente",
         price: 190,
         type: "paddle",
         icon: this.getUpgradeSVG("charged_shot"),
@@ -939,158 +947,146 @@ class Game {
       // Upgrades de Bolinha (8-20)
       {
         id: "piercing_ball",
-        name: "Bolinha Perfurante",
-        description: "Quebra tijolos azuis sem mudar direção",
+        name: getUpgradeText("piercing_ball", "name") || "Bolinha Perfurante",
+        description: getUpgradeText("piercing_ball", "description") || "Quebra tijolos azuis sem mudar direção",
         price: 220,
         type: "ball",
         icon: this.getUpgradeSVG("piercing_ball"),
       },
       {
         id: "friction_field",
-        name: "Campo de Fricção",
-        description: "Reduz velocidade em 10%",
+        name: getUpgradeText("friction_field", "name") || "Campo de Fricção",
+        description: getUpgradeText("friction_field", "description") || "Reduz velocidade em 10%",
         price: 160,
         type: "ball",
         icon: this.getUpgradeSVG("friction_field"),
       },
       {
         id: "multi_ball",
-        name: "Multi-bola",
-        description:
-          "Cria uma nova bolinha grudada na plataforma. Liberada automaticamente em 2 segundos (cooldown 20s)",
+        name: getUpgradeText("multi_ball", "name") || "Multi-bola",
+        description: getUpgradeText("multi_ball", "description") || "Cria uma nova bolinha grudada na plataforma. Liberada automaticamente em 2 segundos (cooldown 20s)",
         price: 200,
         type: "ball",
         icon: this.getUpgradeSVG("multi_ball"),
       },
       {
         id: "combo_ball",
-        name: "Bolinha Combo",
-        description:
-          "A cada 5 combos consecutivos, duplica a bolinha atual uma vez",
+        name: getUpgradeText("combo_ball", "name") || "Bolinha Combo",
+        description: getUpgradeText("combo_ball", "description") || "A cada 5 combos consecutivos, duplica a bolinha atual uma vez",
         price: 150,
         type: "ball",
         icon: this.getUpgradeSVG("combo_ball"),
       },
       {
         id: "heavy_ball",
-        name: "Bolinha Pesada",
-        description:
-          "A bolinha se move 15% mais devagar, facilitando o controle",
+        name: getUpgradeText("heavy_ball", "name") || "Bolinha Pesada",
+        description: getUpgradeText("heavy_ball", "description") || "A bolinha se move 15% mais devagar, facilitando o controle",
         price: 240,
         type: "ball",
         icon: this.getUpgradeSVG("heavy_ball"),
       },
       {
         id: "explosive_ball",
-        name: "Bolinha Explosiva",
-        description:
-          "A bolinha explode sempre ao atingir blocos amarelos ou vermelhos, destruindo tijolos adjacentes em uma pequena área",
+        name: getUpgradeText("explosive_ball", "name") || "Bolinha Explosiva",
+        description: getUpgradeText("explosive_ball", "description") || "A bolinha explode sempre ao atingir blocos amarelos ou vermelhos, destruindo tijolos adjacentes em uma pequena área",
         price: 250,
         type: "ball",
         icon: this.getUpgradeSVG("explosive_ball"),
       },
       {
         id: "ball_echo",
-        name: "Eco da Bolinha",
-        description:
-          "Destrói um bloco aleatório adicional a cada batida (apenas em fases ímpares)",
+        name: getUpgradeText("ball_echo", "name") || "Eco da Bolinha",
+        description: getUpgradeText("ball_echo", "description") || "Destrói um bloco aleatório adicional a cada batida (apenas em fases ímpares)",
         price: 250,
         type: "ball",
         icon: this.getUpgradeSVG("ball_echo"),
       },
       {
         id: "effect_activator",
-        name: "Ativador de Efeito",
-        description:
-          "Ativa efeito aleatório dos blocos na bolinha e ganha moedas baseadas na cor do bloco do efeito ativado (cooldown 5s)",
+        name: getUpgradeText("effect_activator", "name") || "Ativador de Efeito",
+        description: getUpgradeText("effect_activator", "description") || "Ativa efeito aleatório dos blocos na bolinha e ganha moedas baseadas na cor do bloco do efeito ativado (cooldown 5s)",
         price: 60,
         type: "ball",
         icon: this.getUpgradeSVG("effect_activator"),
       },
       {
         id: "mirror_ball",
-        name: "Bolinha Espelhada",
-        description:
-          "Destrói bloco simétrico ao quebrar um (apenas nos primeiros 30 segundos de cada fase)",
+        name: getUpgradeText("mirror_ball", "name") || "Bolinha Espelhada",
+        description: getUpgradeText("mirror_ball", "description") || "Destrói bloco simétrico ao quebrar um (apenas nos primeiros 30 segundos de cada fase)",
         price: 250,
         type: "ball",
         icon: this.getUpgradeSVG("mirror_ball"),
       },
       {
         id: "lucky_ball",
-        name: "Bolinha da Fortuna",
-        description: "Bolinha dourada que dá +1 moeda por bloco",
+        name: getUpgradeText("lucky_ball", "name") || "Bolinha da Fortuna",
+        description: getUpgradeText("lucky_ball", "description") || "Bolinha dourada que dá +1 moeda por bloco",
         price: 150,
         type: "ball",
         icon: this.getUpgradeSVG("lucky_ball"),
       },
       {
         id: "time_ball",
-        name: "Bolinha do Tempo",
-        description: "Para a bolinha por 3 segundos (cooldown 15s)",
+        name: getUpgradeText("time_ball", "name") || "Bolinha do Tempo",
+        description: getUpgradeText("time_ball", "description") || "Para a bolinha por 3 segundos (cooldown 15s)",
         price: 180,
         type: "ball",
         icon: this.getUpgradeSVG("time_ball"),
       },
       {
         id: "prime_ball",
-        name: "Bolinha Prima",
-        description: "Destrói bloco aleatório a cada número primo de batidas",
+        name: getUpgradeText("prime_ball", "name") || "Bolinha Prima",
+        description: getUpgradeText("prime_ball", "description") || "Destrói bloco aleatório a cada número primo de batidas",
         price: 120,
         type: "ball",
         icon: this.getUpgradeSVG("prime_ball"),
       },
       {
         id: "wombo_combo_ball",
-        name: "Bolinha Wombo Combo",
-        description:
-          "Cada bloco em combo dá +2 moedas (ao invés de +1) e a recompensa do combo máximo na loja é dobrada",
+        name: getUpgradeText("wombo_combo_ball", "name") || "Bolinha Wombo Combo",
+        description: getUpgradeText("wombo_combo_ball", "description") || "Cada bloco em combo dá +2 moedas (ao invés de +1) e a recompensa do combo máximo na loja é dobrada",
         price: 120,
         type: "ball",
         icon: this.getUpgradeSVG("wombo_combo_ball"),
       },
       {
         id: "ghost_ball",
-        name: "Bolinha Fantasma",
-        description:
-          "Quando a bolinha cai pela primeira vez em cada fase, ela reaparece no topo do campo",
+        name: getUpgradeText("ghost_ball", "name") || "Bolinha Fantasma",
+        description: getUpgradeText("ghost_ball", "description") || "Quando a bolinha cai pela primeira vez em cada fase, ela reaparece no topo do campo",
         price: 250,
         type: "ball",
         icon: this.getUpgradeSVG("ghost_ball"),
       },
       {
         id: "dimensional_ball",
-        name: "Bolinha Dimensional",
-        description: this.isTouchDevice
+        name: getUpgradeText("dimensional_ball", "name") || "Bolinha Dimensional",
+        description: getUpgradeText("dimensional_ball", "description") || (this.isTouchDevice
           ? "Pode atravessar tijolos sem quebrá-los (Toque para ativar) (2s, cooldown 15s)"
-          : "Pode atravessar tijolos sem quebrá-los (Mantenha espaço pressionado) (até 3s, cooldown 15s)",
+          : "Pode atravessar tijolos sem quebrá-los (Mantenha espaço pressionado) (até 3s, cooldown 15s)"),
         price: 140,
         type: "ball",
         icon: this.getUpgradeSVG("dimensional_ball"),
       },
       {
         id: "shatter_glass",
-        name: "Estilhaços",
-        description:
-          "50% de chance de estilhaçar o vidro de um bloco, causando efeito explosivo",
+        name: getUpgradeText("shatter_glass", "name") || "Estilhaços",
+        description: getUpgradeText("shatter_glass", "description") || "50% de chance de estilhaçar o vidro de um bloco, causando efeito explosivo",
         price: 200,
         type: "ball",
         icon: this.getUpgradeSVG("shatter_glass"),
       },
       {
         id: "combo_power",
-        name: "Combo Power",
-        description:
-          "Todos os poderes que destroem blocos ativam o combo quando destroem um bloco",
+        name: getUpgradeText("combo_power", "name") || "Combo Power",
+        description: getUpgradeText("combo_power", "description") || "Todos os poderes que destroem blocos ativam o combo quando destroem um bloco",
         price: 180,
         type: "utility",
         icon: this.getUpgradeSVG("combo_power"),
       },
       {
         id: "shield_breaker",
-        name: "Quebra Blindagem",
-        description:
-          "Permite que todos os upgrades que destroem blocos também quebrem blocos com vidro",
+        name: getUpgradeText("shield_breaker", "name") || "Quebra Blindagem",
+        description: getUpgradeText("shield_breaker", "description") || "Permite que todos os upgrades que destroem blocos também quebrem blocos com vidro",
         price: 300,
         type: "ball",
         icon: this.getUpgradeSVG("shield_breaker"),
@@ -1098,65 +1094,64 @@ class Game {
       // Upgrades de Utilidade (21-26)
       {
         id: "extra_life",
-        name: "Coração Extra",
-        description: "Ganha uma vida a cada fase",
+        name: getUpgradeText("extra_life", "name") || "Coração Extra",
+        description: getUpgradeText("extra_life", "description") || "Ganha uma vida a cada fase",
         price: 180,
         type: "utility",
         icon: this.getUpgradeSVG("extra_life"),
       },
       {
         id: "safety_net",
-        name: "Rede de Segurança",
-        description: "Barreira temporária por 5s (cooldown 15s)",
+        name: getUpgradeText("safety_net", "name") || "Rede de Segurança",
+        description: getUpgradeText("safety_net", "description") || "Barreira temporária por 5s (cooldown 15s)",
         price: 300,
         type: "utility",
         icon: this.getUpgradeSVG("safety_net"),
       },
       {
         id: "lucky_amulet",
-        name: "Amuleto da Sorte",
-        description: "25% de chance de dobrar dinheiro ao destruir blocos",
+        name: getUpgradeText("lucky_amulet", "name") || "Amuleto da Sorte",
+        description: getUpgradeText("lucky_amulet", "description") || "25% de chance de dobrar dinheiro ao destruir blocos",
         price: 30,
         type: "utility",
         icon: this.getUpgradeSVG("lucky_amulet"),
       },
       {
         id: "life_insurance",
-        name: "Seguro de Vida",
-        description: "Ganha 100 moedas ao perder vida",
+        name: getUpgradeText("life_insurance", "name") || "Seguro de Vida",
+        description: getUpgradeText("life_insurance", "description") || "Ganha 100 moedas ao perder vida",
         price: 150,
         type: "utility",
         icon: this.getUpgradeSVG("life_insurance"),
       },
       {
         id: "recycling",
-        name: "Reciclagem",
-        description: "Tijolos azuis podem reaparecer, concedendo 5 moedas",
+        name: getUpgradeText("recycling", "name") || "Reciclagem",
+        description: getUpgradeText("recycling", "description") || "Tijolos azuis podem reaparecer, concedendo 5 moedas",
         price: 30,
         type: "utility",
         icon: this.getUpgradeSVG("recycling"),
       },
       {
         id: "risk_converter",
-        name: "Conversor de Risco",
-        description:
-          "Diminui vida do bloco vermelho para 2, muda velocidade da bolinha entre 80%-140% a cada 5s e desativa a troca de posição do bloco vermelho",
+        name: getUpgradeText("risk_converter", "name") || "Conversor de Risco",
+        description: getUpgradeText("risk_converter", "description") || "Diminui vida do bloco vermelho para 2, muda velocidade da bolinha entre 80%-140% a cada 5s e desativa a troca de posição do bloco vermelho",
         price: 100,
         type: "utility",
         icon: this.getUpgradeSVG("risk_converter"),
       },
       {
         id: "accelerated_vision",
-        name: "Visão Acelerada",
-        description: "Reduz velocidade dos fragmentos brancos em 40%",
+        name: getUpgradeText("accelerated_vision", "name") || "Visão Acelerada",
+        description: getUpgradeText("accelerated_vision", "description") || "Reduz velocidade dos fragmentos brancos em 40%",
         price: 120,
         type: "utility",
         icon: this.getUpgradeSVG("accelerated_vision"),
       },
       {
         id: "zigzag_stabilizer",
-        name: "Estabilizador de Zigue-zague",
-        description: "Reduz a curva do efeito de zigue-zague em 20%",
+        name: getUpgradeText("zigzag_stabilizer", "name") || "Estabilizador de Zigue-zague",
+        description: getUpgradeText("zigzag_stabilizer", "description") || "Reduz a curva do efeito de zigue-zague em 20%",
         price: 110,
         type: "utility",
         icon: this.getUpgradeSVG("zigzag_stabilizer"),
@@ -1165,43 +1160,40 @@ class Game {
       // Upgrades "Especiais" (21-25)
       {
         id: "structural_damage",
-        name: "Dano Estrutural",
-        description: "A primeira batida no bloco vermelho dá 3 de dano",
+        name: getUpgradeText("structural_damage", "name") || "Dano Estrutural",
+        description: getUpgradeText("structural_damage", "description") || "A primeira batida no bloco vermelho dá 3 de dano",
         price: 180,
         type: "special",
         icon: this.getUpgradeSVG("structural_damage"),
       },
       {
         id: "heat_vision",
-        name: "Visão de Calor",
-        description:
-          "A bolinha invisível deixa um rastro térmico muito mais visível",
+        name: getUpgradeText("heat_vision", "name") || "Visão de Calor",
+        description: getUpgradeText("heat_vision", "description") || "A bolinha invisível deixa um rastro térmico muito mais visível",
         price: 100,
         type: "special",
         icon: this.getUpgradeSVG("heat_vision"),
       },
       {
         id: "controlled_reversal",
-        name: "Reversão Controlada",
-        description:
-          "Desativa completamente o efeito de Inversão do tijolo verde",
+        name: getUpgradeText("controlled_reversal", "name") || "Reversão Controlada",
+        description: getUpgradeText("controlled_reversal", "description") || "Desativa completamente o efeito de Inversão do tijolo verde",
         price: 120,
         type: "special",
         icon: this.getUpgradeSVG("controlled_reversal"),
       },
       {
         id: "investor",
-        name: "Investidor",
-        description:
-          "Menos 1 vida máxima, mas toda fase começa com +100 moedas",
+        name: getUpgradeText("investor", "name") || "Investidor",
+        description: getUpgradeText("investor", "description") || "Menos 1 vida máxima, mas toda fase começa com +100 moedas",
         price: 50,
         type: "special",
         icon: this.getUpgradeSVG("investor"),
       },
       {
         id: "money_saver",
-        name: "Poupança",
-        description: "Mantém até 50 moedas para a próxima fase",
+        name: getUpgradeText("money_saver", "name") || "Poupança",
+        description: getUpgradeText("money_saver", "description") || "Mantém até 50 moedas para a próxima fase",
         price: 80,
         type: "passive",
         icon: this.getUpgradeSVG("money_saver"),
@@ -7427,5 +7419,32 @@ class Game {
 
 // Inicializar jogo quando a página carregar
 document.addEventListener("DOMContentLoaded", () => {
-  new Game();
+  // Inicializar sistema de idioma
+  if (typeof i18n !== 'undefined') {
+    i18n.updatePage();
+    
+    // Atualizar texto do botão de idioma
+    const languageToggle = document.getElementById('languageToggle');
+    const languageText = document.getElementById('languageText');
+    if (languageToggle && languageText) {
+      languageText.textContent = i18n.currentLanguage === 'pt-BR' ? 'EN' : 'PT';
+      
+      languageToggle.addEventListener('click', () => {
+        const newLang = i18n.currentLanguage === 'pt-BR' ? 'en' : 'pt-BR';
+        i18n.setLanguage(newLang);
+        languageText.textContent = newLang === 'pt-BR' ? 'EN' : 'PT';
+        
+        // Recriar interface de upgrades se estiver na tela de upgrades
+        const game = window.gameInstance;
+        if (game && game.currentScreen === 'upgradeScreen') {
+          game.showUpgradeScreen();
+        } else if (game && game.currentScreen === 'powerSelectionScreen') {
+          game.showPowerSelectionScreen();
+        }
+      });
+    }
+  }
+  
+  // Criar instância do jogo
+  window.gameInstance = new Game();
 });
