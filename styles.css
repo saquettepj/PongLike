@@ -789,10 +789,11 @@ body.touch-controls-active .mobile-controls {
   /* Loja: cards mais compactos e grid em 2 colunas */
   .upgrade-container {
     padding: 12px;
-    width: 100%;
-    max-width: 100vw;
+    height: 70vh; /* 70% da altura da tela */
+    overflow-y: auto; /* permite rolar o conteúdo dentro do container */
     display: flex;
     flex-direction: column;
+    margin-bottom: auto;
     /* overflow: hidden removido para permitir rolagem da tela */
   }
   .upgrade-container h2 {
@@ -1671,6 +1672,12 @@ body.touch-controls-active .mobile-controls {
   touch-action: auto; /* permitir gestos verticais e horizontais do navegador */
   overscroll-behavior: auto;
   pointer-events: auto;
+  /* Alinhar com o comportamento da tela de seleção inicial */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 12px env(safe-area-inset-right) calc(12px + env(safe-area-inset-bottom)) env(safe-area-inset-left);
 }
 
 .upgrade-container {
@@ -2143,6 +2150,23 @@ body.touch-controls-active .mobile-controls {
   margin-bottom: 0.5rem;
 }
 
+/* Destaque para o número da fase no Game Over */
+#gameOverScreen #finalPhase {
+  color: #2ecc71; /* verde do sistema */
+  font-weight: bold;
+}
+
+/* Destacar esteticamente (sem aumentar tamanho) a frase "Você chegou até a fase ..." */
+#gameOverScreen .game-over-container p:first-of-type {
+  position: relative;
+  display: inline-block;
+  padding: 8px 12px 8px 16px;
+  margin-top: 6px;
+  border-radius: 10px;
+  color: #fdcb6e;
+  text-shadow: none;
+}
+
 .restart-button {
   font-size: 1.5rem;
   font-weight: bold;
@@ -2161,6 +2185,25 @@ body.touch-controls-active .mobile-controls {
 .restart-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(214, 48, 49, 0.6);
+}
+
+/* Mobile: centralizar Game Over na tela */
+@media (max-width: 900px) {
+  #gameOverScreen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 12px env(safe-area-inset-right)
+      calc(12px + env(safe-area-inset-bottom)) env(safe-area-inset-left);
+  }
+
+  .game-over-container {
+    width: 90%;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 1.5rem;
+  }
 }
 
 /* Container de Upgrades do Desenvolvedor */
@@ -2313,5 +2356,23 @@ body.touch-controls-active .mobile-controls {
   100% {
     transform: scale(1);
     box-shadow: 0 0 10px rgba(46, 204, 113, 0.3);
+  }
+}
+
+/* Desktop: centralizar Loja na tela */
+@media (min-width: 901px) {
+  #upgradeScreen {
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+  }
+
+  .upgrade-container {
+    width: 80%;
+    max-width: 960px;
+    height: auto;
+    overflow-y: visible;
+    margin: 0 auto; /* centraliza horizontalmente */
+    margin-bottom: 0; /* desfaz ajuste do mobile */
   }
 }
