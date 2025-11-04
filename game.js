@@ -186,6 +186,7 @@ class Game {
     this.isMovingLeft = false;
     this.isMovingRight = false;
     this.hasTouchedOnce = false; // Flag para controle da ajuda visual
+    this.activeTouches = new Map(); // Rastrear toques ativos: touchId -> 'left' | 'right' | 'center'
 
     // Upgrades com ativação manual (agora usando tempo real)
     this.activeUpgradeEffects = {
@@ -566,6 +567,11 @@ class Game {
         this.handleTouchMove.bind(this),
         { passive: false },
       );
+      touchZone.addEventListener(
+        "touchcancel",
+        this.handleTouchEnd.bind(this),
+        { passive: false },
+      );
     }
 
     // Botões da interface
@@ -633,29 +639,51 @@ class Game {
       }
     }
     
-    const touch = e.touches[0];
-    const touchX = touch.clientX;
+    // Processar todos os toques ativos
     const screenWidth = window.innerWidth;
-
-    // Dividir a tela em 3 partes
-    if (touchX < screenWidth / 3) {
-      this.isMovingLeft = true;
-    } else if (touchX > (screenWidth * 2) / 3) {
-      this.isMovingRight = true;
-    } else {
-      // Centro
-      this.touchStartX = touch.clientX;
-      this.touchStartY = touch.clientY;
-      this.touchMoving = false;
-    }
+    const touchesToProcess = Array.from(e.touches);
+    
+    // Processar cada toque
+    touchesToProcess.forEach((touch) => {
+      const touchX = touch.clientX;
+      const touchId = touch.identifier;
+      
+      // Dividir a tela em 3 partes
+      if (touchX < screenWidth / 3) {
+        // Lateral esquerda
+        this.activeTouches.set(touchId, 'left');
+        this.isMovingLeft = true;
+      } else if (touchX > (screenWidth * 2) / 3) {
+        // Lateral direita
+        this.activeTouches.set(touchId, 'right');
+        this.isMovingRight = true;
+      } else {
+        // Centro
+        this.activeTouches.set(touchId, 'center');
+        // Se é o primeiro toque no centro, definir coordenadas
+        if (this.touchStartX === 0) {
+          this.touchStartX = touch.clientX;
+          this.touchStartY = touch.clientY;
+          this.touchMoving = false;
+        }
+      }
+    });
   }
 
   handleTouchMove(e) {
     e.preventDefault();
     if (this.touchStartX === 0) return;
 
-    const touch = e.touches[0];
-    const deltaY = touch.clientY - this.touchStartY;
+    // Encontrar o toque no centro
+    const centerTouchId = Array.from(this.activeTouches.entries())
+      .find(([id, zone]) => zone === 'center')?.[0];
+    
+    if (!centerTouchId) return;
+    
+    const centerTouch = Array.from(e.touches).find(t => t.identifier === centerTouchId);
+    if (!centerTouch) return;
+
+    const deltaY = centerTouch.clientY - this.touchStartY;
 
     if (Math.abs(deltaY) > 20) {
       // Movimento vertical significativo
@@ -665,67 +693,67 @@ class Game {
         this.selectNextPower();
       }
       this.touchMoving = true;
-      this.touchStartX = 0;
-      this.touchStartY = 0;
+      // Não resetar touchStartX aqui, pois pode haver outros toques ativos
     }
   }
 
   handleTouchEnd(e) {
     e.preventDefault();
     
-    // Para Bolinha Dimensional no mobile: 1 clique ativa por 2 segundos
-    if (!this.touchMoving && this.touchStartX !== 0 && this.gameRunning && !this.gamePaused) {
-      const selectedPower = this.activatablePowers[this.selectedPowerIndex];
-      if (selectedPower && selectedPower.id === "dimensional_ball" && this.hasUpgrade("dimensional_ball")) {
-        const dimensionalBallEffect = this.activeUpgradeEffects.dimensionalBall;
-        
-        // Só ativar se não estiver ativo e não estiver em cooldown
-        if (!dimensionalBallEffect.active) {
-          const hasFreeBalls = this.balls.some((ball) => !ball.attached);
-          const remainingCooldown = this.getRemainingTime(dimensionalBallEffect);
-          
-          // Verificar se pode ativar: não está em cooldown e há bolinhas livres
-          if (remainingCooldown === 0 && hasFreeBalls) {
-            dimensionalBallEffect.active = true;
-            dimensionalBallEffect.startTime = Date.now();
-            // No mobile, usar duração de 2 segundos
-            dimensionalBallEffect.duration = 2000;
-            this.createParticles(
-              this.paddle.x + this.paddle.width / 2,
-              this.paddle.y,
-              "#8e44ad",
-            );
-            this.playSound("superMagnet");
+    // Remover toques que terminaram
+    const endedTouches = Array.from(e.changedTouches);
+    endedTouches.forEach((touch) => {
+      const touchId = touch.identifier;
+      const zone = this.activeTouches.get(touchId);
+      
+      if (zone === 'center') {
+        // Se era um toque no centro e não estava se movendo, processar ação
+        if (!this.touchMoving && this.touchStartX !== 0 && this.gameRunning && !this.gamePaused) {
+          const selectedPower = this.activatablePowers[this.selectedPowerIndex];
+          if (selectedPower && selectedPower.id === "dimensional_ball" && this.hasUpgrade("dimensional_ball")) {
+            const dimensionalBallEffect = this.activeUpgradeEffects.dimensionalBall;
             
-            // Resetar variáveis de toque e retornar
-            this.isMovingLeft = false;
-            this.isMovingRight = false;
-            this.touchStartX = 0;
-            this.touchStartY = 0;
-            this.touchMoving = false;
-            return;
+            // Só ativar se não estiver ativo e não estiver em cooldown
+            if (!dimensionalBallEffect.active) {
+              const hasFreeBalls = this.balls.some((ball) => !ball.attached);
+              const remainingCooldown = this.getRemainingTime(dimensionalBallEffect);
+              
+              // Verificar se pode ativar: não está em cooldown e há bolinhas livres
+              if (remainingCooldown === 0 && hasFreeBalls) {
+                dimensionalBallEffect.active = true;
+                dimensionalBallEffect.startTime = Date.now();
+                // No mobile, usar duração de 2 segundos
+                dimensionalBallEffect.duration = 2000;
+                this.createParticles(
+                  this.paddle.x + this.paddle.width / 2,
+                  this.paddle.y,
+                  "#8e44ad",
+                );
+                this.playSound("superMagnet");
+              }
+            }
+          } else {
+            // Para outros poderes, manter comportamento normal
+            this.handlePrimaryAction();
           }
         }
-        // Se já está ativo, não fazer nada (aguardar auto-desativação)
-        
-        // Resetar variáveis de toque e retornar
-        this.isMovingLeft = false;
-        this.isMovingRight = false;
-        this.touchStartX = 0;
-        this.touchStartY = 0;
-        this.touchMoving = false;
-        return;
       }
       
-      // Para outros poderes, manter comportamento normal
-      this.handlePrimaryAction();
+      // Remover toque do mapa
+      this.activeTouches.delete(touchId);
+    });
+    
+    // Atualizar flags de movimento baseado nos toques restantes
+    const activeZones = Array.from(this.activeTouches.values());
+    this.isMovingLeft = activeZones.includes('left');
+    this.isMovingRight = activeZones.includes('right');
+    
+    // Se não há mais toques no centro, resetar coordenadas
+    if (!activeZones.includes('center')) {
+      this.touchStartX = 0;
+      this.touchStartY = 0;
+      this.touchMoving = false;
     }
-
-    this.isMovingLeft = false;
-    this.isMovingRight = false;
-    this.touchStartX = 0;
-    this.touchStartY = 0;
-    this.touchMoving = false;
   }
 
   handlePrimaryAction() {
@@ -768,7 +796,12 @@ class Game {
       this.hasTouchedOnce = false;
       const helpOverlay = document.getElementById("touchHelpOverlay");
       if (helpOverlay) {
-        helpOverlay.classList.remove("hidden");
+        // Mostrar help apenas se o jogador estiver abaixo do nível 2
+        if (this.currentPhase < 2) {
+          helpOverlay.classList.remove("hidden");
+        } else {
+          helpOverlay.classList.add("hidden");
+        }
       }
       // Esconder UI panel quando a ajuda está visível (antes do primeiro toque)
       if (gameUI) {
@@ -5100,6 +5133,14 @@ class Game {
     this.gameTime = 0;
     this.phaseTime = 0;
 
+    // Resetar controles de toque
+    this.activeTouches.clear();
+    this.isMovingLeft = false;
+    this.isMovingRight = false;
+    this.touchStartX = 0;
+    this.touchStartY = 0;
+    this.touchMoving = false;
+
     // Resetar multiplicador do conversor de risco
     this.riskConverterSpeedMultiplier = null;
     this.riskConverterTimer = null;
@@ -5818,6 +5859,18 @@ class Game {
 
     // Resetar tempo da fase
     this.phaseTime = 0;
+
+    // Atualizar help de gestos baseado na fase
+    if (this.isTouchDevice && this.currentScreen === "gameScreen") {
+      const helpOverlay = document.getElementById("touchHelpOverlay");
+      if (helpOverlay) {
+        if (this.currentPhase < 2) {
+          helpOverlay.classList.remove("hidden");
+        } else {
+          helpOverlay.classList.add("hidden");
+        }
+      }
+    }
 
     // Remover poder inicial na fase 2
     if (this.currentPhase === 2 && this.initialPower) {
