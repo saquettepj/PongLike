@@ -127,7 +127,7 @@ class Game {
     // - Botões para pular fase e adicionar dinheiro
     // - Ferramentas de debug
     // ========================================
-    this.developerMode = false;
+    this.developerMode = true;
     this.gameRunning = false;
     this.gamePaused = false;
     this.ballHitCount = 0; // Contador de batidas da bolinha para Bolinha Prima
@@ -515,7 +515,7 @@ class Game {
         }
       }
 
-      // Desativar Bolinha Dimensional quando soltar espaço
+      // Desativar Bolinha Dimensional quando soltar espaço (desktop)
       if (e.code === "Space" && this.gameRunning && !this.gamePaused) {
         if (
           this.hasUpgrade("dimensional_ball") &&
@@ -523,6 +523,8 @@ class Game {
         ) {
           this.activeUpgradeEffects.dimensionalBall.active = false;
           this.activeUpgradeEffects.dimensionalBall.startTime = Date.now(); // Iniciar cooldown
+          // Resetar duração para o padrão (3000ms) para próxima ativação
+          this.activeUpgradeEffects.dimensionalBall.duration = 3000;
         }
       }
     });
@@ -654,8 +656,52 @@ class Game {
 
   handleTouchEnd(e) {
     e.preventDefault();
-    if (!this.touchMoving && this.touchStartX !== 0) {
-      // Foi um toque no centro
+    
+    // Para Bolinha Dimensional no mobile: 1 clique ativa por 2 segundos
+    if (!this.touchMoving && this.touchStartX !== 0 && this.gameRunning && !this.gamePaused) {
+      const selectedPower = this.activatablePowers[this.selectedPowerIndex];
+      if (selectedPower && selectedPower.id === "dimensional_ball" && this.hasUpgrade("dimensional_ball")) {
+        const dimensionalBallEffect = this.activeUpgradeEffects.dimensionalBall;
+        
+        // Só ativar se não estiver ativo e não estiver em cooldown
+        if (!dimensionalBallEffect.active) {
+          const hasFreeBalls = this.balls.some((ball) => !ball.attached);
+          const remainingCooldown = this.getRemainingTime(dimensionalBallEffect);
+          
+          // Verificar se pode ativar: não está em cooldown e há bolinhas livres
+          if (remainingCooldown === 0 && hasFreeBalls) {
+            dimensionalBallEffect.active = true;
+            dimensionalBallEffect.startTime = Date.now();
+            // No mobile, usar duração de 2 segundos
+            dimensionalBallEffect.duration = 2000;
+            this.createParticles(
+              this.paddle.x + this.paddle.width / 2,
+              this.paddle.y,
+              "#8e44ad",
+            );
+            this.playSound("superMagnet");
+            
+            // Resetar variáveis de toque e retornar
+            this.isMovingLeft = false;
+            this.isMovingRight = false;
+            this.touchStartX = 0;
+            this.touchStartY = 0;
+            this.touchMoving = false;
+            return;
+          }
+        }
+        // Se já está ativo, não fazer nada (aguardar auto-desativação)
+        
+        // Resetar variáveis de toque e retornar
+        this.isMovingLeft = false;
+        this.isMovingRight = false;
+        this.touchStartX = 0;
+        this.touchStartY = 0;
+        this.touchMoving = false;
+        return;
+      }
+      
+      // Para outros poderes, manter comportamento normal
       this.handlePrimaryAction();
     }
 
@@ -980,8 +1026,9 @@ class Game {
       {
         id: "dimensional_ball",
         name: "Bolinha Dimensional",
-        description:
-          "Pode atravessar tijolos sem quebrá-los (Mantenha espaço pressionado) (até 3s, cooldown 15s)",
+        description: this.isTouchDevice
+          ? "Pode atravessar tijolos sem quebrá-los (Toque para ativar) (2s, cooldown 15s)"
+          : "Pode atravessar tijolos sem quebrá-los (Mantenha espaço pressionado) (até 3s, cooldown 15s)",
         price: 140,
         type: "ball",
         icon: this.getUpgradeSVG("dimensional_ball"),
@@ -1642,13 +1689,15 @@ class Game {
         this.playSound("cushionPaddle");
       }
 
-      // Desativar automaticamente após 3 segundos usando tempo real
+      // Desativar automaticamente após a duração configurada (2s mobile, 3s desktop)
       const currentTime = Date.now();
       const elapsedTime =
         currentTime - this.activeUpgradeEffects.dimensionalBall.startTime;
       if (elapsedTime >= this.activeUpgradeEffects.dimensionalBall.duration) {
         this.activeUpgradeEffects.dimensionalBall.active = false;
         this.activeUpgradeEffects.dimensionalBall.startTime = Date.now(); // Iniciar cooldown
+        // Resetar duração para o padrão baseado no dispositivo para próxima ativação
+        this.activeUpgradeEffects.dimensionalBall.duration = this.isTouchDevice ? 2000 : 3000;
       }
     }
 
@@ -3400,9 +3449,11 @@ class Game {
           this.activeUpgradeEffects.dimensionalBall.startTime === 0 &&
           hasFreeBalls
         ) {
-          // Ativar e iniciar contador de 3 segundos
+          // Ativar e definir duração baseada no dispositivo
           this.activeUpgradeEffects.dimensionalBall.active = true;
           this.activeUpgradeEffects.dimensionalBall.startTime = Date.now();
+          // Mobile: 2 segundos, Desktop: 3 segundos
+          this.activeUpgradeEffects.dimensionalBall.duration = this.isTouchDevice ? 2000 : 3000;
           this.createParticles(
             this.paddle.x + this.paddle.width / 2,
             this.paddle.y,
@@ -4761,6 +4812,11 @@ class Game {
   purchaseDevUpgrade(upgradeId, element) {
     if (!this.developerMode) return;
 
+    // Garantir que devUpgrades está inicializado
+    if (!this.devUpgrades) {
+      this.devUpgrades = {};
+    }
+
     const upgrade = this.getAllUpgrades().find((u) => u.id === upgradeId);
     const upgradeName = upgrade ? upgrade.name : upgradeId;
 
@@ -4837,11 +4893,72 @@ class Game {
         (upgrade) => upgrade.id !== upgradeId,
       );
 
+      // Reverter efeitos específicos do upgrade removido
+      this.revertUpgradeEffects(upgradeId);
+
       // Reaplicar todos os upgrades restantes
       this.applyUpgrades();
 
       // Atualizar UI
       this.updateUI();
+    }
+  }
+
+  revertUpgradeEffects(upgradeId) {
+    // Reverter efeitos específicos de cada upgrade
+    switch (upgradeId) {
+      case "wide_paddle":
+        // Reverter largura da plataforma
+        this.paddle.width = this.config.paddleWidth;
+        break;
+      case "reinforced_paddle":
+      case "repulsor_shield":
+        // Reverter altura da plataforma
+        this.paddle.height = this.config.paddleHeight;
+        break;
+      case "friction_field":
+        // Reverter multiplicador de velocidade (será recalculado ao reaplicar upgrades)
+        break;
+      case "extra_life":
+        // Não remover vida, apenas não adicionar mais
+        break;
+      default:
+        // Para outros upgrades, os efeitos são revertidos automaticamente
+        // ao remover do activeUpgrades e reaplicar
+        break;
+    }
+
+    // Mapear upgradeId (snake_case) para chave de efeito ativo (camelCase)
+    const effectKeyMap = {
+      "dimensional_ball": "dimensionalBall",
+      "multi_ball": "multiBall",
+      "time_ball": "timeBall",
+      "super_magnet": "superMagnet",
+      "charged_shot": "chargedShot",
+      "safety_net": "safetyNet",
+      "effect_activator": "effectActivator",
+      "cushion_paddle": "cushionPaddle",
+      "paddle_dash": "paddleDash",
+    };
+
+    // Limpar efeitos ativos específicos se existirem
+    const effectKey = effectKeyMap[upgradeId];
+    if (effectKey && this.activeUpgradeEffects[effectKey]) {
+      this.activeUpgradeEffects[effectKey].active = false;
+      this.activeUpgradeEffects[effectKey].startTime = 0;
+      this.activeUpgradeEffects[effectKey].timer = 0;
+    }
+
+    // Resetar efeitos de bolinha que podem ter sido aplicados
+    this.resetBallEffects();
+    
+    // Recalcular multiplicador de velocidade baseado nos upgrades restantes
+    if (this.activeUpgrades) {
+      this.activeUpgrades.forEach((upgrade) => {
+        if (upgrade.id === "friction_field") {
+          this.ballEffects.speedMultiplier *= 0.9;
+        }
+      });
     }
   }
 
@@ -4878,6 +4995,9 @@ class Game {
     devUpgradesContainer.style.display = "none";
 
     if (this.developerMode) {
+      // Inicializar upgrades do desenvolvedor
+      this.initializeDevUpgrades();
+      
       if (this.isTouchDevice) {
         // Mostra apenas o painel mobile em dispositivos de toque
         mobileDevPanel.style.display = "flex";
@@ -4887,7 +5007,6 @@ class Game {
         gameInfoPanel.style.display = "block";
         brickCounterPanel.style.display = "block";
         devUpgradesContainer.style.display = "block";
-        this.generateDevUpgrades();
       }
     }
   }
