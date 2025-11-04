@@ -358,11 +358,15 @@ body {
   left: 0;
   right: 0;
   bottom: 84px; /* altura reservada para os botões de dev mobile */
+  display: none; /* desativada por padrão para não bloquear gestos na Loja */
 }
 
 /* Exibir overlay apenas em modo de toque ativo */
 body.touch-controls-active #touchOverlay {
   display: block;
+}
+body.touch-controls-active #touchZone {
+  display: block; /* ativa zona de toque apenas durante o jogo */
 }
 
 /* Barra de botões dev no overlay (mobile) */
@@ -1664,6 +1668,8 @@ body.touch-controls-active .mobile-controls {
   background: linear-gradient(135deg, #2c1810, #3d2317);
   overflow-y: auto; /* permitir rolagem na Loja */
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y; /* permitir gestos verticais padrão do navegador */
+  overscroll-behavior: auto;
 }
 
 .upgrade-container {
