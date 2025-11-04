@@ -2820,7 +2820,8 @@ class Game {
       );
 
       // Criar partículas de velocidade para indicar o aumento
-      for (let i = 0; i < 5; i++) {
+      const speedParticleCount = this.isTouchDevice ? Math.round(5 * 0.6) : 5;
+      for (let i = 0; i < speedParticleCount; i++) {
         this.particles.push({
           x: brick.x + brick.width / 2,
           y: brick.y + brick.height / 2,
@@ -3153,8 +3154,9 @@ class Game {
     });
 
     // Criar explosão de partículas
-    for (let i = 0; i < 20; i++) {
-      const angle = (i / 20) * Math.PI * 2;
+    const explosionParticleCount = this.isTouchDevice ? Math.round(20 * 0.6) : 20;
+    for (let i = 0; i < explosionParticleCount; i++) {
+      const angle = (i / explosionParticleCount) * Math.PI * 2;
       const speed = 5 + Math.random() * 5;
       this.particles.push({
         x: ball.x,
@@ -3232,8 +3234,9 @@ class Game {
     });
 
     // Criar partículas de vidro estilhaçado
-    for (let i = 0; i < 15; i++) {
-      const angle = (i / 15) * Math.PI * 2;
+    const shatterParticleCount = this.isTouchDevice ? Math.round(15 * 0.6) : 15;
+    for (let i = 0; i < shatterParticleCount; i++) {
+      const angle = (i / shatterParticleCount) * Math.PI * 2;
       const speed = 3 + Math.random() * 4;
       this.particles.push({
         x: brick.x + brick.width / 2,
@@ -3250,8 +3253,9 @@ class Game {
     }
 
     // Criar partículas de explosão laranja (efeito de impacto)
-    for (let i = 0; i < 8; i++) {
-      const angle = (i / 8) * Math.PI * 2;
+    const impactParticleCount = this.isTouchDevice ? Math.round(8 * 0.6) : 8;
+    for (let i = 0; i < impactParticleCount; i++) {
+      const angle = (i / impactParticleCount) * Math.PI * 2;
       const speed = 2 + Math.random() * 3;
       this.particles.push({
         x: brick.x + brick.width / 2,
@@ -4260,7 +4264,13 @@ class Game {
   }
 
   createParticles(x, y, color) {
-    for (let i = 0; i < 8; i++) {
+    // Reduzir quantidade de partículas em 40% (60% do original) no mobile
+    const baseCount = 8;
+    const particleCount = this.isTouchDevice 
+      ? Math.round(baseCount * 0.6) 
+      : baseCount;
+    
+    for (let i = 0; i < particleCount; i++) {
       this.particles.push({
         x: x,
         y: y,
@@ -5985,6 +5995,9 @@ class Game {
     // Atualizar lista de poderes ativáveis e interface de seleção
     this.updateActivatablePowers();
     this.updatePowerSelectionUI();
+    
+    // Atualizar overlay do poder selecionado (para atualizar filtro vermelho em tempo real)
+    this.updateSelectedPowerOverlay();
 
     // Atualizar visual dos upgrades do desenvolvedor se estiver no modo dev
     if (this.developerMode) {
@@ -6773,6 +6786,58 @@ class Game {
     overlay.innerHTML = this.getUpgradeSVG(selectedPowerId);
     overlay.setAttribute("title", this.getUpgradeName(selectedPowerId));
     overlay.style.display = "flex";
+
+    // Verificar se o poder está em cooldown e aplicar filtro vermelho
+    const isOnCooldown = this.isPowerOnCooldown(selectedPowerId);
+    const svgElement = overlay.querySelector("svg");
+    if (svgElement) {
+      if (isOnCooldown) {
+        // Filtro vermelho para indicar cooldown no SVG do fundo do canvas
+        svgElement.style.filter = "hue-rotate(-50deg) saturate(2) brightness(0.9)";
+        svgElement.style.opacity = "0.85";
+      } else {
+        svgElement.style.filter = "";
+        svgElement.style.opacity = "";
+      }
+    }
+  }
+
+  // Função auxiliar para converter ID do upgrade para chave do efeito
+  getEffectKeyFromUpgradeId(upgradeId) {
+    const mapping = {
+      "super_magnet": "superMagnet",
+      "paddle_dash": "paddleDash",
+      "charged_shot": "chargedShot",
+      "safety_net": "safetyNet",
+      "effect_activator": "effectActivator",
+      "cushion_paddle": "cushionPaddle",
+      "multi_ball": "multiBall",
+      "time_ball": "timeBall",
+      "dimensional_ball": "dimensionalBall"
+    };
+    return mapping[upgradeId] || null;
+  }
+
+  // Verificar se um poder está em cooldown
+  isPowerOnCooldown(upgradeId) {
+    const effectKey = this.getEffectKeyFromUpgradeId(upgradeId);
+    if (!effectKey || !this.activeUpgradeEffects[effectKey]) {
+      return false;
+    }
+
+    const effect = this.activeUpgradeEffects[effectKey];
+    if (!effect.cooldown || effect.cooldown === 0) {
+      return false;
+    }
+
+    // Se está ativo, não está em cooldown
+    if (effect.active) {
+      return false;
+    }
+
+    // Verificar se está em cooldown
+    const remainingTime = this.getRemainingTime(effect);
+    return remainingTime > 0;
   }
 
   getUpgradeName(upgradeId) {

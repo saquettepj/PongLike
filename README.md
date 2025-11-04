@@ -19,10 +19,16 @@ Um jogo web que funde a mecânica clássica de Breakout com elementos de Rogueli
 
 ## 🎮 Controles
 
+### 🖥️ Desktop
 - **Teclas A/D ou Setas ← →**: Controlar a plataforma
 - **Barra de Espaço**: Ativar poderes especiais / Soltar bolinha presa
 - **Tecla P**: Pausar/Despausar o jogo
 - **Clique Esquerdo do Mouse**: Navegar / Comprar upgrades
+
+### 📱 Mobile
+- **Toque nas Laterais**: Mover a plataforma para esquerda ou direita
+- **Toque no Centro**: Soltar a bolinha ou ativar o poder selecionado
+- **Deslize para Cima/Baixo no Centro**: Trocar o poder selecionado
 
 ## 📈 Sistema de Dificuldade Progressiva
 
