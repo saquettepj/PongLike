@@ -231,6 +231,11 @@ body {
   color: #ffffff;
 }
 
+/* Destaque da palavra "tela" nas instruções */
+.control-text strong {
+  color: #ff6b35;
+}
+
 .start-button {
   font-size: 2rem;
   font-weight: bold;
