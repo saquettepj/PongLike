@@ -699,6 +699,17 @@ class Game {
 
     // Ativar/desativar controles de toque
     this.setTouchControls(screenName === "gameScreen");
+
+    // Atualizar overlay do poder selecionado conforme a tela
+    const overlay = document.getElementById("selectedPowerOverlay");
+    if (overlay) {
+      if (screenName === "gameScreen") {
+        this.updateSelectedPowerOverlay();
+      } else {
+        overlay.style.display = "none";
+        overlay.innerHTML = "";
+      }
+    }
   }
 
   showInitialPowerSelection() {
@@ -6446,7 +6457,10 @@ class Game {
     const powerSelectionContainer = document.getElementById(
       "powerSelectionContainer",
     );
-    if (!powerSelectionContainer) return;
+    if (!powerSelectionContainer) {
+      this.updateSelectedPowerOverlay();
+      return;
+    }
 
     // Só recriar a interface se os poderes ativáveis mudaram
     if (this.lastActivatablePowersCount !== this.activatablePowers.length) {
@@ -6512,6 +6526,37 @@ class Game {
       });
     }
 
+    this.updateSelectedPowerOverlay();
+  }
+
+  updateSelectedPowerOverlay() {
+    const overlay = document.getElementById("selectedPowerOverlay");
+    if (!overlay) return;
+
+    // Mostrar apenas em dispositivos touch e dentro da tela de jogo ativa
+    const isInGameScreen = this.currentScreen === "gameScreen";
+    if (!this.isTouchDevice || !isInGameScreen || !this.gameRunning || this.gamePaused) {
+      overlay.style.display = "none";
+      overlay.innerHTML = "";
+      return;
+    }
+
+    if (!this.activatablePowers || this.activatablePowers.length === 0) {
+      overlay.style.display = "none";
+      overlay.innerHTML = "";
+      return;
+    }
+
+    const selectedPowerId = this.activatablePowers[this.selectedPowerIndex] || null;
+    if (!selectedPowerId) {
+      overlay.style.display = "none";
+      overlay.innerHTML = "";
+      return;
+    }
+
+    overlay.innerHTML = this.getUpgradeSVG(selectedPowerId);
+    overlay.setAttribute("title", this.getUpgradeName(selectedPowerId));
+    overlay.style.display = "flex";
   }
 
   getUpgradeName(upgradeId) {
@@ -6777,11 +6822,13 @@ class Game {
       this.ctx.stroke();
       this.ctx.setLineDash([]);
 
-      // Desenhar texto "ESPAÇO" acima da bolinha
-      this.ctx.fillStyle = "#ff6b35";
-      this.ctx.font = '12px "Press Start 2P"';
-      this.ctx.textAlign = "center";
-      this.ctx.fillText("ESPAÇO", ball.x, ball.y - 20);
+      // Desenhar texto "ESPAÇO" acima da bolinha (apenas desktop)
+      if (!this.isTouchDevice) {
+        this.ctx.fillStyle = "#ff6b35";
+        this.ctx.font = '12px "Press Start 2P"';
+        this.ctx.textAlign = "center";
+        this.ctx.fillText("ESPAÇO", ball.x, ball.y - 20);
+      }
     }
 
     // Verificar invisibilidade - bolinha 100% invisível
