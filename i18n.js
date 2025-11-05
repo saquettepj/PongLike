@@ -134,7 +134,46 @@ class I18n {
         
         // Notificações
         powerRemoved: 'Poder "{name}" removido!',
-        canBuyAgain: 'Você pode comprá-lo novamente na loja'
+        canBuyAgain: 'Você pode comprá-lo novamente na loja',
+        
+        // Status de poderes
+        active: 'ATIVO',
+        ready: 'PRONTO',
+        
+        // Interface de poderes
+        activatablePowers: 'Poderes Ativáveis',
+        noActivatablePowers: 'Nenhum poder ativável',
+        noPowersPurchased: 'Nenhum poder comprado ainda',
+        powerSelectionInstructions: 'W/S ou ↑/↓ para selecionar<br>ESPAÇO para ativar',
+        
+        // Modificadores
+        activeModifier: 'Modificador Ativo:',
+        modifiers: {
+          chaoticMovement: 'Movimento Caótico',
+          inflatedMarket: 'Mercado Inflacionado',
+          redPanic: 'Pânico Vermelho',
+          weakBattery: 'Bateria Fraca',
+          noGoodEffects: 'Sem Efeitos Bons',
+          countdown: 'Contagem Regressiva'
+        },
+        
+        // Notificações de combo
+        comboReward: 'Recompensa de Combo:',
+        comboRewardWombo: 'Recompensa de Combo (Wombo Combo!):',
+        coinsEarnedByCombo: 'moedas 🪙 ganhas pelo combo máximo',
+        womboComboDoubled: 'Bolinha Wombo Combo dobrou a recompensa!',
+        
+        // Poupança
+        savingsActivated: 'Poupança Ativada!',
+        savingsDetails: 'Guardou {saved} de {original} moedas (30%)',
+        
+        // Desenvolvedor
+        developerMoneyAdded: '+200 Moedas!',
+        developerUpgradePurchased: '{name} comprado!',
+        developerUpgradeRemoved: '{name} removido!',
+        
+        // Idioma
+        toggleLanguage: 'Trocar Idioma'
       },
       
       'en': {
@@ -266,7 +305,46 @@ class I18n {
         
         // Notifications
         powerRemoved: 'Power "{name}" removed!',
-        canBuyAgain: 'You can buy it again in the shop'
+        canBuyAgain: 'You can buy it again in the shop',
+        
+        // Power status
+        active: 'ACTIVE',
+        ready: 'READY',
+        
+        // Power interface
+        activatablePowers: 'Activatable Powers',
+        noActivatablePowers: 'No activatable powers',
+        noPowersPurchased: 'No powers purchased yet',
+        powerSelectionInstructions: 'W/S or ↑/↓ to select<br>SPACE to activate',
+        
+        // Modifiers
+        activeModifier: 'Active Modifier:',
+        modifiers: {
+          chaoticMovement: 'Chaotic Movement',
+          inflatedMarket: 'Inflated Market',
+          redPanic: 'Red Panic',
+          weakBattery: 'Weak Battery',
+          noGoodEffects: 'No Good Effects',
+          countdown: 'Countdown'
+        },
+        
+        // Combo notifications
+        comboReward: 'Combo Reward:',
+        comboRewardWombo: 'Combo Reward (Wombo Combo!):',
+        coinsEarnedByCombo: 'coins 🪙 earned by max combo',
+        womboComboDoubled: 'Wombo Combo Ball doubled the reward!',
+        
+        // Savings
+        savingsActivated: 'Savings Activated!',
+        savingsDetails: 'Saved {saved} of {original} coins (30%)',
+        
+        // Developer
+        developerMoneyAdded: '+200 Coins!',
+        developerUpgradePurchased: '{name} purchased!',
+        developerUpgradeRemoved: '{name} removed!',
+        
+        // Language
+        toggleLanguage: 'Toggle Language'
       }
     };
   }
@@ -291,7 +369,7 @@ class I18n {
     }
   }
   
-  t(key) {
+  t(key, params = {}) {
     const keys = key.split('.');
     let value = this.translations[this.currentLanguage];
     
@@ -302,6 +380,13 @@ class I18n {
         console.warn(`Translation key not found: ${key}`);
         return key;
       }
+    }
+    
+    // Substituir placeholders se houver parâmetros
+    if (params && typeof value === 'string') {
+      Object.keys(params).forEach(param => {
+        value = value.replace(`{${param}}`, params[param]);
+      });
     }
     
     return value;
@@ -319,6 +404,13 @@ class I18n {
       } else {
         el.textContent = translation;
       }
+    });
+    
+    // Atualizar atributos title com data-i18n-title
+    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+      const key = el.getAttribute('data-i18n-title');
+      const translation = this.t(key);
+      el.setAttribute('title', translation);
     });
     
     // Atualizar atributo lang do HTML

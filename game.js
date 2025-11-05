@@ -1366,10 +1366,12 @@ class Game {
             z-index: 10000;
             box-shadow: 0 0 20px rgba(255, 107, 53, 0.5);
         `;
+    const powerRemovedText = typeof i18n !== 'undefined' && i18n.t ? i18n.t('powerRemoved', { name: this.removedInitialPower.name }) : `Poder "${this.removedInitialPower.name}" removido!`;
+    const canBuyAgainText = typeof i18n !== 'undefined' && i18n.t ? i18n.t('canBuyAgain') : 'Você pode comprá-lo novamente na loja';
     notification.innerHTML = `
-            <div>Poder "${this.removedInitialPower.name}" removido!</div>
+            <div>${powerRemovedText}</div>
             <div style="font-size: 0.9rem; color: #fdcb6e; margin-top: 0.5rem;">
-                Você pode comprá-lo novamente na loja
+                ${canBuyAgainText}
             </div>
         `;
 
@@ -1492,8 +1494,8 @@ class Game {
 
     // Se não há upgrades comprados, mostrar mensagem
     if (this.activeUpgrades.length === 0) {
-      container.innerHTML =
-        '<div style="color: #888; font-style: italic;">Nenhum poder comprado ainda</div>';
+      const noPowersText = typeof i18n !== 'undefined' && i18n.t ? i18n.t('noPowersPurchased') : 'Nenhum poder comprado ainda';
+      container.innerHTML = `<div style="color: #888; font-style: italic;">${noPowersText}</div>`;
       return;
     }
 
@@ -4957,6 +4959,7 @@ class Game {
   }
 
   showModifierNotification(modifier) {
+    // Fallback para compatibilidade
     const modifierNames = {
       chaoticMovement: "Movimento Caótico",
       inflatedMarket: "Mercado Inflacionado",
@@ -4985,9 +4988,11 @@ class Game {
             z-index: 10000;
             box-shadow: 0 0 30px rgba(255, 107, 53, 0.5);
         `;
+    const modifierName = typeof i18n !== 'undefined' && i18n.t ? i18n.t(`modifiers.${modifier}`) : modifierNames[modifier];
+    const activeModifierText = typeof i18n !== 'undefined' && i18n.t ? i18n.t('activeModifier') : 'Modificador Ativo:';
     notification.innerHTML = `
-            <div>Modificador Ativo:</div>
-            <div style="color: #fdcb6e; margin-top: 10px;">${modifierNames[modifier]}</div>
+            <div>${activeModifierText}</div>
+            <div style="color: #fdcb6e; margin-top: 10px;">${modifierName}</div>
         `;
 
     document.body.appendChild(notification);
@@ -5031,16 +5036,20 @@ class Game {
             box-shadow: 0 0 30px ${isWomboComboActive ? "rgba(155, 89, 182, 0.5)" : "rgba(255, 107, 53, 0.5)"};
         `;
 
+    const comboRewardText = typeof i18n !== 'undefined' && i18n.t ? i18n.t('comboReward') : 'Recompensa de Combo:';
+    const coinsEarnedText = typeof i18n !== 'undefined' && i18n.t ? i18n.t('coinsEarnedByCombo') : 'moedas 🪙 ganhas pelo combo máximo';
     let notificationText = `
-            <div>Recompensa de Combo:</div>
-            <div style="color: #fdcb6e; margin-top: 10px;">+${comboCount} moedas 🪙 ganhas pelo combo máximo</div>
+            <div>${comboRewardText}</div>
+            <div style="color: #fdcb6e; margin-top: 10px;">+${comboCount} ${coinsEarnedText}</div>
         `;
 
     if (isWomboComboActive) {
+      const comboRewardWomboText = typeof i18n !== 'undefined' && i18n.t ? i18n.t('comboRewardWombo') : 'Recompensa de Combo (Wombo Combo!):';
+      const womboDoubledText = typeof i18n !== 'undefined' && i18n.t ? i18n.t('womboComboDoubled') : 'Bolinha Wombo Combo dobrou a recompensa!';
       notificationText = `
-                <div>Recompensa de Combo (Wombo Combo!):</div>
-                <div style="color: #fdcb6e; margin-top: 10px;">+${baseCombo} × 2 = +${comboCount} moedas 🪙</div>
-                <div style="color: #9b59b6; margin-top: 5px; font-size: 1rem;">Bolinha Wombo Combo dobrou a recompensa!</div>
+                <div>${comboRewardWomboText}</div>
+                <div style="color: #fdcb6e; margin-top: 10px;">+${baseCombo} × 2 = +${comboCount} ${coinsEarnedText}</div>
+                <div style="color: #9b59b6; margin-top: 5px; font-size: 1rem;">${womboDoubledText}</div>
             `;
     }
 
@@ -5148,7 +5157,8 @@ class Game {
     this.updateUI();
 
     // Feedback visual
-    this.showDeveloperNotification("+200 Moedas!");
+    const developerMoneyText = typeof i18n !== 'undefined' && i18n.t ? i18n.t('developerMoneyAdded') : '+200 Moedas!';
+    this.showDeveloperNotification(developerMoneyText);
   }
 
   showDeveloperNotification(message) {
@@ -5251,7 +5261,8 @@ class Game {
       }, 300);
 
       // Feedback visual
-      this.showDeveloperNotification(`${upgradeName} comprado!`);
+      const purchasedText = typeof i18n !== 'undefined' && i18n.t ? i18n.t('developerUpgradePurchased', { name: upgradeName }) : `${upgradeName} comprado!`;
+      this.showDeveloperNotification(purchasedText);
     } else {
       // Descomprar upgrade
       this.devUpgrades[upgradeId] = false;
@@ -5270,7 +5281,8 @@ class Game {
       }, 300);
 
       // Feedback visual
-      this.showDeveloperNotification(`${upgradeName} removido!`);
+      const removedText = typeof i18n !== 'undefined' && i18n.t ? i18n.t('developerUpgradeRemoved', { name: upgradeName }) : `${upgradeName} removido!`;
+      this.showDeveloperNotification(removedText);
     }
   }
 
@@ -6473,10 +6485,12 @@ class Game {
             </svg>
         `;
 
+    const savingsName = typeof i18n !== 'undefined' && i18n.t ? i18n.t('upgrades.money_saver.name') : 'Poupança';
+    const savingsDesc = typeof i18n !== 'undefined' && i18n.t ? i18n.t('upgrades.money_saver.description') : 'Se não comprar nada nesta loja, guarde 30% do dinheiro para próxima partida';
     savingsCard.innerHTML = `
             <div class="upgrade-icon">${piggyBankIcon}</div>
-            <div class="upgrade-name">Poupança</div>
-            <div class="upgrade-description">Se não comprar nada nesta loja, guarde 30% do dinheiro para próxima partida</div>
+            <div class="upgrade-name">${savingsName}</div>
+            <div class="upgrade-description">${savingsDesc}</div>
         `;
 
     // A opção de poupança não é clicável - é automática
@@ -6491,12 +6505,14 @@ class Game {
     // Criar elemento de notificação
     const notification = document.createElement("div");
     notification.className = "savings-notification";
+    const savingsActivatedText = typeof i18n !== 'undefined' && i18n.t ? i18n.t('savingsActivated') : 'Poupança Ativada!';
+    const savingsDetailsText = typeof i18n !== 'undefined' && i18n.t ? i18n.t('savingsDetails', { saved: savedMoney, original: originalMoney }) : `Guardou ${savedMoney} de ${originalMoney} moedas (30%)`;
     notification.innerHTML = `
             <div class="savings-notification-content">
                 <div class="savings-icon">🐷</div>
                 <div class="savings-text">
-                    <div class="savings-title">Poupança Ativada!</div>
-                    <div class="savings-details">Guardou ${savedMoney} de ${originalMoney} moedas (30%)</div>
+                    <div class="savings-title">${savingsActivatedText}</div>
+                    <div class="savings-details">${savingsDetailsText}</div>
                 </div>
             </div>
         `;
@@ -6872,7 +6888,7 @@ class Game {
             const seconds = Math.ceil(remainingTime / 1000);
             cooldownElement.textContent = `${seconds}s`;
           } else {
-            cooldownElement.textContent = "ATIVO";
+            cooldownElement.textContent = typeof i18n !== 'undefined' && i18n.t ? i18n.t('active') : "ATIVO";
           }
           cooldownElement.className = "power-cooldown ready";
         } else {
@@ -6884,7 +6900,7 @@ class Game {
             cooldownElement.className = "power-cooldown";
           } else {
             powerItem.className = "power-item";
-            cooldownElement.textContent = "PRONTO";
+            cooldownElement.textContent = typeof i18n !== 'undefined' && i18n.t ? i18n.t('ready') : "PRONTO";
             cooldownElement.className = "power-cooldown ready";
           }
         }
@@ -6899,7 +6915,7 @@ class Game {
             const seconds = Math.ceil(remainingTime / 1000);
             cooldownElement.textContent = `${seconds}s`;
           } else {
-            cooldownElement.textContent = "ATIVO";
+            cooldownElement.textContent = typeof i18n !== 'undefined' && i18n.t ? i18n.t('active') : "ATIVO";
           }
           cooldownElement.className = "power-cooldown ready";
         } else {
@@ -6911,7 +6927,7 @@ class Game {
             cooldownElement.className = "power-cooldown";
           } else {
             powerItem.className = "power-item";
-            cooldownElement.textContent = "PRONTO";
+            cooldownElement.textContent = typeof i18n !== 'undefined' && i18n.t ? i18n.t('ready') : "PRONTO";
             cooldownElement.className = "power-cooldown ready";
           }
         }
@@ -6927,7 +6943,7 @@ class Game {
           cooldownElement.className = "power-cooldown";
         } else {
           powerItem.className = "power-item";
-          cooldownElement.textContent = "PRONTO";
+          cooldownElement.textContent = typeof i18n !== 'undefined' && i18n.t ? i18n.t('ready') : "PRONTO";
           cooldownElement.className = "power-cooldown ready";
         }
         break;
@@ -6941,7 +6957,7 @@ class Game {
             const seconds = Math.ceil(remainingTime / 1000);
             cooldownElement.textContent = `${seconds}s`;
           } else {
-            cooldownElement.textContent = "ATIVO";
+            cooldownElement.textContent = typeof i18n !== 'undefined' && i18n.t ? i18n.t('active') : "ATIVO";
           }
           cooldownElement.className = "power-cooldown ready";
         } else {
@@ -6953,7 +6969,7 @@ class Game {
             cooldownElement.className = "power-cooldown";
           } else {
             powerItem.className = "power-item";
-            cooldownElement.textContent = "PRONTO";
+            cooldownElement.textContent = typeof i18n !== 'undefined' && i18n.t ? i18n.t('ready') : "PRONTO";
             cooldownElement.className = "power-cooldown ready";
           }
         }
@@ -6969,7 +6985,7 @@ class Game {
           cooldownElement.className = "power-cooldown";
         } else {
           powerItem.className = "power-item";
-          cooldownElement.textContent = "PRONTO";
+          cooldownElement.textContent = typeof i18n !== 'undefined' && i18n.t ? i18n.t('ready') : "PRONTO";
           cooldownElement.className = "power-cooldown ready";
         }
         break;
@@ -6983,7 +6999,7 @@ class Game {
             const seconds = Math.ceil(remainingTime / 1000);
             cooldownElement.textContent = `${seconds}s`;
           } else {
-            cooldownElement.textContent = "ATIVO";
+            cooldownElement.textContent = typeof i18n !== 'undefined' && i18n.t ? i18n.t('active') : "ATIVO";
           }
           cooldownElement.className = "power-cooldown ready";
         } else {
@@ -6995,7 +7011,7 @@ class Game {
             cooldownElement.className = "power-cooldown";
           } else {
             powerItem.className = "power-item";
-            cooldownElement.textContent = "PRONTO";
+            cooldownElement.textContent = typeof i18n !== 'undefined' && i18n.t ? i18n.t('ready') : "PRONTO";
             cooldownElement.className = "power-cooldown ready";
           }
         }
@@ -7011,7 +7027,7 @@ class Game {
           cooldownElement.className = "power-cooldown";
         } else {
           powerItem.className = "power-item";
-          cooldownElement.textContent = "PRONTO";
+          cooldownElement.textContent = typeof i18n !== 'undefined' && i18n.t ? i18n.t('ready') : "PRONTO";
           cooldownElement.className = "power-cooldown ready";
         }
         break;
@@ -7026,7 +7042,7 @@ class Game {
           cooldownElement.className = "power-cooldown";
         } else {
           powerItem.className = "power-item";
-          cooldownElement.textContent = "PRONTO";
+          cooldownElement.textContent = typeof i18n !== 'undefined' && i18n.t ? i18n.t('ready') : "PRONTO";
           cooldownElement.className = "power-cooldown ready";
         }
         break;
@@ -7040,7 +7056,7 @@ class Game {
             const seconds = Math.ceil(remainingTime / 1000);
             cooldownElement.textContent = `${seconds}s`;
           } else {
-            cooldownElement.textContent = "ATIVO";
+            cooldownElement.textContent = typeof i18n !== 'undefined' && i18n.t ? i18n.t('active') : "ATIVO";
           }
           cooldownElement.className = "power-cooldown active";
         } else {
@@ -7052,7 +7068,7 @@ class Game {
             cooldownElement.className = "power-cooldown";
           } else {
             powerItem.className = "power-item";
-            cooldownElement.textContent = "PRONTO";
+            cooldownElement.textContent = typeof i18n !== 'undefined' && i18n.t ? i18n.t('ready') : "PRONTO";
             cooldownElement.className = "power-cooldown ready";
           }
         }
@@ -7077,15 +7093,16 @@ class Game {
       powerSelectionContainer.innerHTML = "";
 
       if (this.activatablePowers.length === 0) {
-        powerSelectionContainer.innerHTML =
-          '<div class="no-powers">Nenhum poder ativável</div>';
+        const noActivatableText = typeof i18n !== 'undefined' && i18n.t ? i18n.t('noActivatablePowers') : 'Nenhum poder ativável';
+        powerSelectionContainer.innerHTML = `<div class="no-powers">${noActivatableText}</div>`;
         return;
       }
 
       // Criar interface de seleção apenas quando a contagem mudou
       const title = document.createElement("div");
       title.className = "power-selection-title";
-      title.textContent = "Poderes Ativáveis";
+      const activatablePowersText = typeof i18n !== 'undefined' && i18n.t ? i18n.t('activatablePowers') : 'Poderes Ativáveis';
+      title.textContent = activatablePowersText;
       powerSelectionContainer.appendChild(title);
 
       this.activatablePowers.forEach((powerId, index) => {
@@ -7109,14 +7126,14 @@ class Game {
       // Adicionar instruções
       const instructions = document.createElement("div");
       instructions.className = "power-selection-instructions";
-      instructions.innerHTML =
-        "W/S ou ↑/↓ para selecionar<br>ESPAÇO para ativar";
+      const instructionsText = typeof i18n !== 'undefined' && i18n.t ? i18n.t('powerSelectionInstructions') : 'W/S ou ↑/↓ para selecionar<br>ESPAÇO para ativar';
+      instructions.innerHTML = instructionsText;
       powerSelectionContainer.appendChild(instructions);
     } else if (this.activatablePowers.length === 0) {
       // Garantir que a mensagem apareça mesmo se a contagem não mudou
       if (powerSelectionContainer.innerHTML.trim() === "") {
-        powerSelectionContainer.innerHTML =
-          '<div class="no-powers">Nenhum poder ativável</div>';
+        const noActivatableText = typeof i18n !== 'undefined' && i18n.t ? i18n.t('noActivatablePowers') : 'Nenhum poder ativável';
+        powerSelectionContainer.innerHTML = `<div class="no-powers">${noActivatableText}</div>`;
       }
       return;
     } else {
@@ -8011,6 +8028,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const newLang = i18n.currentLanguage === 'pt-BR' ? 'en' : 'pt-BR';
         i18n.setLanguage(newLang);
         languageText.textContent = newLang === 'pt-BR' ? 'EN' : 'PT';
+        // Atualizar título do botão
+        if (typeof i18n !== 'undefined' && i18n.t) {
+          languageToggle.setAttribute('title', i18n.t('toggleLanguage'));
+        }
         
         // Recriar interface de upgrades se estiver na tela de upgrades
         const game = window.gameInstance;
