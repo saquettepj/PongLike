@@ -136,7 +136,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 18. **Bolinha do Tempo** - Para a bolinha por 3 segundos. (cooldown 15s) (180 🪙)
 19. **Bolinha Prima** - Destrói bloco aleatório a cada número primo de batidas (120 🪙)
 20. **Bolinha Wombo Combo**: Com esta upgrade, cada bloco em combo dá +2 moedas (ao invés de +1) e a recompensa do combo máximo na loja é dobrada (120 🪙)
-21. **Bolinha Fantasma** - Quando a bolinha cai pela primeira vez em cada fase, ela reaparece no topo do campo (250 🪙)
+21. **Bolinha Portal** - Quando a bolinha cai pela primeira vez em cada fase, ela reaparece no topo do campo (250 🪙)
 22. **Bolinha Dimensional** - Pode atravessar tijolos sem quebrá-los (Mantenha espaço pressionado) (até 3s, cooldown 15s) (140 🪙)
 23. **Estilhaços** - 50% de chance de estilhaçar o vidro de um bloco, causando efeito explosivo (200 🪙)
 24. **Combo Power** - Todos os poderes que destroem blocos ativam o combo quando destroem um bloco (180 🪙)

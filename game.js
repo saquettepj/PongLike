@@ -55,8 +55,8 @@ class Game {
       }
     };
 
-    // Controle da Bolinha Fantasma
-    this.ghostBallUsedThisPhase = false;
+    // Controle da Bolinha Portal
+    this.portalBallUsedThisPhase = false;
 
     // Contador de tijolos atual
     this.currentBrickCount = {
@@ -1116,12 +1116,12 @@ class Game {
         icon: this.getUpgradeSVG("wombo_combo_ball"),
       },
       {
-        id: "ghost_ball",
-        name: getUpgradeText("ghost_ball", "name") || "Bolinha Fantasma",
-        description: getUpgradeText("ghost_ball", "description") || "Quando a bolinha cai pela primeira vez em cada fase, ela reaparece no topo do campo",
+        id: "portal_ball",
+        name: getUpgradeText("portal_ball", "name") || "Bolinha Portal",
+        description: getUpgradeText("portal_ball", "description") || "Quando a bolinha cai pela primeira vez em cada fase, ela reaparece no topo do campo",
         price: 250,
         type: "ball",
-        icon: this.getUpgradeSVG("ghost_ball"),
+        icon: this.getUpgradeSVG("portal_ball"),
       },
       {
         id: "dimensional_ball",
@@ -1335,7 +1335,7 @@ class Game {
     this.money = 0;
     this.lives = 3;
     this.activeUpgrades = [];
-    this.ghostBallUsedThisPhase = false; // Resetar uso da Bolinha Fantasma
+    this.portalBallUsedThisPhase = false; // Resetar uso da Bolinha Portal
     this.resetBallEffects();
     this.initialPowerSelected = false; // Flag para controlar se o poder inicial foi selecionado
     this.initialPower = null; // Armazenar o poder inicial selecionado
@@ -2259,15 +2259,15 @@ class Game {
           ball.vy = -Math.abs(ball.vy);
           this.createParticles(ball.x, ball.y, "#2ecc71");
         } else {
-          // Verificar Bolinha Fantasma antes de remover a bolinha
-          if (this.hasUpgrade("ghost_ball") && !this.ghostBallUsedThisPhase) {
-            this.ghostBallUsedThisPhase = true;
+          // Verificar Bolinha Portal antes de remover a bolinha
+          if (this.hasUpgrade("portal_ball") && !this.portalBallUsedThisPhase) {
+            this.portalBallUsedThisPhase = true;
 
             // Salvar a velocidade da bolinha que caiu
             const savedVx = ball.vx;
             const savedVy = Math.abs(ball.vy); // Garantir que seja para baixo
 
-            // Tocar som de efeito fantasma
+            // Tocar som de efeito portal
             this.playSound("cushionPaddle");
 
             // Reposicionar bolinha no topo mantendo a trajetória
@@ -4101,18 +4101,46 @@ class Game {
                 <circle cx="22" cy="11" r="0.3" fill="#f39c12"/>
             </svg>`,
 
-      ghost_ball: `<svg width="32" height="32" viewBox="0 0 32 32">
-                <!-- Bolinha fantasma (semi-transparente) -->
-                <circle cx="16" cy="16" r="4" fill="#9b59b6" stroke="#8e44ad" stroke-width="1" opacity="0.7"/>
-                <circle cx="16" cy="16" r="3" fill="#bb8fce" opacity="0.5"/>
-
-                <!-- Efeito fantasma (ondas) -->
-                <circle cx="16" cy="16" r="7" fill="none" stroke="#9b59b6" stroke-width="1" opacity="0.4"/>
-                <circle cx="16" cy="16" r="10" fill="none" stroke="#9b59b6" stroke-width="1" stroke-dasharray="2,2" opacity="0.3"/>
-
-                <!-- Símbolo de reaparecimento (seta para cima) -->
-                <path d="M16 6 L14 8 L16 10 L18 8 Z" fill="#9b59b6" opacity="0.8"/>
-                <path d="M16 10 L16 14" stroke="#9b59b6" stroke-width="2" opacity="0.8"/>
+      portal_ball: `<svg width="32" height="32" viewBox="0 0 32 32">
+                <defs>
+                    <!-- Gradiente mágico para o portal -->
+                    <radialGradient id="portalGradient" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" style="stop-color:#9b59b6;stop-opacity:1" />
+                        <stop offset="50%" style="stop-color:#8e44ad;stop-opacity:0.9" />
+                        <stop offset="100%" style="stop-color:#6c5ce7;stop-opacity:0.8" />
+                    </radialGradient>
+                    <!-- Gradiente para o brilho interno -->
+                    <radialGradient id="portalGlow" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" style="stop-color:#a29bfe;stop-opacity:0.8" />
+                        <stop offset="70%" style="stop-color:#6c5ce7;stop-opacity:0.4" />
+                        <stop offset="100%" style="stop-color:#9b59b6;stop-opacity:0" />
+                    </radialGradient>
+                </defs>
+                
+                <!-- Portal dimensional mágico (oval vertical mais alto) - camada externa -->
+                <ellipse cx="16" cy="16" rx="4.5" ry="12" fill="url(#portalGradient)" opacity="0.9"/>
+                
+                <!-- Brilho interno do portal -->
+                <ellipse cx="16" cy="16" rx="3.5" ry="9" fill="url(#portalGlow)"/>
+                
+                <!-- Efeito de energia no centro -->
+                <ellipse cx="16" cy="16" rx="2" ry="6" fill="#a29bfe" opacity="0.6"/>
+                <ellipse cx="16" cy="16" rx="1" ry="3" fill="#ffffff" opacity="0.8"/>
+                
+                <!-- Partículas de energia mágica -->
+                <circle cx="13" cy="12" r="0.4" fill="#a29bfe" opacity="0.7"/>
+                <circle cx="14.5" cy="8" r="0.3" fill="#6c5ce7" opacity="0.6"/>
+                <circle cx="17.5" cy="10" r="0.4" fill="#a29bfe" opacity="0.7"/>
+                <circle cx="13.5" cy="20" r="0.3" fill="#6c5ce7" opacity="0.6"/>
+                <circle cx="18" cy="22" r="0.4" fill="#a29bfe" opacity="0.7"/>
+                <circle cx="14" cy="24" r="0.3" fill="#6c5ce7" opacity="0.6"/>
+                
+                <!-- Semi-circunferência da bolinha saindo do portal (estilo eco_ball, menor) -->
+                <!-- A bolinha está na frente do portal, com metade saindo do centro do portal (centro em x=16) -->
+                <path d="M 16 10 A 2.5 2.5 0 0 1 16 22" fill="#fdcb6e" stroke="#ff6b35" stroke-width="1.5"/>
+                <!-- Camadas concêntricas da eco_ball para efeito de profundidade -->
+                <path d="M 16.5 11.5 A 1.8 1.8 0 0 1 16.5 20.5" fill="#fdcb6e" stroke="#ff6b35" stroke-width="1" opacity="0.5"/>
+                <path d="M 16.8 13 A 1.2 1.2 0 0 1 16.8 19" fill="#fdcb6e" stroke="#ff6b35" stroke-width="1" opacity="0.3"/>
             </svg>`,
 
       zigzag_stabilizer: `<svg width="32" height="32" viewBox="0 0 32 32">
@@ -4424,9 +4452,9 @@ class Game {
   }
 
   loseLife() {
-    // Verificar se tem Bolinha Fantasma e ainda não foi usada nesta fase
-    if (this.hasUpgrade("ghost_ball") && !this.ghostBallUsedThisPhase) {
-      this.ghostBallUsedThisPhase = true;
+    // Verificar se tem Bolinha Portal e ainda não foi usada nesta fase
+    if (this.hasUpgrade("portal_ball") && !this.portalBallUsedThisPhase) {
+      this.portalBallUsedThisPhase = true;
 
       // Salvar a velocidade da bolinha que caiu (se houver)
       let savedVx = 0;
@@ -4436,7 +4464,7 @@ class Game {
         savedVy = Math.abs(this.balls[0].vy); // Garantir que seja para baixo
       }
 
-      // Tocar som de efeito fantasma
+      // Tocar som de efeito portal
       this.playSound("cushionPaddle"); // Usar som existente
 
       // Recriar bolinha no topo do campo mantendo a trajetória
@@ -5686,13 +5714,13 @@ class Game {
         icon: this.getUpgradeSVG("time_ball"),
       },
       {
-        id: "ghost_ball",
-        name: "Bolinha Fantasma",
+        id: "portal_ball",
+        name: "Bolinha Portal",
         description:
           "Quando a bolinha cai pela primeira vez em cada fase, ela reaparece no topo do campo.",
         price: 250,
         type: "ball",
-        icon: this.getUpgradeSVG("ghost_ball"),
+        icon: this.getUpgradeSVG("portal_ball"),
       },
       {
         id: "dimensional_ball",
@@ -5891,7 +5919,7 @@ class Game {
     this.resetBallEffects(); // Resetar todos os efeitos para nova fase
     this.ballHitCount = 0; // Resetar contador da Bolinha Prima
     this.paddle.hitCount = 0; // Resetar contador de batidas da plataforma para Canhões Acoplados
-    this.ghostBallUsedThisPhase = false; // Resetar uso da Bolinha Fantasma para nova fase
+    this.portalBallUsedThisPhase = false; // Resetar uso da Bolinha Portal para nova fase
 
     // Resetar combo da fase para nova fase
     this.currentPhaseCombo = 0;
@@ -6880,7 +6908,7 @@ class Game {
       cushion_paddle: "Desaceleração",
       multi_ball: "Multi-bola",
       time_ball: "Bolinha do Tempo",
-      ghost_ball: "Bolinha Fantasma",
+      portal_ball: "Bolinha Portal",
       dimensional_ball: "Bolinha Dimensional",
     };
     return names[upgradeId] || upgradeId;
