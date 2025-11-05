@@ -60,6 +60,11 @@ class Game {
 
     // Controle do Escudo Protetor
     this.paddleShieldActive = false;
+    this.paddleShieldWarningActive = false; // Timer de 3 segundos ativo
+    this.paddleShieldWarningStartTime = 0; // Quando o timer começou
+    this.paddleShieldWarningBipCount = 0; // Quantos bips já foram tocados (0, 1, 2)
+    this.paddleShieldRedHits = 0; // Contador de colisões com blocos vermelhos
+    this.paddleShieldOpacity = 1.0; // Opacidade do escudo (1.0 = totalmente opaco, 0.0 = transparente)
 
     // Contador de tijolos atual
     this.currentBrickCount = {
@@ -293,6 +298,42 @@ class Game {
     this.sounds.superMagnet = this.createTone(500, 0.3, "sine");
     this.sounds.paddleDash = this.createTone(800, 0.2, "square");
     this.sounds.chargedShot = this.createTone(400, 0.4, "sawtooth");
+    
+    // Som de explosão de energia do escudo (mais suave e menos alto)
+    this.sounds.shieldExplosion = () => {
+      if (!this.audioContext) return;
+      if (this.audioContext.state === "suspended") {
+        this.audioContext.resume();
+      }
+      
+      // Criar som suave de explosão de energia
+      const oscillator1 = this.audioContext.createOscillator();
+      const oscillator2 = this.audioContext.createOscillator();
+      const gainNode = this.audioContext.createGain();
+      
+      oscillator1.connect(gainNode);
+      oscillator2.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+      
+      // Primeira frequência (mais grave e suave)
+      oscillator1.frequency.value = 150;
+      oscillator1.type = "sine"; // Mudado de sawtooth para sine (mais suave)
+      
+      // Segunda frequência (menos aguda, mais suave)
+      oscillator2.frequency.value = 400; // Reduzido de 800 para 400
+      oscillator2.type = "sine"; // Mudado de square para sine (menos estridente)
+      
+      // Envelope de volume mais suave e menos alto
+      const now = this.audioContext.currentTime;
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(0.12, now + 0.05); // Reduzido de 0.3 para 0.12
+      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4); // Mais longo e suave
+      
+      oscillator1.start(now);
+      oscillator1.stop(now + 0.4);
+      oscillator2.start(now);
+      oscillator2.stop(now + 0.4);
+    };
     this.sounds.safetyNet = this.createTone(300, 0.3, "triangle");
     this.sounds.effectActivator = this.createTone(700, 0.25, "square");
 
@@ -1353,6 +1394,10 @@ class Game {
     this.activeUpgrades = [];
     this.portalBallUsedThisPhase = false; // Resetar uso da Bolinha Portal
     this.paddleShieldActive = this.hasUpgrade("paddle_shield"); // Restaurar escudo se tiver upgrade
+    this.paddleShieldWarningActive = false;
+    this.paddleShieldWarningBipCount = 0;
+    this.paddleShieldRedHits = 0;
+    this.paddleShieldOpacity = 1.0; // Resetar opacidade para totalmente opaco
     this.resetBallEffects();
     this.initialPowerSelected = false; // Flag para controlar se o poder inicial foi selecionado
     this.initialPower = null; // Armazenar o poder inicial selecionado
@@ -1685,6 +1730,7 @@ class Game {
     this.updateMovingBricks(deltaTime);
     this.updateCountdown(deltaTime);
     this.updateChaoticMovementTimer(deltaTime);
+    this.updateShieldWarning(); // Atualizar timer do escudo
     this.checkCollisions();
     this.updateBallEffects();
 
@@ -1734,6 +1780,108 @@ class Game {
       0,
       Math.min(this.width - this.paddle.width, this.paddle.x),
     );
+  }
+
+  updateShieldWarning() {
+    // Atualizar timer de aviso do escudo
+    if (
+      this.hasUpgrade("paddle_shield") &&
+      this.paddleShieldActive &&
+      this.paddleShieldWarningActive
+    ) {
+      const currentTime = Date.now();
+      const elapsedTime = currentTime - this.paddleShieldWarningStartTime;
+
+      // Tocar bips: 1 segundo, 2 segundos, 3 segundos (cada um mais fraco)
+      // E reduzir opacidade progressivamente
+      if (elapsedTime >= 1000 && this.paddleShieldWarningBipCount === 0) {
+        // Primeiro bip (mais forte) - reduzir opacidade para 0.7
+        this.playShieldWarningBip(1.0);
+        this.paddleShieldWarningBipCount = 1;
+        this.paddleShieldOpacity = 0.7;
+      } else if (elapsedTime >= 2000 && this.paddleShieldWarningBipCount === 1) {
+        // Segundo bip (médio) - reduzir opacidade para 0.4
+        this.playShieldWarningBip(0.6);
+        this.paddleShieldWarningBipCount = 2;
+        this.paddleShieldOpacity = 0.4;
+      } else if (elapsedTime >= 3000 && this.paddleShieldWarningBipCount === 2) {
+        // Terceiro bip (mais fraco) e quebrar escudo
+        this.playShieldWarningBip(0.3);
+        this.breakShield();
+      }
+    }
+  }
+
+  playShieldWarningBip(volume) {
+    // Criar um som de bip usando o Web Audio API
+    if (this.audioContext) {
+      const oscillator = this.audioContext.createOscillator();
+      const gainNode = this.audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+      
+      oscillator.frequency.value = 800; // Frequência do bip
+      oscillator.type = "sine";
+      
+      gainNode.gain.setValueAtTime(volume * 0.2, this.audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
+      
+      oscillator.start(this.audioContext.currentTime);
+      oscillator.stop(this.audioContext.currentTime + 0.1);
+    }
+  }
+
+  breakShield() {
+    // Quebrar escudo e criar efeito de explosão
+    const shieldX = this.paddle.x + this.paddle.width / 2;
+    const shieldY = this.paddle.y - 4;
+
+    // Criar partículas azuis menores na explosão (reduzir no mobile)
+    const explosionBlueCount = this.isTouchDevice ? Math.round(16 * 0.6) : 16;
+    for (let i = 0; i < explosionBlueCount; i++) {
+      const angle = (Math.PI * 2 * i) / explosionBlueCount;
+      const speed = 2 + Math.random() * 2.5;
+      this.particles.push({
+        x: shieldX,
+        y: shieldY,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1200,
+        maxLife: 1200,
+        color: "#3498db",
+        size: 2 + Math.random() * 2, // Partículas menores (2-4 ao invés de 3-6)
+        startTime: Date.now(),
+      });
+    }
+
+    // Criar algumas partículas brancas menores também (reduzir no mobile)
+    const explosionWhiteCount = this.isTouchDevice ? Math.round(8 * 0.6) : 8;
+    for (let i = 0; i < explosionWhiteCount; i++) {
+      const angle = (Math.PI * 2 * i) / explosionWhiteCount;
+      const speed = 1.5 + Math.random() * 2;
+      this.particles.push({
+        x: shieldX,
+        y: shieldY,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1000,
+        maxLife: 1000,
+        color: "#ffffff",
+        size: 1.5 + Math.random() * 1.5, // Partículas menores (1.5-3 ao invés de 2-4)
+        startTime: Date.now(),
+      });
+    }
+
+    // Tocar som de explosão de energia
+    this.playSound("shieldExplosion");
+
+    // Desativar escudo
+    this.paddleShieldActive = false;
+    this.paddleShieldWarningActive = false;
+    this.paddleShieldWarningBipCount = 0;
+    this.paddleShieldRedHits = 0;
+    this.paddleShieldOpacity = 1.0; // Resetar opacidade
   }
 
   updateUpgradeEffects() {
@@ -2387,12 +2535,18 @@ class Game {
           fragment.x + fragment.size > shieldX &&
           fragment.x < shieldX + shieldWidth
         ) {
-        // Escudo absorve a colisão
-        this.paddleShieldActive = false;
+        // Escudo absorve a colisão - fragmento explode sem dar dano
+        // Se for a primeira colisão com fragmento, iniciar timer de 3 segundos
+        if (!this.paddleShieldWarningActive) {
+          this.paddleShieldWarningActive = true;
+          this.paddleShieldWarningStartTime = Date.now();
+          this.paddleShieldWarningBipCount = 0;
+        }
 
-        // Criar partículas azuis do escudo
-        for (let i = 0; i < 12; i++) {
-          const angle = (Math.PI * 2 * i) / 12;
+        // Criar partículas azuis do escudo (reduzir no mobile)
+        const blueParticleCount = this.isTouchDevice ? Math.round(12 * 0.6) : 12;
+        for (let i = 0; i < blueParticleCount; i++) {
+          const angle = (Math.PI * 2 * i) / blueParticleCount;
           const speed = 2 + Math.random() * 3;
           this.particles.push({
             x: fragment.x,
@@ -2407,9 +2561,10 @@ class Game {
           });
         }
 
-        // Criar partículas brancas do fragmento
-        for (let i = 0; i < 8; i++) {
-          const angle = (Math.PI * 2 * i) / 8;
+        // Criar partículas brancas do fragmento (reduzir no mobile)
+        const whiteParticleCount = this.isTouchDevice ? Math.round(8 * 0.6) : 8;
+        for (let i = 0; i < whiteParticleCount; i++) {
+          const angle = (Math.PI * 2 * i) / whiteParticleCount;
           const speed = 1.5 + Math.random() * 2.5;
           this.particles.push({
             x: fragment.x,
@@ -2424,8 +2579,6 @@ class Game {
           });
         }
 
-        // Tocar som de portal quebrando
-        this.playSound("paddleHit"); // Usar som existente como base
         // Tocar som de explosão de fragmento
         this.playSound("brickHit"); // Som de explosão
 
@@ -2652,6 +2805,24 @@ class Game {
   }
 
   handlePaddleCollision(ball) {
+    // Verificar se escudo está ativo e se a bolinha bateu em bloco vermelho recentemente
+    if (
+      this.hasUpgrade("paddle_shield") &&
+      this.paddleShieldActive &&
+      ball.lastBrickHit === "red"
+    ) {
+      this.paddleShieldRedHits++;
+      // Se atingiu 3 colisões vermelhas e o timer está ativo, quebrar escudo
+      if (this.paddleShieldRedHits >= 3 && this.paddleShieldWarningActive) {
+        this.paddleShieldActive = false;
+        this.paddleShieldWarningActive = false;
+        this.paddleShieldRedHits = 0;
+      }
+    }
+
+    // Resetar último bloco atingido após bater no paddle
+    ball.lastBrickHit = null;
+
     // Resetar efeitos ao tocar no paddle (exceto speedMultiplier do bloco vermelho)
     this.resetBallEffects();
 
@@ -2725,6 +2896,13 @@ class Game {
     }
 
     // Movimento Caótico não precisa de lógica especial na colisão
+
+    // Rastrear último bloco que a bolinha bateu (para escudo)
+    if (!ball.lastBrickHit) {
+      ball.lastBrickHit = brick.color;
+    } else {
+      ball.lastBrickHit = brick.color;
+    }
 
     // Incrementar contador de batidas para Bolinha Prima
     this.ballHitCount++;
@@ -3861,7 +4039,7 @@ class Game {
                 
                 <!-- Padrão de escudo -->
                 <path d="M16 16 L20 20 L16 24 L12 20 Z" fill="#2980b9" opacity="0.7"/>
-                <circle cx="16" cy="20" r="2" fill="#ffffff" opacity="0.8"/>
+                <circle cx="16" cy="20" r="3.5" fill="#ffffff" opacity="0.8"/>
                 
                 <!-- Efeito de proteção (linhas de energia) -->
                 <path d="M8 20 Q16 16 24 20" stroke="#3498db" stroke-width="1" fill="none" opacity="0.6"/>
@@ -6035,6 +6213,10 @@ class Game {
     this.paddle.hitCount = 0; // Resetar contador de batidas da plataforma para Canhões Acoplados
     this.portalBallUsedThisPhase = false; // Resetar uso da Bolinha Portal para nova fase
     this.paddleShieldActive = this.hasUpgrade("paddle_shield"); // Restaurar escudo para nova fase
+    this.paddleShieldWarningActive = false; // Resetar timer de aviso
+    this.paddleShieldWarningBipCount = 0; // Resetar contador de bips
+    this.paddleShieldRedHits = 0; // Resetar contador de colisões vermelhas
+    this.paddleShieldOpacity = 1.0; // Resetar opacidade para totalmente opaco
 
     // Resetar combo da fase para nova fase
     this.currentPhaseCombo = 0;
@@ -7304,8 +7486,14 @@ class Game {
       const shieldWidth = this.paddle.width + shieldPadding * 2;
       const shieldHeight = this.paddle.height + shieldPadding * 2;
 
+      // Usar opacidade dinâmica baseada no estado do escudo
+      const baseOpacity = 0.6 * this.paddleShieldOpacity;
+      const glowOpacity = 0.3 * this.paddleShieldOpacity;
+      const borderOpacity = 0.8 * this.paddleShieldOpacity;
+      const reflectionOpacity = 0.4 * this.paddleShieldOpacity;
+
       // Película azul principal (como bloco com vidro)
-      this.ctx.fillStyle = "rgba(52, 152, 219, 0.6)";
+      this.ctx.fillStyle = `rgba(52, 152, 219, ${baseOpacity})`;
       this.ctx.fillRect(
         shieldX + 2,
         shieldY + 2,
@@ -7314,11 +7502,11 @@ class Game {
       );
 
       // Efeito de brilho azul
-      this.ctx.fillStyle = "rgba(52, 152, 219, 0.3)";
+      this.ctx.fillStyle = `rgba(52, 152, 219, ${glowOpacity})`;
       this.ctx.fillRect(shieldX + 4, shieldY + 4, shieldWidth - 8, 2);
 
       // Borda azul para destacar
-      this.ctx.strokeStyle = "rgba(52, 152, 219, 0.8)";
+      this.ctx.strokeStyle = `rgba(52, 152, 219, ${borderOpacity})`;
       this.ctx.lineWidth = 2;
       this.ctx.strokeRect(
         shieldX + 1,
@@ -7328,7 +7516,7 @@ class Game {
       );
 
       // Efeito de reflexo no canto superior esquerdo
-      this.ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+      this.ctx.fillStyle = `rgba(255, 255, 255, ${reflectionOpacity})`;
       this.ctx.fillRect(shieldX + 2, shieldY + 2, shieldWidth / 3, 2);
       this.ctx.fillRect(shieldX + 2, shieldY + 2, 2, shieldHeight / 3);
     }
