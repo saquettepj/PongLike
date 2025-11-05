@@ -81,6 +81,7 @@ class Game {
     this.shopPromotion = {
       active: false,
       discountPercent: 0,
+      promotedUpgradeId: null, // ID do upgrade com promoção individual (60% desconto)
     };
 
     // Sistema de dificuldades progressivas
@@ -4859,15 +4860,20 @@ class Game {
       this.shopPromotion.active = true;
       // Desconto para primeira loja: 20-40%
       this.shopPromotion.discountPercent = Math.floor(Math.random() * 21) + 20; // 20-40%
+      this.shopPromotion.promotedUpgradeId = null; // Loja toda em promoção
     }
     // Ativar promoção a cada 3 fases (fases 3, 6, 9, 12, etc.)
     else if (this.currentPhase % 3 === 0) {
       this.shopPromotion.active = true;
       // Desconto aleatório entre 20% e 40%
       this.shopPromotion.discountPercent = Math.floor(Math.random() * 21) + 20; // 20-40%
+      this.shopPromotion.promotedUpgradeId = null; // Loja toda em promoção
     } else {
       this.shopPromotion.active = false;
       this.shopPromotion.discountPercent = 0;
+      // Quando loja não está em promoção, um upgrade aleatório terá 60% de desconto
+      // O upgrade será escolhido em generateUpgradeOptions() após selecionar os upgrades
+      this.shopPromotion.promotedUpgradeId = null; // Será definido depois
     }
   }
 
@@ -5577,6 +5583,7 @@ class Game {
     this.shopPromotion = {
       active: false,
       discountPercent: 0,
+      promotedUpgradeId: null,
     };
 
     // Resetar dinheiro antes da loja
@@ -5649,25 +5656,41 @@ class Game {
       selectedUpgrades.push(shuffledUpgrades[i]);
     }
 
+    // Se a loja não está em promoção, escolher um upgrade aleatório para promoção individual de 60%
+    if (!this.shopPromotion.active && selectedUpgrades.length > 0) {
+      const randomIndex = Math.floor(Math.random() * selectedUpgrades.length);
+      this.shopPromotion.promotedUpgradeId = selectedUpgrades[randomIndex].id;
+    }
+
     // Mostrar upgrades selecionados
     selectedUpgrades.forEach((upgrade) => {
+      // Verificar se este upgrade específico está em promoção individual
+      const isIndividualPromotion = !this.shopPromotion.active && 
+                                    this.shopPromotion.promotedUpgradeId === upgrade.id;
+      const promotionDiscount = isIndividualPromotion ? 60 : this.shopPromotion.discountPercent;
+      
       // Calcular preço base considerando promoção
       let displayPrice = upgrade.price;
-      if (this.shopPromotion.active) {
-        displayPrice = Math.floor(
-          upgrade.price * (1 - this.shopPromotion.discountPercent / 100),
-        );
-      }
-      // Aplicar Modificador "Mercado Inflacionado" para exibição (+50%)
+      let originalPrice = upgrade.price;
+      
+      // Aplicar Modificador "Mercado Inflacionado" ao preço base se aplicável
       if (this.phaseModifiers && this.phaseModifiers.inflatedMarket) {
-        displayPrice = Math.floor(displayPrice * 1.5);
+        originalPrice = Math.floor(upgrade.price * 1.5);
+      }
+      
+      if (this.shopPromotion.active || isIndividualPromotion) {
+        displayPrice = Math.floor(
+          originalPrice * (1 - promotionDiscount / 100),
+        );
+      } else {
+        displayPrice = originalPrice;
       }
 
       const upgradeCard = document.createElement("div");
       upgradeCard.className = "upgrade-card";
 
-      // Adicionar classe especial se promoção estiver ativa
-      if (this.shopPromotion.active) {
+      // Adicionar classe especial se promoção estiver ativa (loja toda ou individual)
+      if (this.shopPromotion.active || isIndividualPromotion) {
         upgradeCard.classList.add("promotion-active");
       }
 
@@ -5682,9 +5705,9 @@ class Game {
                 <div class="upgrade-name">${upgrade.name}</div>
                 <div class="upgrade-description">${upgrade.description}</div>
                 <div class="upgrade-price ${priceColorClass}">
-                    ${this.shopPromotion.active ? `<span class="original-price">${upgrade.price}</span>` : ""}
+                    ${(this.shopPromotion.active || isIndividualPromotion) ? `<span class="original-price">${originalPrice}</span>` : ""}
                     ${displayPrice} 🪙
-                    ${this.shopPromotion.active ? `<span class="discount-badge">-${this.shopPromotion.discountPercent}%</span>` : ""}
+                    ${(this.shopPromotion.active || isIndividualPromotion) ? `<span class="discount-badge">-${promotionDiscount}%</span>` : ""}
                 </div>
             `;
 
