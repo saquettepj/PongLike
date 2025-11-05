@@ -127,7 +127,7 @@ class Game {
     // - Botões para pular fase e adicionar dinheiro
     // - Ferramentas de debug
     // ========================================
-    this.developerMode = false;
+    this.developerMode = true;
     this.gameRunning = false;
     this.gamePaused = false;
     this.ballHitCount = 0; // Contador de batidas da bolinha para Bolinha Prima
@@ -3866,17 +3866,15 @@ class Game {
             </svg>`,
 
       heavy_ball: `<svg width="32" height="32" viewBox="0 0 32 32">
-                <!-- Bolinha principal mais escura e maior -->
-                <circle cx="16" cy="16" r="7" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
-                <!-- Efeito de peso (linhas de sombra) -->
-                <circle cx="16" cy="16" r="5" fill="#2c3e50" stroke="#1a252f" stroke-width="1" opacity="0.8"/>
-                <!-- Símbolo de peso (âncora ou martelo) -->
-                <rect x="14" y="8" width="4" height="8" fill="#95a5a6" stroke="#7f8c8d" stroke-width="1"/>
-                <rect x="13" y="10" width="6" height="2" fill="#7f8c8d" stroke="#6c7b7d" stroke-width="1"/>
-                <rect x="15" y="6" width="2" height="4" fill="#95a5a6" stroke="#7f8c8d" stroke-width="1"/>
-                <!-- Efeito de impacto (ondas) -->
-                <circle cx="16" cy="16" r="9" fill="none" stroke="#34495e" stroke-width="1" opacity="0.3"/>
-                <circle cx="16" cy="16" r="11" fill="none" stroke="#34495e" stroke-width="1" opacity="0.2"/>
+                <!-- Peso - Base trapezoidal arredondada maior -->
+                <path d="M 4 24 Q 4 20 6 18 L 7 16 Q 8 14 10 14 L 22 14 Q 24 14 25 16 L 26 18 Q 28 20 28 24 L 28 29 Q 28 31 27 31.5 L 26 32 Q 25 32.5 24 32.5 L 8 32.5 Q 7 32.5 6 32 L 5 31.5 Q 4 31 4 29 Z" fill="#2c3e50" stroke="#1a252f" stroke-width="1"/>
+                <!-- Alça circular com círculo transparente no meio -->
+                <circle cx="16" cy="16" r="4.5" fill="none" stroke="#2c3e50" stroke-width="2.5"/>
+                <circle cx="16" cy="16" r="2.5" fill="none"/>
+                <!-- Bolinha baseada na eco_ball dentro do peso -->
+                <circle cx="16" cy="23" r="4" fill="#fdcb6e" stroke="#ff6b35" stroke-width="1.5"/>
+                <circle cx="16" cy="23" r="2.8" fill="#fdcb6e" stroke="#ff6b35" stroke-width="1" opacity="0.5"/>
+                <circle cx="16" cy="23" r="1.6" fill="#fdcb6e" stroke="#ff6b35" stroke-width="1" opacity="0.3"/>
             </svg>`,
 
       // Upgrades de Utilidade
