@@ -16,20 +16,20 @@ class I18n {
         blockEffects: 'Efeitos dos Blocos',
         
         // Controles desktop
-        controlPaddle: 'Controlar o paddle',
+        controlPaddle: 'Controlar a plataforma',
         selectPower: 'Selecionar poder',
         activatePower: 'Ativar poder selecionado',
         pauseResume: 'Pausar/Despausar',
         navigateShop: 'Navegar / Comprar upgrades',
         
         // Controles mobile
-        touchSidesMove: 'Toque nas <strong>laterais</strong> da <strong>tela</strong> para mover o paddle',
+        touchSidesMove: 'Toque nas <strong>laterais</strong> da <strong>tela</strong> para mover a plataforma',
         touchCenterRelease: 'Toque no <strong>centro</strong> da <strong>tela</strong> para soltar a bolinha ou ativar o poder',
         swipeChangePower: 'Deslize para cima/baixo no <strong>centro</strong> da <strong>tela</strong> para trocar o poder',
         
         // Help overlay (touch zones)
-        movePaddleLeft: 'Mover<br>Paddle<br>←',
-        movePaddleRight: 'Mover<br>Paddle<br>→',
+        movePaddleLeft: 'Mover<br>Plataforma<br>←',
+        movePaddleRight: 'Mover<br>Plataforma<br>→',
         releaseBallOrActivate: 'Soltar Bolinha<br>ou Ativar Poder',
         
         // Efeitos dos blocos
@@ -90,17 +90,17 @@ class I18n {
         
         // Upgrades
         upgrades: {
-          wide_paddle: { name: 'Paddle Largo', description: 'Aumenta o tamanho do paddle em 50%' },
+          wide_paddle: { name: 'Plataforma Larga', description: 'Aumenta o tamanho da plataforma em 50%' },
           attached_cannons: { name: 'Canhões Acoplados', description: 'Atira projéteis apenas em batidas ímpares' },
           super_magnet: { name: 'Super Ímã', description: 'Campo magnético para puxar bolinha por 1s (cooldown 10s)' },
-          paddle_dash: { name: 'Dash de Paddle', description: 'Movimento rápido lateral por 2s (cooldown 8s)' },
-          cushion_paddle: { name: 'Paddle de Desaceleração', description: 'Diminui em 50% a velocidade de todas as bolinhas por 3s (cooldown 10s)' },
-          reinforced_paddle: { name: 'Reforço', description: 'Paddle 2x mais alto e destrói bloco da linha de cima' },
-          speed_boost: { name: 'Impulso de Velocidade', description: 'Aumenta a velocidade do paddle em 25%' },
+          paddle_dash: { name: 'Dash de Plataforma', description: 'Movimento rápido lateral por 2s (cooldown 8s)' },
+          cushion_paddle: { name: 'Plataforma de Desaceleração', description: 'Diminui em 50% a velocidade de todas as bolinhas por 3s (cooldown 10s)' },
+          reinforced_paddle: { name: 'Reforço', description: 'Plataforma 2x mais alta e destrói bloco da linha de cima' },
+          speed_boost: { name: 'Impulso de Velocidade', description: 'Aumenta a velocidade da plataforma em 25%' },
           charged_shot: { name: 'Tiro Carregado', description: 'Atira projétil perfurante imediatamente' },
           piercing_ball: { name: 'Bolinha Perfurante', description: 'Quebra tijolos azuis sem mudar direção' },
           friction_field: { name: 'Campo de Fricção', description: 'Reduz velocidade em 10%' },
-          multi_ball: { name: 'Multi-bola', description: 'Cria uma nova bolinha grudada no paddle. Liberada automaticamente em 2 segundos (cooldown 20s)' },
+          multi_ball: { name: 'Multi-bola', description: 'Cria uma nova bolinha grudada na plataforma. Liberada automaticamente em 2 segundos (cooldown 20s)' },
           combo_ball: { name: 'Bolinha Combo', description: 'A cada 5 combos consecutivos, duplica a bolinha atual uma vez' },
           heavy_ball: { name: 'Bolinha Pesada', description: 'A bolinha se move 15% mais devagar, facilitando o controle' },
           explosive_ball: { name: 'Bolinha Explosiva', description: 'A bolinha explode sempre ao atingir blocos amarelos ou vermelhos, destruindo tijolos adjacentes em uma pequena área' },
