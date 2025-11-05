@@ -4429,9 +4429,9 @@ class Game {
   }
 
   createFragment(x, y) {
-    // Calcular velocidade base
-    let baseVx = (Math.random() - 0.5) * 1.92; // -60% de 4.8 para 1.92
-    let baseVy = 1.92 + Math.random() * 1.92; // -60% de 4.8+4.8 para 1.92+1.92
+    // Calcular velocidade base (reduzida em 25%)
+    let baseVx = (Math.random() - 0.5) * 1.92 * 0.75; // -60% de 4.8 para 1.92, depois -25%
+    let baseVy = (1.92 + Math.random() * 1.92) * 0.75; // -60% de 4.8+4.8 para 1.92+1.92, depois -25%
 
     // Reduzir velocidade em 20% se Pânico Vermelho estiver ativo
     if (this.phaseModifiers.redPanic) {
