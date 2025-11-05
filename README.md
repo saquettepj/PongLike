@@ -121,6 +121,7 @@ A partir da fase 6, um modificador aleatório é aplicado a cada fase. Cada modi
 6. **Reforço** - Plataforma 2x mais alta e destrói bloco da linha de cima (220 🪙)
 7. **Impulso de Velocidade** - Aumenta a velocidade da plataforma em 25% (120 🪙)
 8. **Tiro Carregado** - Atira projétil perfurante imediatamente (cooldown 5s) (190 🪙)
+9. **Escudo Protetor** - Escudo azul protetor que absorve uma colisão de fragmento branco (100 🪙)
 
 #### ⚽ Upgrades de Bolinha (17 total)
 8. **Bolinha Perfurante** - Quebra tijolos azuis sem mudar direção (220 🪙)

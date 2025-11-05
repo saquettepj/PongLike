@@ -58,6 +58,9 @@ class Game {
     // Controle da Bolinha Portal
     this.portalBallUsedThisPhase = false;
 
+    // Controle do Escudo Protetor
+    this.paddleShieldActive = false;
+
     // Contador de tijolos atual
     this.currentBrickCount = {
       blue: 0,
@@ -919,6 +922,11 @@ class Game {
 
     if (selectedUpgrade) {
       this.activeUpgrades.push(selectedUpgrade);
+      
+      // Ativar escudo se comprou o upgrade
+      if (selectedUpgrade.id === "paddle_shield") {
+        this.paddleShieldActive = true;
+      }
       this.initialPower = selectedUpgrade;
       this.initialPowerSelected = true;
     }
@@ -1009,6 +1017,14 @@ class Game {
         price: 190,
         type: "paddle",
         icon: this.getUpgradeSVG("charged_shot"),
+      },
+      {
+        id: "paddle_shield",
+        name: getUpgradeText("paddle_shield", "name") || "Escudo Protetor",
+        description: getUpgradeText("paddle_shield", "description") || "Escudo azul protetor que absorve uma colisão de fragmento branco",
+        price: 100,
+        type: "paddle",
+        icon: this.getUpgradeSVG("paddle_shield"),
       },
       // Upgrades de Bolinha (8-20)
       {
@@ -1336,6 +1352,7 @@ class Game {
     this.lives = 3;
     this.activeUpgrades = [];
     this.portalBallUsedThisPhase = false; // Resetar uso da Bolinha Portal
+    this.paddleShieldActive = this.hasUpgrade("paddle_shield"); // Restaurar escudo se tiver upgrade
     this.resetBallEffects();
     this.initialPowerSelected = false; // Flag para controlar se o poder inicial foi selecionado
     this.initialPower = null; // Armazenar o poder inicial selecionado
@@ -2350,6 +2367,71 @@ class Game {
       if (elapsedTime >= fragment.life) {
         this.fragments.splice(index, 1);
         return;
+      }
+
+      // Verificar colisão com o escudo protetor (se ativo e upgrade comprado)
+      // O escudo envolve o paddle completamente, então verificamos uma área maior
+      if (
+        this.hasUpgrade("paddle_shield") &&
+        this.paddleShieldActive
+      ) {
+        const shieldPadding = 8;
+        const shieldX = this.paddle.x - shieldPadding;
+        const shieldY = this.paddle.y - shieldPadding;
+        const shieldWidth = this.paddle.width + shieldPadding * 2;
+        const shieldHeight = this.paddle.height + shieldPadding * 2;
+
+        if (
+          fragment.y + fragment.size > shieldY &&
+          fragment.y < shieldY + shieldHeight &&
+          fragment.x + fragment.size > shieldX &&
+          fragment.x < shieldX + shieldWidth
+        ) {
+        // Escudo absorve a colisão
+        this.paddleShieldActive = false;
+
+        // Criar partículas azuis do escudo
+        for (let i = 0; i < 12; i++) {
+          const angle = (Math.PI * 2 * i) / 12;
+          const speed = 2 + Math.random() * 3;
+          this.particles.push({
+            x: fragment.x,
+            y: fragment.y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: 1000,
+            maxLife: 1000,
+            color: "#3498db",
+            size: 3 + Math.random() * 3,
+            startTime: Date.now(),
+          });
+        }
+
+        // Criar partículas brancas do fragmento
+        for (let i = 0; i < 8; i++) {
+          const angle = (Math.PI * 2 * i) / 8;
+          const speed = 1.5 + Math.random() * 2.5;
+          this.particles.push({
+            x: fragment.x,
+            y: fragment.y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: 800,
+            maxLife: 800,
+            color: "#ffffff",
+            size: 2 + Math.random() * 2,
+            startTime: Date.now(),
+          });
+        }
+
+        // Tocar som de portal quebrando
+        this.playSound("paddleHit"); // Usar som existente como base
+        // Tocar som de explosão de fragmento
+        this.playSound("brickHit"); // Som de explosão
+
+        this.fragments.splice(index, 1);
+        return;
+        }
       }
 
       // Verificar colisão com a plataforma
@@ -3767,6 +3849,25 @@ class Game {
                 <path d="M12 8 Q16 6 20 8" stroke="#f1c40f" stroke-width="1.5" fill="none" opacity="0.8"/>
             </svg>`,
 
+      paddle_shield: `<svg width="32" height="32" viewBox="0 0 32 32">
+                <!-- Plataforma base -->
+                <rect x="2" y="26" width="28" height="4" fill="#ff6b35" stroke="#d63031" stroke-width="1"/>
+                <rect x="1" y="25" width="30" height="2" fill="#fdcb6e"/>
+                <rect x="1" y="29" width="30" height="2" fill="#e17055"/>
+
+                <!-- Escudo protetor azul transparente -->
+                <rect x="0" y="20" width="32" height="8" fill="#3498db" opacity="0.6" stroke="#2980b9" stroke-width="1.5"/>
+                <rect x="2" y="22" width="28" height="4" fill="#5dade2" opacity="0.4"/>
+                
+                <!-- Padrão de escudo -->
+                <path d="M16 16 L20 20 L16 24 L12 20 Z" fill="#2980b9" opacity="0.7"/>
+                <circle cx="16" cy="20" r="2" fill="#ffffff" opacity="0.8"/>
+                
+                <!-- Efeito de proteção (linhas de energia) -->
+                <path d="M8 20 Q16 16 24 20" stroke="#3498db" stroke-width="1" fill="none" opacity="0.6"/>
+                <path d="M8 24 Q16 20 24 24" stroke="#3498db" stroke-width="1" fill="none" opacity="0.6"/>
+            </svg>`,
+
       // Upgrades de Bolinha
       piercing_ball: `<svg width="32" height="32" viewBox="0 0 32 32">
                 <circle cx="16" cy="16" r="6" fill="#fdcb6e" stroke="#ff6b35" stroke-width="2"/>
@@ -5004,6 +5105,11 @@ class Game {
       if (upgrade) {
         this.activeUpgrades.push(upgrade);
 
+        // Ativar escudo se comprou o upgrade
+        if (upgrade.id === "paddle_shield") {
+          this.paddleShieldActive = true;
+        }
+
         // Aplicar efeitos do upgrade
         this.applyUpgrades();
 
@@ -5488,6 +5594,14 @@ class Game {
         type: "paddle",
         icon: this.getUpgradeSVG("charged_shot"),
       },
+      {
+        id: "paddle_shield",
+        name: "Escudo Protetor",
+        description: "Escudo azul protetor que absorve uma colisão de fragmento branco",
+        price: 100,
+        type: "paddle",
+        icon: this.getUpgradeSVG("paddle_shield"),
+      },
 
       // Upgrades de Bolinha (8-14)
       {
@@ -5920,6 +6034,7 @@ class Game {
     this.ballHitCount = 0; // Resetar contador da Bolinha Prima
     this.paddle.hitCount = 0; // Resetar contador de batidas da plataforma para Canhões Acoplados
     this.portalBallUsedThisPhase = false; // Resetar uso da Bolinha Portal para nova fase
+    this.paddleShieldActive = this.hasUpgrade("paddle_shield"); // Restaurar escudo para nova fase
 
     // Resetar combo da fase para nova fase
     this.currentPhaseCombo = 0;
@@ -6906,6 +7021,7 @@ class Game {
       safety_net: "Rede de Segurança",
       effect_activator: "Ativador",
       cushion_paddle: "Desaceleração",
+      paddle_shield: "Escudo",
       multi_ball: "Multi-bola",
       time_ball: "Bolinha do Tempo",
       portal_ball: "Bolinha Portal",
@@ -7176,6 +7292,46 @@ class Game {
       this.paddle.width,
       2,
     );
+
+    // Desenhar escudo protetor se ativo (envolvendo o paddle como um bloco com vidro)
+    if (
+      this.hasUpgrade("paddle_shield") &&
+      this.paddleShieldActive
+    ) {
+      const shieldPadding = 8; // Espaçamento extra ao redor do paddle
+      const shieldX = this.paddle.x - shieldPadding;
+      const shieldY = this.paddle.y - shieldPadding;
+      const shieldWidth = this.paddle.width + shieldPadding * 2;
+      const shieldHeight = this.paddle.height + shieldPadding * 2;
+
+      // Película azul principal (como bloco com vidro)
+      this.ctx.fillStyle = "rgba(52, 152, 219, 0.6)";
+      this.ctx.fillRect(
+        shieldX + 2,
+        shieldY + 2,
+        shieldWidth - 4,
+        shieldHeight - 4,
+      );
+
+      // Efeito de brilho azul
+      this.ctx.fillStyle = "rgba(52, 152, 219, 0.3)";
+      this.ctx.fillRect(shieldX + 4, shieldY + 4, shieldWidth - 8, 2);
+
+      // Borda azul para destacar
+      this.ctx.strokeStyle = "rgba(52, 152, 219, 0.8)";
+      this.ctx.lineWidth = 2;
+      this.ctx.strokeRect(
+        shieldX + 1,
+        shieldY + 1,
+        shieldWidth - 2,
+        shieldHeight - 2,
+      );
+
+      // Efeito de reflexo no canto superior esquerdo
+      this.ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+      this.ctx.fillRect(shieldX + 2, shieldY + 2, shieldWidth / 3, 2);
+      this.ctx.fillRect(shieldX + 2, shieldY + 2, 2, shieldHeight / 3);
+    }
   }
 
   drawBall(ball) {
